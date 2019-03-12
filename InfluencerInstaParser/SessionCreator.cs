@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Net;
 using InstaSharper.API;
 using InstaSharper.API.Builder;
 using InstaSharper.Classes;

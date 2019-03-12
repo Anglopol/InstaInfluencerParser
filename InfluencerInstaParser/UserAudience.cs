@@ -8,10 +8,10 @@ using InstaSharper.Classes.Models;
 
 namespace InfluencerInstaParser
 {
-    public class UserInfoHandler
+    public class UserAudience
     {
         private IInstaApi _instaApi;
-        public UserInfoHandler(IInstaApi instaApi)
+        public UserAudience(IInstaApi instaApi)
         {
             _instaApi = instaApi;
         }
