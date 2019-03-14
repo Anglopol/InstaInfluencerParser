@@ -5,7 +5,7 @@ using InstagramApiSharp.Classes;
 
 namespace InfluencerInstaParser
 {
-    public class UserSessionDataCreator
+    public class UserSessionDataFactory
     {
         
         private static int _currentAccount = 0;
