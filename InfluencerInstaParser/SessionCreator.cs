@@ -11,13 +11,9 @@ namespace InfluencerInstaParser
         private IRequestDelay _delay;
 
 
-        public SessionCreator(string login, string password, IRequestDelay delay)
+        public SessionCreator(UserSessionData sessionData, IRequestDelay delay)
         {
-            _sessionData = new UserSessionData
-            {
-                UserName = login,
-                Password = password
-            };
+            _sessionData = sessionData;
             _delay = delay;
         }
 
