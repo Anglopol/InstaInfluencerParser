@@ -5,10 +5,6 @@ using InstagramApiSharp.API;
 using InstagramApiSharp.API.Builder;
 using InstagramApiSharp.Classes;
 using InstagramApiSharp.Logger;
-using InstaSharper.API;
-using InstaSharper.API.Builder;
-using InstaSharper.Classes;
-using InstaSharper.Logger;
 
 namespace InfluencerInstaParser
 {
