@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using InstaSharper.API;
-using InstaSharper.Classes;
-using InstaSharper.Classes.Models;
+using InstagramApiSharp;
+using InstagramApiSharp.API;
+using InstagramApiSharp.Classes;
+using InstagramApiSharp.Classes.Models;
 
 namespace InfluencerInstaParser
 {
@@ -22,7 +23,7 @@ namespace InfluencerInstaParser
                 followers = new List<InstaUserShort>();
             // load more followers
             Console.WriteLine($"Loaded so far: {followers.Count}, loading more");
-            var result = await _instaApi.GetUserFollowersAsync(username, parameters);
+            var result = await _instaApi.UserProcessor.GetUserFollowersAsync(username, parameters);
 
             // merge results
             if (result.Value != null)
@@ -32,7 +33,7 @@ namespace InfluencerInstaParser
                 return followers;
 
             // prepare nex id
-            var nextId = result.Value?.NextId ?? parameters.NextId;
+            var nextId = result.Value?.NextMaxId ?? parameters.NextMaxId;
 
             // setup some delay
             var delay = TimeSpan.FromSeconds(new Random(DateTime.Now.Millisecond).Next(60, 120));
@@ -40,7 +41,7 @@ namespace InfluencerInstaParser
                 delay = TimeSpan.FromSeconds(new Random(DateTime.Now.Millisecond).Next(120, 360));
             Console.WriteLine($"Not able to load full list of followers, retry in {delay.TotalSeconds} seconds");
             await Task.Delay(delay);
-            return await GetFollowersList(username, parameters.StartFromId(nextId), followers);
+            return await GetFollowersList(username, parameters.StartFromMaxId(nextId), followers);
         }
 
         public async Task<List<InstaUserShort>> GetFollowingList(string username,
@@ -50,7 +51,7 @@ namespace InfluencerInstaParser
                 following = new List<InstaUserShort>();
             // load more followers
             Console.WriteLine($"Loaded so far: {following.Count}, loading more");
-            var result = await _instaApi.GetUserFollowingAsync(username, parameters);
+            var result = await _instaApi.UserProcessor.GetUserFollowingAsync(username, parameters);
 
             // merge results
             if (result.Value != null)
@@ -60,7 +61,7 @@ namespace InfluencerInstaParser
                 return following;
 
             // prepare nex id
-            var nextId = result.Value?.NextId ?? parameters.NextId;
+            var nextId = result.Value?.NextMaxId ?? parameters.NextMaxId;
 
             // setup some delay
             var delay = TimeSpan.FromSeconds(new Random(DateTime.Now.Millisecond).Next(60, 120));
@@ -68,7 +69,7 @@ namespace InfluencerInstaParser
                 delay = TimeSpan.FromSeconds(new Random(DateTime.Now.Millisecond).Next(120, 360));
             Console.WriteLine($"Not able to load full list of following users, retry in {delay.TotalSeconds} seconds");
             await Task.Delay(delay);
-            return await GetFollowingList(username, parameters.StartFromId(nextId), following);
+            return await GetFollowingList(username, parameters.StartFromMaxId(nextId), following);
         }
     }
 }

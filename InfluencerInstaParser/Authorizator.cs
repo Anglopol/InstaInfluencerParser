@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using InstaSharper.API;
-using InstaSharper.Classes;
+using InstagramApiSharp.API;
+using InstagramApiSharp.Classes;
 
 namespace InfluencerInstaParser
 {

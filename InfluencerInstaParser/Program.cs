@@ -1,6 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using InstagramApiSharp.API;
+using InstagramApiSharp.API.Builder;
+using InstagramApiSharp.Classes;
+using InstagramApiSharp.Logger;
 using InstaSharper.API;
 using InstaSharper.API.Builder;
 using InstaSharper.Classes;
@@ -72,11 +76,6 @@ namespace InfluencerInstaParser
                 state.Seek(0, SeekOrigin.Begin);
                 state.CopyTo(fileStream);
             }
-
-//            var followers = await _instaApi.GetUserFollowersAsync(userSession.UserName,
-//                PaginationParameters.MaxPagesToLoad(200)); //7435427285
-
-//            await _instaApi.FollowUserAsync(7435427285);
 
             return true;
         }
