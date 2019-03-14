@@ -9,7 +9,7 @@ namespace InfluencerInstaParser
     {
         
         private static int _currentAccount = 0;
-        public static UserSessionData UserSessionDataFromConfigs()
+        public static UserSessionData MakeDataFromConfigs()
         {
             var accountsSection = (NameValueCollection)ConfigurationManager.GetSection("accounts"); //TODO using set
             var login = accountsSection.GetKey(_currentAccount);
@@ -23,7 +23,7 @@ namespace InfluencerInstaParser
             };
         }
         
-        public static UserSessionData UserSessionDataFromConfigsLogin(string login)
+        public static UserSessionData MakeDataFromConfigsLogin(string login)
         {
             var accountsSection = (NameValueCollection)ConfigurationManager.GetSection("accounts");
             var password = accountsSection.Get(login);
