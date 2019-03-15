@@ -10,7 +10,7 @@ namespace InfluencerInstaParser.SessionData
         private static int _currentAccount = 0;
         private static int _numberOfSessions = 0;
 
-        UserSessionData IUserSessionDataFactory.MakeSessionDataFromLogin(string login)
+        public UserSessionData MakeSessionDataFromLogin(string login)
         {
             var accountsSection = (NameValueCollection) ConfigurationManager.GetSection("accounts");
             var password = accountsSection.Get(login);
@@ -26,7 +26,7 @@ namespace InfluencerInstaParser.SessionData
             };
         }
 
-        UserSessionData IUserSessionDataFactory.MakeSessionData()
+        public UserSessionData MakeSessionData()
         {
             var accountsSection = (NameValueCollection) ConfigurationManager.GetSection("accounts"); //TODO using set
             var login = accountsSection.GetKey(_currentAccount);
