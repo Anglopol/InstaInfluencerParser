@@ -3,7 +3,7 @@ using System.Collections.Specialized;
 using System.Configuration;
 using InstagramApiSharp.Classes;
 
-namespace InfluencerInstaParser
+namespace InfluencerInstaParser.SessionData
 {
     public class ConfigSessionDataFactory : IUserSessionDataFactory
     {
