@@ -1,14 +1,17 @@
-using System;
 using System.Collections.Specialized;
 using System.Configuration;
+using InfluencerInstaParser.Exceptions;
 using InstagramApiSharp.Classes;
 
 namespace InfluencerInstaParser.SessionData
 {
     public class ConfigSessionDataFactory : IUserSessionDataFactory
     {
+        private const int MaxValueOfSessions = 19;
+
         private static int _currentAccount = 0;
         private static int _numberOfSessions = 0;
+
 
         public UserSessionData MakeSessionDataFromLogin(string login)
         {
@@ -16,7 +19,7 @@ namespace InfluencerInstaParser.SessionData
             var password = accountsSection.Get(login);
             if (password == null)
             {
-                throw new Exception("There is no such login in configs"); //TODO add custom exception
+                throw new NoSuchLoginException($"There is no such login({login}) in configs");
             }
 
             return new UserSessionData()
@@ -33,7 +36,7 @@ namespace InfluencerInstaParser.SessionData
             var password = accountsSection.Get(login);
             _numberOfSessions++;
 
-            if (_numberOfSessions >= 19)
+            if (_numberOfSessions >= MaxValueOfSessions)
             {
                 _currentAccount++;
                 _numberOfSessions = 0;
