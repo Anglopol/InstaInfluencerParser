@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using InstagramApiSharp.API;
 using InstagramApiSharp.Classes;
 
@@ -8,50 +9,55 @@ namespace InfluencerInstaParser
 {
     public class Authorizator
     {
-        public async void MassAuthorize(IEnumerable<IInstaApi> instaApiList, IRequestDelay delay) 
+        public static async void MassAuthorize(IEnumerable<IInstaApi> instaApiList, IRequestDelay delay) 
         {
             foreach (var api in instaApiList)
             {
                 Authorize(api, delay);
             }
         }
-        public async void Authorize(IInstaApi instaApi, IRequestDelay delay)
+        public static async Task<bool> Authorize(IInstaApi instaApi, IRequestDelay delay)
         {
-            var username = instaApi.UserProcessor.GetCurrentUserAsync().Result.Value.UserName;
-            var stateFile = username + ".bin";
+//            var user = instaApi.
+//            var username = user.Value.UserName;
+//            var stateFile = username + ".bin";
 
             if (instaApi.IsUserAuthenticated)
             {
                 Console.WriteLine("User already authenticated");
-                return;
+                return true;
             }
 
-            try
-            {
-                StateFileLoad(instaApi, stateFile);
-            }
-            catch (Exception e) //TODO custom exception
-            {
-                Console.WriteLine(e);
-            }
+//            try
+//            {
+//                StateFileLoad(instaApi, stateFile);
+//            }
+//            catch (Exception e) //TODO custom exception
+//            {
+//                Console.WriteLine(e);
+//            }
 
             if (!instaApi.IsUserAuthenticated)
             {
-                Console.WriteLine($"Logging {username}");
+//                Console.WriteLine($"Logging {username}");
                 delay.Disable();
                 var logInResult = await instaApi.LoginAsync();
                 delay.Enable();
                 if (!logInResult.Succeeded)
                 {
-                    Console.WriteLine($"Unable to login for {username}");
-                    return;
+//                    Console.WriteLine($"Unable to login for {username}");
+                    return false;
                 }
+
+                return true;
             }
 
-            StateFileCreate(instaApi, stateFile);
+            return true;
+
+//            StateFileCreate(instaApi, stateFile);
         }
 
-        private void StateFileLoad(IInstaApi instaApi, string stateFile)
+        private static void StateFileLoad(IInstaApi instaApi, string stateFile)
         {
             if (!File.Exists(stateFile)) return;
             Console.WriteLine($"Loading state from file: {stateFile}");
@@ -61,7 +67,7 @@ namespace InfluencerInstaParser
             }
         }
 
-        private void StateFileCreate(IInstaApi instaApi, string stateFile)
+        private static void StateFileCreate(IInstaApi instaApi, string stateFile)
         {
             var state = instaApi.GetStateDataAsStream();
             using (var fileStream = File.Create(stateFile))
