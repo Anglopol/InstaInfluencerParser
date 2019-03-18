@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using InstagramApiSharp.API;
 
 namespace InfluencerInstaParser.AudienceParser
 {
     public interface IParser
     {
-        List<string> GetFollowers(string username);
+        Task<List<string>> GetParsedFollowers(string username, IInstaApi api);
     }
 }
