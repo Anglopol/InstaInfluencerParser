@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,18 +8,33 @@ namespace InfluencerInstaParser.AudienceParser
     public class SingletonParsingSet
     {
         private static SingletonParsingSet _instance;
-        private HashSet<string> _handledUsers;
-        private Queue<string> _unprocessedUsers;
+        private ConcurrentDictionary<string, byte> _handledUsers;
+        private ConcurrentQueue<string> _unprocessedUsers;
+
+        private readonly object _initLocker = new object();
+        private bool _isInit = false;
+
         private SingletonParsingSet()
         {
-            _handledUsers = new HashSet<string>();
-            _unprocessedUsers = new Queue<string>();
-
+            _handledUsers = new ConcurrentDictionary<string, byte>();
+            _unprocessedUsers = new ConcurrentQueue<string>();
         }
 
         public SingletonParsingSet GetInstance()
         {
-            return _instance ?? (_instance = new SingletonParsingSet());
+            if (!_isInit)
+            {
+                lock (_initLocker)
+                {
+                    if (!_isInit)
+                    {
+                        _isInit = true;
+                        return _instance = new SingletonParsingSet();
+                    }
+                }
+            }
+
+            return _instance;
         }
 
         public void AddInQueue(string username)
@@ -31,12 +47,13 @@ namespace InfluencerInstaParser.AudienceParser
 
         public string Dequeue(string username)
         {
-            return _unprocessedUsers.Dequeue();
+            _unprocessedUsers.TryDequeue(out var result);
+            return result;
         }
 
         public bool IsProcessed(string username)
         {
-            return _handledUsers.Contains(username);
+            return _handledUsers.ContainsKey(username);
         }
 
         public bool IsInQueue(string username)
@@ -53,16 +70,16 @@ namespace InfluencerInstaParser.AudienceParser
         {
             if (!IsProcessed(username))
             {
-                _handledUsers.Add(username);
+                _handledUsers.TryAdd(username, 0);
             }
         }
 
-        public HashSet<string> GetHandledSet()
+        public ConcurrentDictionary<string, byte> GetHandledSet()
         {
             return _handledUsers;
         }
 
-        public Queue<string> GetQueue()
+        public ConcurrentQueue<string> GetQueue()
         {
             return _unprocessedUsers;
         }
