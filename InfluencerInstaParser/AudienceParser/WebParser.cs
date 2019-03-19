@@ -4,7 +4,7 @@ using InstagramApiSharp.API;
 
 namespace InfluencerInstaParser.AudienceParser
 {
-    public class WebParser : IParser
+    public class WebParser
     {
         public Task<List<string>> GetParsedFollowers(string username, IInstaApi api = null)
         {

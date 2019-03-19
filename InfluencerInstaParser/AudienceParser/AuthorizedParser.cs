@@ -4,36 +4,48 @@ using System.Configuration;
 using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.AudienceDownloader;
 using InstagramApiSharp.API;
+using InstagramApiSharp.Classes.Models;
 
 namespace InfluencerInstaParser.AudienceParser
 {
-    public class AuthorizedParser : IParser
+    public class AuthorizedParser
     {
-        public async Task<List<string>> GetParsedFollowers(string username, IInstaApi api)
+        private readonly int _minNumberOfFollowers;
+        private readonly float _subscriptionProportion;
+
+        public AuthorizedParser()
         {
-            var followers = await new FollowersDownloader().GetFollowers(username, api);
             var parsingArguments = (NameValueCollection) ConfigurationManager.GetSection("parsingarguments");
-            var minNumberOfFollowers = int.Parse(parsingArguments.Get("MinFollowersValue"));
-            var subscriptionProportion = float.Parse(parsingArguments.Get("SubscriptionProportion"));
-            return await Parse(followers, api, minNumberOfFollowers, subscriptionProportion);
+            _minNumberOfFollowers = int.Parse(parsingArguments.Get("MinFollowersValue"));
+            _subscriptionProportion = float.Parse(parsingArguments.Get("SubscriptionProportion"));
         }
 
-        private async Task<List<string>> Parse(IEnumerable<string> rawFollowers, IInstaApi api, int minNumberOfFollowers,
-            float subscriptionProportion)
+        public async Task<List<InstaUserInfo>> GetParsedFollowers(string username, IInstaApi api)
         {
-            var parsedFollowers = new List<string>();
+            var followers = await new FollowersDownloader().GetFollowers(username, api);
+
+            return await Parse(followers, api);
+        }
+
+        private async Task<List<InstaUserInfo>> Parse(IEnumerable<string> rawFollowers, IInstaApi api)
+        {
+            var parsedFollowers = new List<InstaUserInfo>();
             foreach (var user in rawFollowers)
             {
                 var userInformation = await api.UserProcessor.GetUserInfoByUsernameAsync(user);
-                if(userInformation.Value.FollowerCount > minNumberOfFollowers &&
-                   (userInformation.Value.FollowingCount / (double)userInformation.Value.FollowerCount) < subscriptionProportion)
+                if (CheckUser(userInformation.Value))
                 {
-                    parsedFollowers.Add(user);
+                    parsedFollowers.Add(userInformation.Value);
                 }
             }
 
             return parsedFollowers;
         }
-        
+
+        private bool CheckUser(InstaUserInfo user)
+        {
+            return user.FollowerCount > _minNumberOfFollowers &&
+                   (user.FollowingCount / (double) user.FollowerCount) < _subscriptionProportion;
+        }
     }
 }
