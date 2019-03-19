@@ -9,23 +9,20 @@ namespace InfluencerInstaParser
 {
     public class Authorizator
     {
-        public static async void MassAuthorize(IEnumerable<IInstaApi> instaApiList, IRequestDelay delay) 
+        public static async void MassAuthorize(IEnumerable<IInstaApi> instaApiList, IRequestDelay delay)
         {
             foreach (var api in instaApiList)
             {
-                Authorize(api, delay);
+                await Authorize(api, delay);
             }
         }
-        public static async Task<bool> Authorize(IInstaApi instaApi, IRequestDelay delay)
-        {
-//            var user = instaApi.
-//            var username = user.Value.UserName;
-//            var stateFile = username + ".bin";
 
+        public static async Task Authorize(IInstaApi instaApi, IRequestDelay delay)
+        {
             if (instaApi.IsUserAuthenticated)
             {
                 Console.WriteLine("User already authenticated");
-                return true;
+                return;
             }
 
 //            try
@@ -46,13 +43,8 @@ namespace InfluencerInstaParser
                 if (!logInResult.Succeeded)
                 {
 //                    Console.WriteLine($"Unable to login for {username}");
-                    return false;
                 }
-
-                return true;
             }
-
-            return true;
 
 //            StateFileCreate(instaApi, stateFile);
         }
