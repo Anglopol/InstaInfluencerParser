@@ -35,7 +35,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return "";
         }
 
-        public static string GetJsonFromUserPage(string username)
+        public static string GetJsonStringFromUserPage(string username)
         {
             var htmlDocument = UserPageDownload(username);
             var script = htmlDocument.DocumentNode.SelectSingleNode("//body/script");
