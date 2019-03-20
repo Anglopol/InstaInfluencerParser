@@ -8,33 +8,19 @@ namespace InfluencerInstaParser.AudienceParser
     public class SingletonParsingSet
     {
         private static SingletonParsingSet _instance;
-        private ConcurrentDictionary<string, byte> _handledUsers;
+        private ConcurrentDictionary<string, string> _handledUsers;
         private ConcurrentQueue<string> _unprocessedUsers;
 
-        private readonly object _initLocker = new object();
-        private bool _isInit = false;
 
         private SingletonParsingSet()
         {
-            _handledUsers = new ConcurrentDictionary<string, byte>();
+            _handledUsers = new ConcurrentDictionary<string, string>();
             _unprocessedUsers = new ConcurrentQueue<string>();
         }
 
-        public SingletonParsingSet GetInstance()
+        public static SingletonParsingSet GetInstance()
         {
-            if (!_isInit)
-            {
-                lock (_initLocker)
-                {
-                    if (!_isInit)
-                    {
-                        _isInit = true;
-                        return _instance = new SingletonParsingSet();
-                    }
-                }
-            }
-
-            return _instance;
+            return _instance ?? (_instance = new SingletonParsingSet());
         }
 
         public void AddInQueue(string username)
@@ -66,15 +52,15 @@ namespace InfluencerInstaParser.AudienceParser
             return IsProcessed(username) || IsInQueue(username);
         }
 
-        public void AddInHandledSet(string username)
+        public void AddInHandledSet(string username, string fromUsername)
         {
             if (!IsProcessed(username))
             {
-                _handledUsers.TryAdd(username, 0);
+                _handledUsers.TryAdd(username, fromUsername);
             }
         }
 
-        public ConcurrentDictionary<string, byte> GetHandledSet()
+        public ConcurrentDictionary<string, string> GetHandledSet()
         {
             return _handledUsers;
         }
