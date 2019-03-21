@@ -5,7 +5,7 @@ using HtmlAgilityPack;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
-    public class HtmlPageDownloader
+    public class PageDownloader
     {
         public const string InstagramUrl = @"https://www.instagram.com/";
         public const string ProfilePageContainerUrl = @"/static/bundles/metro/ProfilePageContainer.js";
@@ -44,7 +44,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return jsonStr;
         }
 
-        public static async Task<string> GetPageContainer(string url)
+        public static async Task<string> GetPageContent(string url)
         {
             var link = @"https://www.instagram.com" + url;
             using (var client = new HttpClient())
@@ -55,8 +55,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                     var response = await client.GetAsync(link);
                     response.EnsureSuccessStatusCode();
 
-                    var responseBody = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine(responseBody);
+                    return await response.Content.ReadAsStringAsync();
                 }
                 catch (HttpRequestException e)
                 {
