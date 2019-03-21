@@ -42,7 +42,7 @@ namespace InfluencerInstaParser
                 delay.Enable();
                 if (!logInResult.Succeeded)
                 {
-//                    Console.WriteLine($"Unable to login for {username}");
+                    Console.WriteLine("Unable to login");
                 }
             }
 
