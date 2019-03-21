@@ -22,12 +22,17 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public string MakeInstagramGis(string rhxGis, int userId, int count, string endOfCursor)
         {
-            var signatureParams = $"{rhxGis}:{{\"id\":\"{userId}\",\"first\":{count},\"after\":\"{endOfCursor}\"}}";
+            var signatureParams = $"{rhxGis}:{MakeSignatureString(userId, count, endOfCursor)}";
             using (var md5 = MD5.Create())
             {
                 var gis = md5.ComputeHash(Encoding.UTF8.GetBytes(signatureParams));
                 return Convert.ToBase64String(gis);
             }
+        }
+
+        public string MakeSignatureString(int userId, int count, string endOfCursor)
+        {
+            return $"{{\"id\":\"{userId}\",\"first\":{count},\"after\":\"{endOfCursor}\"}}";
         }
     }
 }
