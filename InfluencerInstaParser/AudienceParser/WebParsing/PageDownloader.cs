@@ -44,12 +44,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return jsonStr;
         }
 
-        public static async Task<string> GetPageContent(string url)
+        public static async Task<string> GetPageContent(string url, string rhxGis = "")
         {
             var link = @"https://www.instagram.com" + url;
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.UserAgent.TryParseAdd(DefaultUserAgent);
+                client.DefaultRequestHeaders.Add("x-instagram-gis", rhxGis);
                 try
                 {
                     var response = await client.GetAsync(link);
