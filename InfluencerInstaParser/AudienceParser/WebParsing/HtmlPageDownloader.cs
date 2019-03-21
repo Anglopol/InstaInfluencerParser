@@ -10,10 +10,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public const string InstagramUrl = @"https://www.instagram.com/";
         public const string ProfilePageContainerUrl = @"/static/bundles/metro/ProfilePageContainer.js";
 
+        public const string DefaultUserAgent =
+            @"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36";
+
         public static HtmlDocument UserPageDownload(string username)
         {
             var url = InstagramUrl + username + "/";
-            var web = new HtmlWeb();
+            var web = new HtmlWeb {UserAgent = DefaultUserAgent};
+
             return web.Load(url);
         }
 
@@ -43,14 +47,15 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public static async Task<string> GetPageContainer(string url)
         {
             var link = @"https://www.instagram.com" + url;
-            using (HttpClient client = new HttpClient())
+            using (var client = new HttpClient())
             {
+                client.DefaultRequestHeaders.UserAgent.TryParseAdd(DefaultUserAgent);
                 try
                 {
-                    HttpResponseMessage response = await client.GetAsync(link);
+                    var response = await client.GetAsync(link);
                     response.EnsureSuccessStatusCode();
 
-                    string responseBody = await response.Content.ReadAsStringAsync();
+                    var responseBody = await response.Content.ReadAsStringAsync();
                     Console.WriteLine(responseBody);
                 }
                 catch (HttpRequestException e)
