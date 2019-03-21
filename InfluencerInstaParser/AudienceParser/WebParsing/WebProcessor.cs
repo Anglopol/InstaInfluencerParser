@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using Newtonsoft.Json.Linq;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
@@ -10,13 +11,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
     {
         public string GetRhxGisParameter(string username)
         {
-            return Regex.Matches(HtmlPageDownloader.GetJsonStringFromUserPage(username), "rhx_gis.{35}")[0].ToString()
+            return Regex.Matches(PageDownloader.GetJsonStringFromUserPage(username), "rhx_gis.{35}")[0].ToString()
                 .Split(":")[1].Remove(0, 1);
         }
 
         public string GetEndOfCursorOnFirstPage(string username)
         {
-            return Regex.Matches(HtmlPageDownloader.GetJsonStringFromUserPage(username),
+            return Regex.Matches(PageDownloader.GetJsonStringFromUserPage(username),
                     "\"has_next_page\":true,\"end_cursor\":\".{120}")[0].ToString()
                 .Split(":")[2].Remove(0, 1);
         }
@@ -39,9 +40,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public string GetQueryUrlForPosts(int userId, int count, string endOfCursor)
         {
             const string defaultQueryUrl = 
-                @"https://www.instagram.com/graphql/query/?query_hash=f2405b236d85e8296cf30347c9f08c2a&variables=";
+                @"/graphql/query/?query_hash=f2405b236d85e8296cf30347c9f08c2a&variables=";
             var signatureUrlString = HttpUtility.UrlEncode(MakeSignatureString(userId, count, endOfCursor));
             return defaultQueryUrl + signatureUrlString;
+        }
+
+        public JObject GetObjectFromJsonString(string jsonString)
+        {
+            return JObject.Parse(jsonString);
         }
     }
 }
