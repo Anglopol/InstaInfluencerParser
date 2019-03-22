@@ -11,25 +11,36 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
     {
         public string GetRhxGisParameter(string username)
         {
-            return Regex.Matches(PageDownloader.GetJsonStringFromUserPage(username), "rhx_gis.{35}")[0].ToString()
+            return Regex.Matches(PageDownloader.GetJsonStringFromUserPage(username), "rhx_gis.{3}[^\"]*")[0].ToString()
                 .Split(":")[1].Remove(0, 1);
         }
 
         public string GetEndOfCursorOnFirstPage(string username)
         {
             return Regex.Matches(PageDownloader.GetJsonStringFromUserPage(username),
-                    "\"has_next_page\":true,\"end_cursor\":\".{120}")[0].ToString()
+                    "\"has_next_page\":true,\"end_cursor.{3}[^\"]*")[0].ToString()
                 .Split(":")[2].Remove(0, 1);
         }
 
         public string MakeInstagramGisForPosts(string rhxGis, int userId, int count, string endOfCursor)
         {
             var signatureParams = $"{rhxGis}:{MakeSignatureString(userId, count, endOfCursor)}";
-            using (var md5 = MD5.Create())
+            Console.WriteLine(signatureParams);
+            return CalculateMD5Hash(signatureParams);
+        }
+        
+        public string CalculateMD5Hash(string input)
+        {
+            var md5 = MD5.Create();
+            var inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+            var hash = md5.ComputeHash(inputBytes);
+ 
+            var sb = new StringBuilder();
+            foreach (var character in hash)
             {
-                var gis = md5.ComputeHash(Encoding.UTF8.GetBytes(signatureParams));
-                return Convert.ToBase64String(gis);
+                sb.Append(character.ToString("x2"));
             }
+            return sb.ToString();
         }
 
         public string MakeSignatureString(int userId, int count, string endOfCursor)
