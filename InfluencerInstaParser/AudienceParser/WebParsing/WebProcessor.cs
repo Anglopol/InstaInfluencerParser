@@ -80,5 +80,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             return shortCodes;
         }
+
+        public bool HasNextPage(JObject queryContent)
+        {
+            var nextPageProperty =
+                (string)queryContent.SelectToken("data.user.edge_owner_to_timeline_media.page_info.has_next_page");
+            return bool.Parse(nextPageProperty);
+        }
     }
 }
