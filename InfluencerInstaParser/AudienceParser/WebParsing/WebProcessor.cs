@@ -24,14 +24,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 .Split(":")[2].Remove(0, 1);
         }
 
-        public string MakeInstagramGisForPosts(string rhxGis, int userId, int count, string endOfCursor)
+        public string MakeInstagramGisForPosts(string rhxGis, long userId, int count, string endOfCursor)
         {
             var signatureParams = $"{rhxGis}:{MakeSignatureString(userId, count, endOfCursor)}";
             Console.WriteLine(signatureParams);
             return CalculateMD5Hash(signatureParams);
         }
 
-        public string CalculateMD5Hash(string input)
+        private string CalculateMD5Hash(string input)
         {
             var md5 = MD5.Create();
             var inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
@@ -46,12 +46,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return sb.ToString();
         }
 
-        public string MakeSignatureString(int userId, int count, string endOfCursor)
+        public string MakeSignatureString(long userId, int count, string endOfCursor)
         {
             return $"{{\"id\":\"{userId}\",\"first\":{count},\"after\":\"{endOfCursor}\"}}";
         }
 
-        public string GetQueryUrlForPosts(int userId, int count, string endOfCursor)
+        public string GetQueryUrlForPosts(long userId, int count, string endOfCursor)
         {
             const string defaultQueryUrl =
                 @"/graphql/query/?query_hash=f2405b236d85e8296cf30347c9f08c2a&variables=";

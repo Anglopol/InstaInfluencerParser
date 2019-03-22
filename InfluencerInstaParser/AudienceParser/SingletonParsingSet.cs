@@ -11,7 +11,6 @@ namespace InfluencerInstaParser.AudienceParser
         private ConcurrentDictionary<string, string> _handledUsers;
         private ConcurrentQueue<string> _unprocessedUsers;
 
-
         private SingletonParsingSet()
         {
             _handledUsers = new ConcurrentDictionary<string, string>();
@@ -42,10 +41,8 @@ namespace InfluencerInstaParser.AudienceParser
             return _handledUsers.ContainsKey(username);
         }
 
-        public bool IsInQueue(string username)
-        {
-            return _unprocessedUsers.Contains(username);
-        }
+        public bool IsInQueue(string username) => _unprocessedUsers.Contains(username);
+        
 
         public bool IsInParsingSet(string username)
         {

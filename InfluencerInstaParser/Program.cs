@@ -27,7 +27,16 @@ namespace InfluencerInstaParser
 
         public static async Task<bool> MainAsync()
         {
-            Console.WriteLine(new WebParser().GetEndOfCursorOnFirstPage("varlamov"));
+            var proc = new WebProcessor();
+            var pageContent = await PageDownloader.GetPageContent("/varlamov/");
+            var rhGis = proc.GetRhxGisParameter(pageContent);
+            var id = 3144054;
+            var end = proc.GetEndOfCursorOnFirstPage(pageContent);
+            var query = proc.GetQueryUrlForPosts(id, 12, end);
+            var instaGis = proc.MakeInstagramGisForPosts(rhGis, id, 12, end);
+            Console.WriteLine(query + "\n\n" + instaGis);
+            var res = proc.GetListOfShortCodesFromQueryContent(proc.GetObjectFromJsonString(await PageDownloader.GetPageContent(query, instaGis)));
+            Console.WriteLine(res);
 //            var userSession = new ConfigSessionDataFactory().MakeSessionData();
 //            Console.WriteLine(userSession.UserName + userSession.Password);
 //
