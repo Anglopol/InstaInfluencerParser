@@ -68,5 +68,17 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             return Regex.Matches(pageContent, "shortcode.{3}[^\"]*").Select(match => match.Value).ToList();
         }
+
+        public List<string> GetListOfShortCodesFromQueryContent(JObject queryContent)
+        {
+            var edges = (JArray) queryContent.SelectToken("data.user.edge_owner_to_timeline_media.edges");
+            var shortCodes = new List<string>();
+            foreach (var edge in edges)
+            {
+              shortCodes.Add((string) edge.SelectToken("node.shortcode"));
+            }
+
+            return shortCodes;
+        }
     }
 }
