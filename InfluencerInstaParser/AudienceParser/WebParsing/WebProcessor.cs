@@ -63,5 +63,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             return JObject.Parse(jsonString);
         }
+
+        public List<string> GetListOfShortCodesFromPageContent(string pageContent)
+        {
+            return Regex.Matches(pageContent, "shortcode.{3}[^\"]*").Select(match => match.Value).ToList();
+        }
     }
 }
