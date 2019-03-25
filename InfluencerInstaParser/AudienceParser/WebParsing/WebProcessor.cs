@@ -75,6 +75,22 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 .Split(":")[1].Remove(0, 1)).ToList();
         }
 
+        public List<string> GetListOfUsernamesFromPageContent(string pageContent)
+        {
+            return Regex.Matches(pageContent, "username.{3}[^\"]*").Select(match => match.Value.ToString()
+                .Split(":")[1].Remove(0, 1)).ToList();
+        }
+
+        public List<string> GetListOfUsernamesFromQueryContent(JObject queryContent)
+        {
+            var edges = (JArray) queryContent.SelectToken("data.shortcode_media.edge_media_to_comment.edges");
+            var shortCodes = new List<string>();
+            foreach (var edge in edges)
+            {
+                shortCodes.Add((string) edge.SelectToken("node.owner.username"));
+            }
+        }
+
         public List<string> GetListOfShortCodesFromQueryContent(JObject queryContent)
         {
             var edges = (JArray) queryContent.SelectToken("data.user.edge_owner_to_timeline_media.edges");
