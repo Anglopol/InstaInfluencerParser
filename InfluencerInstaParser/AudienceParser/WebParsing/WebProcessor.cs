@@ -71,7 +71,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public List<string> GetListOfShortCodesFromPageContent(string pageContent)
         {
-            return Regex.Matches(pageContent, "shortcode.{3}[^\"]*").Select(match => match.Value).ToList();
+            return Regex.Matches(pageContent, "shortcode.{3}[^\"]*").Select(match => match.Value.ToString()
+                .Split(":")[1].Remove(0, 1)).ToList();
         }
 
         public List<string> GetListOfShortCodesFromQueryContent(JObject queryContent)
@@ -80,7 +81,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var shortCodes = new List<string>();
             foreach (var edge in edges)
             {
-              shortCodes.Add((string) edge.SelectToken("node.shortcode"));
+                shortCodes.Add((string) edge.SelectToken("node.shortcode"));
             }
 
             return shortCodes;
@@ -89,7 +90,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public bool HasNextPage(JObject queryContent)
         {
             var nextPageProperty =
-                (string)queryContent.SelectToken("data.user.edge_owner_to_timeline_media.page_info.has_next_page");
+                (string) queryContent.SelectToken("data.user.edge_owner_to_timeline_media.page_info.has_next_page");
             return bool.Parse(nextPageProperty);
         }
 
