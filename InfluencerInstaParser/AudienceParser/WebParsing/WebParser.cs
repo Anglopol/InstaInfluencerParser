@@ -48,13 +48,32 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var resultList = _webProcessor.GetListOfUsernamesFromPageContent(postPageContent);
             if (!_webProcessor.HasNextPageForPageContent(postPageContent)) return resultList;
             var jsonPage = await _queryRequester.GetJsonPageContent(postPageContent, postShortCode, rhxGis);
-            resultList.AddRange(_webProcessor.GetListOfUsernamesFromQueryContent(jsonPage));
+            resultList.AddRange(_webProcessor.GetListOfUsernamesFromQueryContentForPost(jsonPage));
             while (_webProcessor.HasNextPageForComments(jsonPage))
             {
                 var nextCursor = _webProcessor.GetEndOfCursorFromJsonForComments(jsonPage);
                 Thread.Sleep(400);
                 jsonPage = await _queryRequester.GetJson(postShortCode, rhxGis, nextCursor);
-                resultList.AddRange(_webProcessor.GetListOfUsernamesFromQueryContent(jsonPage));
+                resultList.AddRange(_webProcessor.GetListOfUsernamesFromQueryContentForPost(jsonPage));
+            }
+
+            return resultList;
+        }
+
+        public async Task<List<string>> GetUsernamesFromPostLikes(string postShortCode)
+        {
+            var postUrl = "/p/" + postShortCode + "/";
+            var postPageContent = await PageDownloader.GetPageContent(postUrl);
+            var rhxGis = _webProcessor.GetRhxGisParameter(postPageContent);
+            var resultList = new List<string>();
+            var jsonPage = await _queryRequester.GetJsonForLikes(postShortCode, rhxGis, "");
+            resultList.AddRange(_webProcessor.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
+            while (_webProcessor.HasNextPageForLikes(jsonPage))
+            {
+                var nextCursor = _webProcessor.GetEndOfCursorFromJsonForLikes(jsonPage);
+                Thread.Sleep(400);
+                jsonPage = await _queryRequester.GetJsonForLikes(postShortCode, rhxGis, nextCursor);
+                resultList.AddRange(_webProcessor.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
             }
 
             return resultList;
