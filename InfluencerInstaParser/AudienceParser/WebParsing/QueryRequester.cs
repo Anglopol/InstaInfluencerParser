@@ -11,7 +11,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var proc = new WebProcessor();
             var endOfCursor = proc.GetEndOfCursorFromPageContent(userPageContent);
-            var instagramGis = proc.MakeInstagramGisForPosts(rhxGis, userId, 50, endOfCursor);
+            var instagramGis = proc.MakeInstagramGis(rhxGis, userId, 50, endOfCursor);
             var queryUrl = proc.GetQueryUrlForPosts(userId, 50, endOfCursor);
             try
             {
@@ -28,7 +28,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var proc = new WebProcessor();
             var endOfCursor = proc.GetEndOfCursorFromPageContent(userPageContent);
-            var instagramGis = proc.MakeInstagramGisForComments(rhxGis, shortCode, 50, endOfCursor);
+            var instagramGis = proc.MakeInstagramGis(rhxGis, shortCode, 50, endOfCursor);
             var queryUrl = proc.GetQueryUrlForComments(shortCode, 50, endOfCursor);
             try
             {
@@ -44,7 +44,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public async Task<JObject> GetJson(long userId, string rhxGis, string endOfCursor)
         {
             var proc = new WebProcessor();
-            var instagramGis = proc.MakeInstagramGisForPosts(rhxGis, userId, 50, endOfCursor);
+            var instagramGis = proc.MakeInstagramGis(rhxGis, userId, 50, endOfCursor);
             var queryUrl = proc.GetQueryUrlForPosts(userId, 50, endOfCursor);
             try
             {
@@ -60,7 +60,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public async Task<JObject> GetJson(string shortCode, string rhxGis, string endOfCursor)
         {
             var proc = new WebProcessor();
-            var instagramGis = proc.MakeInstagramGisForComments(rhxGis, shortCode, 50, endOfCursor);
+            var instagramGis = proc.MakeInstagramGis(rhxGis, shortCode, 50, endOfCursor);
             var queryUrl = proc.GetQueryUrlForComments(shortCode, 50, endOfCursor);
             try
             {
@@ -70,6 +70,22 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             {
                 Thread.Sleep(60000);
                 return await GetJson(shortCode, rhxGis, endOfCursor);
+            }
+        }
+        
+        public async Task<JObject> GetJsonForLikes(string shortCode, string rhxGis, string endOfCursor)
+        {
+            var proc = new WebProcessor();
+            var instagramGis = proc.MakeInstagramGis(rhxGis, shortCode, 50, endOfCursor);
+            var queryUrl = proc.GetQueryUrlForLikes(shortCode, 50, endOfCursor);
+            try
+            {
+                return proc.GetObjectFromJsonString(await PageDownloader.GetPageContent(queryUrl, instagramGis));
+            }
+            catch (Exception e)
+            {
+                Thread.Sleep(60000);
+                return await GetJsonForLikes(shortCode, rhxGis, endOfCursor);
             }
         }
     }
