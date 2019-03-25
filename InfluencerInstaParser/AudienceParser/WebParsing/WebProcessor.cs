@@ -56,11 +56,24 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return $"{{\"id\":\"{userId}\",\"first\":{count},\"after\":\"{endOfCursor}\"}}";
         }
 
+        public string MakeSignatureString(string shortCode, int count, string endOfCursor)
+        {
+            return $"{{\"shortcode\":\"{shortCode}\",\"first\":{count},\"after\":\"{endOfCursor}\"}}";
+        }
+
         public string GetQueryUrlForPosts(long userId, int count, string endOfCursor)
         {
             const string defaultQueryUrl =
                 @"/graphql/query/?query_hash=f2405b236d85e8296cf30347c9f08c2a&variables=";
             var signatureUrlString = HttpUtility.UrlEncode(MakeSignatureString(userId, count, endOfCursor));
+            return defaultQueryUrl + signatureUrlString;
+        }
+
+        public string GetQueryUrlForComments(string shortCode, int count, string endOfCursor)
+        {
+            const string defaultQueryUrl =
+                @"/graphql/query/?query_hash=f0986789a5c5d17c2400faebf16efd0d&variables=";
+            var signatureUrlString = HttpUtility.UrlEncode(MakeSignatureString(shortCode, count, endOfCursor));
             return defaultQueryUrl + signatureUrlString;
         }
 
