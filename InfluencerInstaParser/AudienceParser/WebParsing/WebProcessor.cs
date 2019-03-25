@@ -19,9 +19,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public string GetEndOfCursorOnFirstPage(string pageContent)
         {
-            return Regex.Matches(pageContent,
-                    "\"has_next_page\":true,\"end_cursor.{3}[^\"]*")[0].ToString()
-                .Split(":")[2].Remove(0, 1);
+            if (HasNextPage(pageContent))
+            {
+                return Regex.Matches(pageContent,
+                        "\"has_next_page\":true,\"end_cursor.{3}[^\"]*")[0].ToString()
+                    .Split(":")[2].Remove(0, 1);
+            }
+
+            return "";
         }
 
         public string MakeInstagramGisForPosts(string rhxGis, long userId, int count, string endOfCursor)
@@ -88,7 +93,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return bool.Parse(nextPageProperty);
         }
 
-        public string GetEndOfCursorFromQuery(JObject queryContent)
+        public bool HasNextPage(string pageContent)
+        {
+            return pageContent.Contains("\"has_next_page\":true");
+        }
+
+        public string GetEndOfCursorFromJson(JObject queryContent)
         {
             var endOfCursor =
                 (string) queryContent.SelectToken("data.user.edge_owner_to_timeline_media.page_info.end_cursor");
