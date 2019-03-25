@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using InstagramApiSharp.Classes.Models;
 
@@ -21,8 +22,17 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var userPageContent = await PageDownloader.GetPageContent(userUrl);
             var rhxGis = _webProcessor.GetRhxGisParameter(userPageContent);
             var resultList = _webProcessor.GetListOfShortCodesFromPageContent(userPageContent);
-            var jsonFromUserPage = await _queryRequester.GetJsonFromUserPage(userPageContent, user.Pk, rhxGis);
-            
+            if (!_webProcessor.HasNextPage(userPageContent)) return resultList;
+            var jsonPage = await _queryRequester.GetJson(userPageContent, user.Pk, rhxGis);
+            resultList.AddRange(_webProcessor.GetListOfShortCodesFromQueryContent(jsonPage));
+            while (_webProcessor.HasNextPage(jsonPage))
+            {
+                var nextCursor = _webProcessor.GetEndOfCursorFromJson(jsonPage);
+                jsonPage = await _queryRequester.GetJson(user.Pk, rhxGis, nextCursor);
+                resultList.AddRange(_webProcessor.GetListOfShortCodesFromQueryContent(jsonPage));
+            }
+
+            return resultList;
         }
     }
 }
