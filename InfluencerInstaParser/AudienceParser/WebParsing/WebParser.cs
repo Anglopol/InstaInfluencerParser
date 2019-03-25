@@ -24,17 +24,37 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var userPageContent = await PageDownloader.GetPageContent(userUrl);
             var rhxGis = _webProcessor.GetRhxGisParameter(userPageContent);
             var resultList = _webProcessor.GetListOfShortCodesFromPageContent(userPageContent);
-            if (!_webProcessor.HasNextPage(userPageContent)) return resultList;
-            var jsonPage = await _queryRequester.GetJson(userPageContent, user.Pk, rhxGis);
+            if (!_webProcessor.HasNextPageForPageContent(userPageContent)) return resultList;
+            var jsonPage = await _queryRequester.GetJsonPageContent(userPageContent, user.Pk, rhxGis);
             resultList.AddRange(_webProcessor.GetListOfShortCodesFromQueryContent(jsonPage));
             var count = 0;
-            while (_webProcessor.HasNextPage(jsonPage) && count < countOfLoading)
+            while (_webProcessor.HasNextPageForPosts(jsonPage) && count < countOfLoading)
             {
                 count++;
-                var nextCursor = _webProcessor.GetEndOfCursorFromJson(jsonPage);
+                var nextCursor = _webProcessor.GetEndOfCursorFromJsonForPosts(jsonPage);
                 Thread.Sleep(400);
                 jsonPage = await _queryRequester.GetJson(user.Pk, rhxGis, nextCursor);
                 resultList.AddRange(_webProcessor.GetListOfShortCodesFromQueryContent(jsonPage));
+            }
+
+            return resultList;
+        }
+
+        public async Task<List<string>> GetUsernamesFromComments(string postShortCode)
+        {
+            var postUrl = "/p/" + postShortCode + "/";
+            var postPageContent = await PageDownloader.GetPageContent(postUrl);
+            var rhxGis = _webProcessor.GetRhxGisParameter(postPageContent);
+            var resultList = _webProcessor.GetListOfUsernamesFromPageContent(postPageContent);
+            if (!_webProcessor.HasNextPageForPageContent(postPageContent)) return resultList;
+            var jsonPage = await _queryRequester.GetJsonPageContent(postPageContent, postShortCode, rhxGis);
+            resultList.AddRange(_webProcessor.GetListOfUsernamesFromQueryContent(jsonPage));
+            while (_webProcessor.HasNextPageForComments(jsonPage))
+            {
+                var nextCursor = _webProcessor.GetEndOfCursorFromJsonForComments(jsonPage);
+                Thread.Sleep(400);
+                jsonPage = await _queryRequester.GetJson(postShortCode, rhxGis, nextCursor);
+                resultList.AddRange(_webProcessor.GetListOfUsernamesFromQueryContent(jsonPage));
             }
 
             return resultList;

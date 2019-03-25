@@ -17,7 +17,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 .Split(":")[1].Remove(0, 1);
         }
 
-        public string GetEndOfCursorOnFirstPage(string pageContent)
+        public string GetEndOfCursorFromPageContent(string pageContent)
         {
             if (HasNextPageForPageContent(pageContent))
             {
@@ -32,6 +32,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public string MakeInstagramGisForPosts(string rhxGis, long userId, int count, string endOfCursor)
         {
             var signatureParams = $"{rhxGis}:{MakeSignatureString(userId, count, endOfCursor)}";
+            Console.WriteLine(signatureParams);
+            return CalculateMD5Hash(signatureParams);
+        }
+        
+        public string MakeInstagramGisForComments(string rhxGis, string shortCode, int count, string endOfCursor)
+        {
+            var signatureParams = $"{rhxGis}:{MakeSignatureString(shortCode, count, endOfCursor)}";
             Console.WriteLine(signatureParams);
             return CalculateMD5Hash(signatureParams);
         }
@@ -137,10 +144,17 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return bool.Parse(nextPageProperty);
         }
 
-        public string GetEndOfCursorFromJson(JObject queryContent)
+        public string GetEndOfCursorFromJsonForPosts(JObject queryContent)
         {
             var endOfCursor =
                 (string) queryContent.SelectToken("data.user.edge_owner_to_timeline_media.page_info.end_cursor");
+            return endOfCursor;
+        }
+
+        public string GetEndOfCursorFromJsonForComments(JObject queryContent)
+        {
+            var endOfCursor =
+                (string) queryContent.SelectToken("data.shortcode_media.edge_media_to_comment.page_info.end_cursor");
             return endOfCursor;
         }
     }
