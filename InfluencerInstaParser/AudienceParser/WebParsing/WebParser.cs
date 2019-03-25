@@ -17,7 +17,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _queryRequester = new QueryRequester();
         }
 
-        public async Task<List<string>> GetPostsShortCodesFromUser(InstaUserInfo user, int countOfLoading = 10)
+        public async Task<List<string>> GetPostsShortCodesFromUser(InstaUserInfo user, int countOfLoading = 4)
         {
             var userUrl = "/" + user.Username + "/";
 //            var userUrl = "/varlamov/";
@@ -40,7 +40,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return resultList;
         }
 
-        public async Task<List<string>> GetUsernamesFromComments(string postShortCode)
+        public async Task<List<string>> GetUsernamesFromPostComments(string postShortCode)
         {
             var postUrl = "/p/" + postShortCode + "/";
             var postPageContent = await PageDownloader.GetPageContent(postUrl);
