@@ -84,11 +84,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public List<string> GetListOfUsernamesFromQueryContent(JObject queryContent)
         {
             var edges = (JArray) queryContent.SelectToken("data.shortcode_media.edge_media_to_comment.edges");
-            var shortCodes = new List<string>();
+            var users = new List<string>();
             foreach (var edge in edges)
             {
-                shortCodes.Add((string) edge.SelectToken("node.owner.username"));
+                users.Add((string) edge.SelectToken("node.owner.username"));
             }
+
+            return users;
         }
 
         public List<string> GetListOfShortCodesFromQueryContent(JObject queryContent)
