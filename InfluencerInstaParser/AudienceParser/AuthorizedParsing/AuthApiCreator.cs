@@ -6,7 +6,7 @@ using InstagramApiSharp.API.Builder;
 using InstagramApiSharp.Classes;
 using InstagramApiSharp.Logger;
 
-namespace InfluencerInstaParser
+namespace InfluencerInstaParser.AudienceParser.AuthorizedParsing
 {
     public class AuthApiCreator
     {

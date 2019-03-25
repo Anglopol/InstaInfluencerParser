@@ -6,7 +6,7 @@ using InfluencerInstaParser.AudienceParser.AudienceDownloader;
 using InstagramApiSharp.API;
 using InstagramApiSharp.Classes.Models;
 
-namespace InfluencerInstaParser.AudienceParser
+namespace InfluencerInstaParser.AudienceParser.AuthorizedParsing
 {
     public class AuthorizedParser
     {

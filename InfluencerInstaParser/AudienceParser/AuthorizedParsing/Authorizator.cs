@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using InstagramApiSharp.API;
 using InstagramApiSharp.Classes;
 
-namespace InfluencerInstaParser
+namespace InfluencerInstaParser.AudienceParser.AuthorizedParsing
 {
     public class Authorizator
     {
