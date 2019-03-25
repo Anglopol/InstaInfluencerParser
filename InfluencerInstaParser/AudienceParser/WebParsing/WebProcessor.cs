@@ -19,7 +19,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public string GetEndOfCursorOnFirstPage(string pageContent)
         {
-            if (HasNextPage(pageContent))
+            if (HasNextPageForPageContent(pageContent))
             {
                 return Regex.Matches(pageContent,
                         "\"has_next_page\":true,\"end_cursor.{3}[^\"]*")[0].ToString()
@@ -103,16 +103,23 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return shortCodes;
         }
 
-        public bool HasNextPage(JObject queryContent)
+        public bool HasNextPageForPosts(JObject queryContent)
         {
             var nextPageProperty =
                 (string) queryContent.SelectToken("data.user.edge_owner_to_timeline_media.page_info.has_next_page");
             return bool.Parse(nextPageProperty);
         }
 
-        public bool HasNextPage(string pageContent)
+        public bool HasNextPageForPageContent(string pageContent)
         {
             return pageContent.Contains("\"has_next_page\":true");
+        }
+
+        public bool HasNextPageForComments(JObject queryContent)
+        {
+            var nextPageProperty =
+                (string) queryContent.SelectToken("data.shortcode_media.edge_media_to_comment.page_info.has_next_page");
+            return bool.Parse(nextPageProperty);
         }
 
         public string GetEndOfCursorFromJson(JObject queryContent)
