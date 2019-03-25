@@ -11,8 +11,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var proc = new WebProcessor();
             var endOfCursor = proc.GetEndOfCursorFromPageContent(userPageContent);
-            var instagramGis = proc.MakeInstagramGisForPosts(rhxGis, userId, 12, endOfCursor);
-            var queryUrl = proc.GetQueryUrlForPosts(userId, 12, endOfCursor);
+            var instagramGis = proc.MakeInstagramGisForPosts(rhxGis, userId, 50, endOfCursor);
+            var queryUrl = proc.GetQueryUrlForPosts(userId, 50, endOfCursor);
             try
             {
                 return proc.GetObjectFromJsonString(await PageDownloader.GetPageContent(queryUrl, instagramGis));
@@ -28,8 +28,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var proc = new WebProcessor();
             var endOfCursor = proc.GetEndOfCursorFromPageContent(userPageContent);
-            var instagramGis = proc.MakeInstagramGisForComments(rhxGis, shortCode, 12, endOfCursor);
-            var queryUrl = proc.GetQueryUrlForComments(shortCode, 12, endOfCursor);
+            var instagramGis = proc.MakeInstagramGisForComments(rhxGis, shortCode, 50, endOfCursor);
+            var queryUrl = proc.GetQueryUrlForComments(shortCode, 50, endOfCursor);
             try
             {
                 return proc.GetObjectFromJsonString(await PageDownloader.GetPageContent(queryUrl, instagramGis));
@@ -44,8 +44,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public async Task<JObject> GetJson(long userId, string rhxGis, string endOfCursor)
         {
             var proc = new WebProcessor();
-            var instagramGis = proc.MakeInstagramGisForPosts(rhxGis, userId, 12, endOfCursor);
-            var queryUrl = proc.GetQueryUrlForPosts(userId, 12, endOfCursor);
+            var instagramGis = proc.MakeInstagramGisForPosts(rhxGis, userId, 50, endOfCursor);
+            var queryUrl = proc.GetQueryUrlForPosts(userId, 50, endOfCursor);
             try
             {
                 return proc.GetObjectFromJsonString(await PageDownloader.GetPageContent(queryUrl, instagramGis));
@@ -60,8 +60,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public async Task<JObject> GetJson(string shortCode, string rhxGis, string endOfCursor)
         {
             var proc = new WebProcessor();
-            var instagramGis = proc.MakeInstagramGisForComments(rhxGis, shortCode, 12, endOfCursor);
-            var queryUrl = proc.GetQueryUrlForComments(shortCode, 12, endOfCursor);
+            var instagramGis = proc.MakeInstagramGisForComments(rhxGis, shortCode, 50, endOfCursor);
+            var queryUrl = proc.GetQueryUrlForComments(shortCode, 50, endOfCursor);
             try
             {
                 return proc.GetObjectFromJsonString(await PageDownloader.GetPageContent(queryUrl, instagramGis));
