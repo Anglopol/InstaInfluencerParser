@@ -11,11 +11,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
     public class WebProcessor
     {
-        private string _userAgent;
-//        public WebProcessor(string userAgent)
-//        {
-//            _userAgent = userAgent;
-//        }
         public string GetRhxGisParameter(string pageContent)
         {
             return Regex.Matches(pageContent, "rhx_gis.{3}[^\"]*")[0].ToString()
@@ -26,8 +21,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             if (HasNextPageForPageContent(pageContent))
             {
-                return Regex.Matches(pageContent,
-                        "\"has_next_page\":true,\"end_cursor.{3}[^\"]*")[0].ToString()
+                return Regex.Match(pageContent,
+                        "\"has_next_page\":true,\"end_cursor.{3}[^\"]*").ToString()
                     .Split(":")[2].Remove(0, 1);
             }
 
@@ -107,6 +102,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public JObject GetObjectFromJsonString(string jsonString)
         {
             return JObject.Parse(jsonString);
+        }
+
+        public string GetUserIdFromPageContent(string pageContent)
+        {
+            return Regex.Match(pageContent, "owner\":{\"id.{3}[^\"]*").ToString()
+                .Split(":")[2].Remove(0, 1);
         }
 
         public List<string> GetListOfShortCodesFromPageContent(string pageContent)
