@@ -10,18 +10,20 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
     {
         private WebProcessor _webProcessor;
         private QueryRequester _queryRequester;
+        private readonly string _userAgent;
 
-        public WebParser()
+        public WebParser(string userAgent)
         {
             _webProcessor = new WebProcessor();
-            _queryRequester = new QueryRequester();
+            _queryRequester = new QueryRequester(userAgent);
+            _userAgent = userAgent;
         }
 
         public async Task<List<string>> GetPostsShortCodesFromUser(InstaUserInfo user, int countOfLoading = 4)
         {
             var userUrl = "/" + user.Username + "/";
 //            var userUrl = "/varlamov/";
-            var userPageContent = await PageDownloader.GetPageContent(userUrl);
+            var userPageContent = await PageDownloader.GetPageContent(userUrl, _userAgent);
             var rhxGis = _webProcessor.GetRhxGisParameter(userPageContent);
             var resultList = _webProcessor.GetListOfShortCodesFromPageContent(userPageContent);
             if (!_webProcessor.HasNextPageForPageContent(userPageContent)) return resultList;
@@ -43,7 +45,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public async Task<List<string>> GetUsernamesFromPostComments(string postShortCode)
         {
             var postUrl = "/p/" + postShortCode + "/";
-            var postPageContent = await PageDownloader.GetPageContent(postUrl);
+            var postPageContent = await PageDownloader.GetPageContent(postUrl, _userAgent);
             var rhxGis = _webProcessor.GetRhxGisParameter(postPageContent);
             var resultList = _webProcessor.GetListOfUsernamesFromPageContent(postPageContent);
             if (!_webProcessor.HasNextPageForPageContent(postPageContent)) return resultList;
@@ -63,7 +65,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public async Task<List<string>> GetUsernamesFromPostLikes(string postShortCode)
         {
             var postUrl = "/p/" + postShortCode + "/";
-            var postPageContent = await PageDownloader.GetPageContent(postUrl);
+            var postPageContent = await PageDownloader.GetPageContent(postUrl, _userAgent);
             var rhxGis = _webProcessor.GetRhxGisParameter(postPageContent);
             var resultList = new List<string>();
             var jsonPage = await _queryRequester.GetJsonForLikes(postShortCode, rhxGis, "");

@@ -13,10 +13,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public const string DefaultUserAgent =
             @"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36";
 
-        public static HtmlDocument UserPageDownload(string username)
+        public static HtmlDocument UserPageDownload(string username, string userAgent)
         {
             var url = InstagramUrl + username + "/";
-            var web = new HtmlWeb {UserAgent = DefaultUserAgent};
+            var web = new HtmlWeb {UserAgent = userAgent};
 
             return web.Load(url);
         }
@@ -35,21 +35,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return "";
         }
 
-        public static string GetJsonStringFromUserPage(string username)
-        {
-            var htmlDocument = UserPageDownload(username);
-            var script = htmlDocument.DocumentNode.SelectSingleNode("//body/script");
-            var jsonStr = script.InnerText.Remove(0, "window._sharedData = ".Length)
-                .Remove(script.InnerText.Remove(0, "window._sharedData = ".Length).Length - 1);
-            return jsonStr;
-        }
-
-        public static async Task<string> GetPageContent(string url, string instGis = "")
+        public static async Task<string> GetPageContent(string url, string userAgent, string instGis = "")
         {
             var link = @"https://www.instagram.com" + url;
             using (var client = new HttpClient())
             {
-                client.DefaultRequestHeaders.UserAgent.TryParseAdd(DefaultUserAgent);
+                client.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
                 client.DefaultRequestHeaders.Add("x-instagram-gis", instGis);
                 try
                 {

@@ -11,6 +11,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
     public class WebProcessor
     {
+        private string _userAgent;
+//        public WebProcessor(string userAgent)
+//        {
+//            _userAgent = userAgent;
+//        }
         public string GetRhxGisParameter(string pageContent)
         {
             return Regex.Matches(pageContent, "rhx_gis.{3}[^\"]*")[0].ToString()
