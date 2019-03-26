@@ -1,5 +1,6 @@
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 
@@ -27,10 +28,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 {
                     Console.WriteLine("\nException Caught!");
                     Console.WriteLine("Message :{0} ", e.Message);
+                    Thread.Sleep(1000);
+                    return await GetPageContent(url, userAgent, instGis);
                 }
             }
-
-            return "";
         }
     }
 }

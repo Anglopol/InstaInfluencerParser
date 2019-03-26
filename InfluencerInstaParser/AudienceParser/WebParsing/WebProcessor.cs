@@ -118,7 +118,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public List<string> GetListOfUsernamesFromPageContent(string pageContent)
         {
-            return Regex.Matches(pageContent, "username.{3}[^\"]*").Select(match => match.Value.ToString()
+            
+            return Regex.Matches(pageContent, "username\".{2}[^\"]*").Select(match => match.Value.ToString()
                 .Split(":")[1].Remove(0, 1)).ToList();
         }
 

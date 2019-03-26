@@ -2,18 +2,19 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using ConcurrentCollections;
 
 namespace InfluencerInstaParser.AudienceParser
 {
     public class SingletonParsingSet
     {
         private static SingletonParsingSet _instance;
-        private ConcurrentDictionary<string, string> _handledUsers;
+        private ConcurrentHashSet<string>_handledUsers;
         private ConcurrentQueue<string> _unprocessedUsers;
 
         private SingletonParsingSet()
         {
-            _handledUsers = new ConcurrentDictionary<string, string>();
+            _handledUsers = new ConcurrentHashSet<string>();
             _unprocessedUsers = new ConcurrentQueue<string>();
         }
 
@@ -38,7 +39,7 @@ namespace InfluencerInstaParser.AudienceParser
 
         public bool IsProcessed(string username)
         {
-            return _handledUsers.ContainsKey(username);
+            return _handledUsers.Contains(username);
         }
 
         public bool IsInQueue(string username) => _unprocessedUsers.Contains(username);
@@ -49,15 +50,15 @@ namespace InfluencerInstaParser.AudienceParser
             return IsProcessed(username) || IsInQueue(username);
         }
 
-        public void AddInHandledSet(string username, string fromUsername)
+        public void AddInHandledSet(string username)
         {
             if (!IsProcessed(username))
             {
-                _handledUsers.TryAdd(username, fromUsername);
+                _handledUsers.Add(username);
             }
         }
 
-        public ConcurrentDictionary<string, string> GetHandledSet()
+        public ConcurrentHashSet<string> GetHandledSet()
         {
             return _handledUsers;
         }
