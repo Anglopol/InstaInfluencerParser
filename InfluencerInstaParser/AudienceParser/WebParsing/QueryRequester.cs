@@ -9,11 +9,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
     {
         private string _userAgent;
         private WebProcessor _proc;
+        private PageDownloader _downloader;
 
         public QueryRequester(string userAgent)
         {
             _userAgent = userAgent;
             _proc = new WebProcessor();
+            _downloader = PageDownloader.GetInstance();
         }
 
         public async Task<JObject> GetJsonPageContent(string userPageContent, long userId, string rhxGis)
@@ -24,7 +26,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             try
             {
                 return _proc.GetObjectFromJsonString(
-                    await PageDownloader.GetPageContent(queryUrl, _userAgent, instagramGis));
+                    await _downloader.GetPageContent(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
@@ -41,7 +43,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             try
             {
                 return _proc.GetObjectFromJsonString(
-                    await PageDownloader.GetPageContent(queryUrl, _userAgent, instagramGis));
+                    await _downloader.GetPageContent(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
@@ -57,7 +59,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             try
             {
                 return _proc.GetObjectFromJsonString(
-                    await PageDownloader.GetPageContent(queryUrl, _userAgent, instagramGis));
+                    await _downloader.GetPageContent(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
@@ -73,7 +75,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             try
             {
                 return _proc.GetObjectFromJsonString(
-                    await PageDownloader.GetPageContent(queryUrl, _userAgent, instagramGis));
+                    await _downloader.GetPageContent(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
@@ -84,12 +86,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public async Task<JObject> GetJsonForLikes(string shortCode, string rhxGis, string endOfCursor)
         {
-            var instagramGis = _proc.MakeInstagramGis(rhxGis, shortCode, 50, endOfCursor);
+            var instagramGis = _proc.MakeInstagramGisForLikes(rhxGis, shortCode, 50, endOfCursor);
             var queryUrl = _proc.GetQueryUrlForLikes(shortCode, 50, endOfCursor);
+            Console.WriteLine(queryUrl);
             try
             {
                 return _proc.GetObjectFromJsonString(
-                    await PageDownloader.GetPageContent(queryUrl, _userAgent, instagramGis));
+                    await _downloader.GetPageContent(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
