@@ -42,11 +42,18 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             Console.WriteLine(signatureParams);
             return CalculateMD5Hash(signatureParams);
         }
+        
+        public string MakeInstagramGisForLikes(string rhxGis, string shortCode, int count, string endOfCursor)
+        {
+            var signatureParams = $"{rhxGis}:{MakeSignatureStringForLikes(shortCode, count, endOfCursor)}";
+            Console.WriteLine(signatureParams);
+            return CalculateMD5Hash(signatureParams);
+        }
 
         private string CalculateMD5Hash(string input)
         {
             var md5 = MD5.Create();
-            var inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+            var inputBytes = Encoding.ASCII.GetBytes(input);
             var hash = md5.ComputeHash(inputBytes);
 
             var sb = new StringBuilder();
@@ -95,7 +102,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             const string defaultQueryUrl =
                 @"/graphql/query/?query_hash=e0f59e4a1c8d78d0161873bc2ee7ec44&variables=";
-            var signatureUrlString = HttpUtility.UrlEncode(MakeSignatureString(shortCode, count, endOfCursor));
+            var signatureUrlString = HttpUtility.UrlEncode(MakeSignatureStringForLikes(shortCode, count, endOfCursor));
             return defaultQueryUrl + signatureUrlString;
         }
 
