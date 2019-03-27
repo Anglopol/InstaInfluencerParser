@@ -46,8 +46,8 @@ namespace InfluencerInstaParser
                     q.Enqueue(line);
                 }
             }
-            var postsParser = new WebParser(userAgentsQueue.Dequeue());
-            postsParser.GetPostsShortCodesFromUser("varlamov");
+//            var postsParser = new WebParser(userAgentsQueue.Dequeue());
+//            postsParser.GetPostsShortCodesFromUser("varlamov", 2);
             var set = SingletonParsingSet.GetInstance();
             
 
@@ -55,14 +55,17 @@ namespace InfluencerInstaParser
             {
                 var parser = new WebParser(userAgentsQueue.Dequeue());
                 var post = q.Dequeue();
-                var likes = new Thread(() => parser.GetUsernamesFromPostComments(post)) {Name = post};
+                var likes = new Thread(() => parser.GetUsernamesFromPostLikes(post)) {Name = post};
+                var comments  = new Thread(() => parser.GetUsernamesFromPostComments(post)) {Name = post};
                 likes.Start();
+//                comments.Start();
             }
 
-            var users = set.GetHandledSet();
-            foreach (var user in users)
+            
+            Console.WriteLine();
+            foreach (var user in set.HandledUsers)
             {
-                Console.WriteLine(user);
+                Console.WriteLine(user.Key);
             }
 
             return true;

@@ -9,13 +9,13 @@ namespace InfluencerInstaParser.AudienceParser
     public class SingletonParsingSet
     {
         private static SingletonParsingSet _instance;
-        private ConcurrentHashSet<string>_handledUsers;
-        private ConcurrentQueue<string> _unprocessedUsers;
+        public ConcurrentDictionary<string, byte> HandledUsers { get; }
+        public ConcurrentQueue<string> UnprocessedUsers { get; }
 
         private SingletonParsingSet()
         {
-            _handledUsers = new ConcurrentHashSet<string>();
-            _unprocessedUsers = new ConcurrentQueue<string>();
+            HandledUsers = new ConcurrentDictionary<string, byte>();
+            UnprocessedUsers = new ConcurrentQueue<string>();
         }
 
         public static SingletonParsingSet GetInstance()
@@ -27,23 +27,23 @@ namespace InfluencerInstaParser.AudienceParser
         {
             if (!IsInQueue(username))
             {
-                _unprocessedUsers.Enqueue(username);
+                UnprocessedUsers.Enqueue(username);
             }
         }
 
         public string Dequeue(string username)
         {
-            _unprocessedUsers.TryDequeue(out var result);
+            UnprocessedUsers.TryDequeue(out var result);
             return result;
         }
 
         public bool IsProcessed(string username)
         {
-            return _handledUsers.Contains(username);
+            return HandledUsers.ContainsKey(username);
         }
 
-        public bool IsInQueue(string username) => _unprocessedUsers.Contains(username);
-        
+        public bool IsInQueue(string username) => UnprocessedUsers.Contains(username);
+
 
         public bool IsInParsingSet(string username)
         {
@@ -54,18 +54,8 @@ namespace InfluencerInstaParser.AudienceParser
         {
             if (!IsProcessed(username))
             {
-                _handledUsers.Add(username);
+                HandledUsers.TryAdd(username, 1);
             }
-        }
-
-        public ConcurrentHashSet<string> GetHandledSet()
-        {
-            return _handledUsers;
-        }
-
-        public ConcurrentQueue<string> GetQueue()
-        {
-            return _unprocessedUsers;
         }
     }
 }
