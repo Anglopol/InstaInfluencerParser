@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
@@ -86,6 +87,30 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public JObject GetObjectFromJsonString(string jsonString)
         {
             return JObject.Parse(jsonString);
+        }
+
+        public List<string> GetProxyIps(JObject jObject)
+        {
+            var ipAddresses = new List<string>();
+            var jIpAddresses = jObject.SelectTokens("ip").ToList();
+            foreach (var ip in ipAddresses)
+            {
+                ipAddresses.Add(ip.ToString());
+            }
+
+            return ipAddresses;
+        }
+        
+        public List<string> GetProxyPorts(JObject jObject)
+        {
+            var ports = new List<string>();
+            var jPorts = jObject.SelectTokens("ip").ToList();
+            foreach (var port in jPorts)
+            {
+                ports.Add(port.ToString());
+            }
+
+            return ports;
         }
     }
 }
