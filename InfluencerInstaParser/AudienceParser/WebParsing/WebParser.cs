@@ -33,7 +33,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public void GetPostsShortCodesFromUser(string username, int countOfLoading = 0)
         {
             var userUrl = "/" + username + "/";
-            var userPageContent = Task.Run(() => _downloader.GetPageContent(userUrl, _userAgent)).GetAwaiter()
+            var userPageContent = Task.Run(() => _downloader.GetPageContentWithProxy(userUrl, _userAgent)).GetAwaiter()
                 .GetResult();
             var userId = long.Parse(_webProcessor.GetUserIdFromPageContent(userPageContent));
             _rhxGis = _rhxGis ?? _webProcessor.GetRhxGisParameter(userPageContent);
@@ -73,7 +73,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public void GetUsernamesFromPostComments(string postShortCode)
         {
             var postUrl = "/p/" + postShortCode + "/";
-            var postPageContent = Task.Run(() => _downloader.GetPageContent(postUrl, _userAgent)).GetAwaiter()
+            var postPageContent = Task.Run(() => _downloader.GetPageContentWithProxy(postUrl, _userAgent)).GetAwaiter()
                 .GetResult();
             _rhxGis = _rhxGis ?? _webProcessor.GetRhxGisParameter(postPageContent);
             var resultList = new List<string>();
@@ -119,7 +119,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public void GetUsernamesFromPostLikes(string postShortCode)
         {
             var postUrl = "/p/" + postShortCode + "/";
-            var postPageContent = Task.Run(() => _downloader.GetPageContent(postUrl, _userAgent)).GetAwaiter()
+            var postPageContent = Task.Run(() => _downloader.GetPageContentWithProxy(postUrl, _userAgent)).GetAwaiter()
                 .GetResult();
             _rhxGis = _rhxGis ?? _webProcessor.GetRhxGisParameter(postPageContent);
             var resultList = new List<string>();
@@ -134,7 +134,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 {
                     ChangeUserAgent(
                         "Mozilla/5.0 (X11; CrOS i686 4319.74.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.57 Safari/537.36"); //TODO refactor
-                    postPageContent = Task.Run(() => _downloader.GetPageContent(postUrl, _userAgent)).GetAwaiter()
+                    postPageContent = Task.Run(() => _downloader.GetPageContentWithProxy(postUrl, _userAgent))
+                        .GetAwaiter()
                         .GetResult();
                     _rhxGis = _webProcessor.GetRhxGisParameter(postPageContent);
                     count = 0;

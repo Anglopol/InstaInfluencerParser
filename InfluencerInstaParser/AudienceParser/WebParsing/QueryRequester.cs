@@ -26,7 +26,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             try
             {
                 return _proc.GetObjectFromJsonString(
-                    await _downloader.GetPageContent(queryUrl, _userAgent, instagramGis));
+                    await _downloader.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
@@ -43,7 +43,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             try
             {
                 return _proc.GetObjectFromJsonString(
-                    await _downloader.GetPageContent(queryUrl, _userAgent, instagramGis));
+                    await _downloader.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
@@ -59,7 +59,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             try
             {
                 return _proc.GetObjectFromJsonString(
-                    await _downloader.GetPageContent(queryUrl, _userAgent, instagramGis));
+                    await _downloader.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
@@ -75,7 +75,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             try
             {
                 return _proc.GetObjectFromJsonString(
-                    await _downloader.GetPageContent(queryUrl, _userAgent, instagramGis));
+                    await _downloader.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
@@ -92,7 +92,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             try
             {
                 return _proc.GetObjectFromJsonString(
-                    await _downloader.GetPageContent(queryUrl, _userAgent, instagramGis));
+                    await _downloader.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {

@@ -1,9 +1,9 @@
 using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using InfluencerInstaParser.Exceptions;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
@@ -12,7 +12,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private static PageDownloader _instance;
 
         private const string InstagramUrl = @"https://www.instagram.com";
-        private static int _requestCounter = 0;
+        private static int _requestCounter;
         private WebProxy _proxy;
 
         public WebProxy Proxy
@@ -21,20 +21,21 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             {
                 _proxy = value;
                 _httpClientHandler.Proxy = value;
-                _client = new HttpClient(handler: _httpClientHandler, disposeHandler: true);
+                _proxyClient = new HttpClient(handler: _httpClientHandler, disposeHandler: true);
             }
             get => _proxy;
         }
 
         private HttpClientHandler _httpClientHandler;
+        private HttpClient _proxyClient;
         private HttpClient _client;
-        private object _proxyChangerLock;
+        private readonly object _proxyChangerLock;
 
         private PageDownloader()
         {
             _httpClientHandler = new HttpClientHandler();
             _proxyChangerLock = new object();
-            _client = new HttpClient(handler: _httpClientHandler, disposeHandler: true);
+            _client = new HttpClient();
         }
 
         public static PageDownloader GetInstance()
@@ -42,40 +43,30 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return _instance ?? (_instance = new PageDownloader());
         }
 
-        public async Task<string> GetPageContent(string url, string userAgent, string instGis = "")
+        public async Task<string> GetPageContent(string url)
         {
-            var link = InstagramUrl + url;
-
-
-            _client.DefaultRequestHeaders.Clear();
-
-            _client.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
-            _client.DefaultRequestHeaders.Add("x-instagram-gis", instGis);
-
             try
             {
-                var response = await _client.GetAsync(link);
+                var response = await _client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
-                var body = await response.Content.ReadAsStringAsync();
-                Console.Write(" " + _requestCounter);
-                return body;
+                return await response.Content.ReadAsStringAsync();
             }
             catch (HttpRequestException e)
             {
-                Console.WriteLine("\nException Caught!   " + _requestCounter);
+                Console.WriteLine("\nException Caught!");
                 Console.WriteLine("Message :{0} ", e.Message);
-                Thread.Sleep(1000);
-                return await GetPageContent(url, userAgent, instGis);
+                return await GetPageContent(url);
             }
         }
 
         public async Task<string> GetPageContentWithProxy(string url, string userAgent, string instGis = "")
         {
+            if (Proxy == null) throw new ProxyNotInitializeException("You need to set proxy to use this method");
             var link = InstagramUrl + url;
 
-            _client.DefaultRequestHeaders.Clear();
-            _client.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
-            _client.DefaultRequestHeaders.Add("x-instagram-gis", instGis);
+            _proxyClient.DefaultRequestHeaders.Clear();
+            _proxyClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
+            _proxyClient.DefaultRequestHeaders.Add("x-instagram-gis", instGis);
 
             try
             {
@@ -85,7 +76,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                     ChangeProxy(null); //TODO refactor
                 }
 
-                var response = await _client.GetAsync(link);
+                var response = await _proxyClient.GetAsync(link);
                 response.EnsureSuccessStatusCode();
                 var body = await response.Content.ReadAsStringAsync();
                 Console.Write(" " + _requestCounter);
@@ -96,7 +87,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 Console.WriteLine("\nException Caught!   " + _requestCounter);
                 Console.WriteLine("Message :{0} ", e.Message);
                 Thread.Sleep(180000);
-                return await GetPageContent(url, userAgent, instGis);
+                return await GetPageContentWithProxy(url, userAgent, instGis);
             }
         }
 
