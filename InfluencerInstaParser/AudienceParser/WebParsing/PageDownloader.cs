@@ -14,6 +14,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private const string InstagramUrl = @"https://www.instagram.com";
         private static int _requestCounter;
         private WebProxy _proxy;
+        private ProxyCreator _proxyCreator;
 
         public WebProxy Proxy
         {
@@ -73,7 +74,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 _requestCounter++;
                 if (_requestCounter > 190)
                 {
-                    ChangeProxy(null); //TODO refactor
+                    SetProxy(null); //TODO refactor
                 }
 
                 var response = await _proxyClient.GetAsync(link);
@@ -91,7 +92,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
         }
 
-        private void ChangeProxy(WebProxy proxy)
+        private void SetProxy(WebProxy proxy)
         {
             lock (_proxyChangerLock)
             {
