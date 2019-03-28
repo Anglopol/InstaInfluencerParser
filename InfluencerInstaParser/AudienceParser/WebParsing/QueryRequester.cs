@@ -10,12 +10,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private string _userAgent;
         private WebProcessor _proc;
         private PageDownloader _downloader;
+        private JObjectHandler _jObjectHandler;
 
         public QueryRequester(string userAgent)
         {
             _userAgent = userAgent;
             _proc = new WebProcessor();
             _downloader = PageDownloader.GetInstance();
+            _jObjectHandler = new JObjectHandler();
         }
 
         public async Task<JObject> GetJsonPageContent(string userPageContent, long userId, string rhxGis)
@@ -25,11 +27,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var queryUrl = _proc.GetQueryUrlForPosts(userId, 50, endOfCursor);
             try
             {
-                return _proc.GetObjectFromJsonString(
+                return _jObjectHandler.GetObjectFromJsonString(
                     await _downloader.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.StackTrace);
                 Thread.Sleep(60000);
                 return await GetJsonPageContent(userPageContent, userId, rhxGis);
             }
@@ -42,11 +45,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var queryUrl = _proc.GetQueryUrlForComments(shortCode, 50, endOfCursor);
             try
             {
-                return _proc.GetObjectFromJsonString(
+                return _jObjectHandler.GetObjectFromJsonString(
                     await _downloader.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.StackTrace);
                 Thread.Sleep(60000);
                 return await GetJsonPageContent(userPageContent, shortCode, rhxGis);
             }
@@ -58,11 +62,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var queryUrl = _proc.GetQueryUrlForPosts(userId, 50, endOfCursor);
             try
             {
-                return _proc.GetObjectFromJsonString(
+                return _jObjectHandler.GetObjectFromJsonString(
                     await _downloader.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.StackTrace);
                 Thread.Sleep(60000);
                 return await GetJson(userId, rhxGis, endOfCursor);
             }
@@ -74,11 +79,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var queryUrl = _proc.GetQueryUrlForComments(shortCode, 50, endOfCursor);
             try
             {
-                return _proc.GetObjectFromJsonString(
+                return _jObjectHandler.GetObjectFromJsonString(
                     await _downloader.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.StackTrace);
                 Thread.Sleep(60000);
                 return await GetJson(shortCode, rhxGis, endOfCursor);
             }
@@ -91,11 +97,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             Console.WriteLine(queryUrl);
             try
             {
-                return _proc.GetObjectFromJsonString(
+                return _jObjectHandler.GetObjectFromJsonString(
                     await _downloader.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.StackTrace);
                 Thread.Sleep(60000);
                 return await GetJsonForLikes(shortCode, rhxGis, endOfCursor);
             }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
@@ -13,6 +14,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private string _rhxGis;
         private SingletonParsingSet _usersSet;
         private PageDownloader _downloader;
+        private JObjectHandler _jObjectHandler;
 
 
         public WebParser(string userAgent)
@@ -22,9 +24,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _userAgent = userAgent;
             _usersSet = SingletonParsingSet.GetInstance();
             _downloader = PageDownloader.GetInstance();
+            _jObjectHandler = new JObjectHandler();
         }
 
-        public void ChangeUserAgent(string userAgent)
+        private void ChangeUserAgent(string userAgent)
         {
             _userAgent = userAgent;
             _queryRequester = new QueryRequester(userAgent);
@@ -50,16 +53,16 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             var jsonPage = Task.Run(() => _queryRequester.GetJsonPageContent(userPageContent, userId, _rhxGis))
                 .GetAwaiter().GetResult();
-            resultList.AddRange(_webProcessor.GetListOfShortCodesFromQueryContent(jsonPage));
+            resultList.AddRange(_jObjectHandler.GetListOfShortCodesFromQueryContent(jsonPage));
             var count = 0;
-            while (_webProcessor.HasNextPageForPosts(jsonPage) && count < countOfLoading)
+            while (_jObjectHandler.HasNextPageForPosts(jsonPage) && count < countOfLoading)
             {
                 count++;
-                var nextCursor = _webProcessor.GetEndOfCursorFromJsonForPosts(jsonPage);
+                var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForPosts(jsonPage);
                 Thread.Sleep(1000);
                 jsonPage = Task.Run(() => _queryRequester.GetJson(userId, _rhxGis, nextCursor)).GetAwaiter()
                     .GetResult();
-                resultList.AddRange(_webProcessor.GetListOfShortCodesFromQueryContent(jsonPage));
+                resultList.AddRange(_jObjectHandler.GetListOfShortCodesFromQueryContent(jsonPage));
             }
 
             foreach (var shortCode in resultList)
@@ -99,14 +102,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             var jsonPage = Task.Run(() => _queryRequester.GetJsonPageContent(postPageContent, postShortCode, _rhxGis))
                 .GetAwaiter().GetResult();
-            resultList.AddRange(_webProcessor.GetListOfUsernamesFromQueryContentForPost(jsonPage));
-            while (_webProcessor.HasNextPageForComments(jsonPage))
+            resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForPost(jsonPage));
+            while (_jObjectHandler.HasNextPageForComments(jsonPage))
             {
-                var nextCursor = _webProcessor.GetEndOfCursorFromJsonForComments(jsonPage);
+                var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForComments(jsonPage);
                 Thread.Sleep(600);
                 jsonPage = Task.Run(() => _queryRequester.GetJson(postShortCode, _rhxGis, nextCursor)).GetAwaiter()
                     .GetResult();
-                resultList.AddRange(_webProcessor.GetListOfUsernamesFromQueryContentForPost(jsonPage));
+                resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForPost(jsonPage));
             }
 
             foreach (var user in resultList)
@@ -125,9 +128,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var resultList = new List<string>();
             var jsonPage = Task.Run(() => _queryRequester.GetJsonForLikes(postShortCode, _rhxGis, ""))
                 .GetAwaiter().GetResult();
-            resultList.AddRange(_webProcessor.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
+            resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
             var count = 0;
-            while (_webProcessor.HasNextPageForLikes(jsonPage))
+            while (_jObjectHandler.HasNextPageForLikes(jsonPage))
             {
                 count++;
                 if (count > 190)
@@ -141,11 +144,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                     count = 0;
                 }
 
-                var nextCursor = _webProcessor.GetEndOfCursorFromJsonForLikes(jsonPage);
+                var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForLikes(jsonPage);
                 Thread.Sleep(600);
                 jsonPage = Task.Run(() => _queryRequester.GetJsonForLikes(postShortCode, _rhxGis, nextCursor))
                     .GetAwaiter().GetResult();
-                resultList.AddRange(_webProcessor.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
+                resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
             }
 
             foreach (var user in resultList)
