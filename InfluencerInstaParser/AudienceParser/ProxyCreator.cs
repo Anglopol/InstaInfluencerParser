@@ -18,16 +18,12 @@ namespace InfluencerInstaParser.AudienceParser
         private Queue<WebProxy> _proxyQueue;
         private readonly string[] _proxyParams;
         private readonly string _proxyUrl;
-        private readonly object _fillLocker;
-        private readonly object _getLocker;
 
         public ProxyCreator(string proxyUrl, string[] proxyParams)
         {
             _proxyParams = proxyParams;
             _proxyUrl = proxyUrl;
             _proxyQueue = new Queue<WebProxy>();
-            _fillLocker = new object();
-            _getLocker = new object();
         }
 
         public ProxyCreator()
@@ -35,44 +31,36 @@ namespace InfluencerInstaParser.AudienceParser
             _proxyParams = DefaultProxyParams;
             _proxyUrl = DefaultProxyUrl;
             _proxyQueue = new Queue<WebProxy>();
-            _fillLocker = new object();
-            _getLocker = new object();
         }
 
         public WebProxy GetProxy()
         {
-            lock (_getLocker)
-            {
-                if (_proxyQueue.Count == 0) FillQueue();
-                return _proxyQueue.Dequeue();
-            }
+            if (_proxyQueue.Count == 0) FillQueue();
+            return _proxyQueue.Dequeue();
         }
 
         private void FillQueue()
         {
-            lock (_fillLocker)
+            if (_proxyQueue.Count != 0) return;
+            var requestUrl = _proxyParams.Aggregate(_proxyUrl, (current, param) => current + (param + "&"));
+            var downloader = PageDownloader.GetInstance();
+            var jsonHandler = new JObjectHandler();
+            var jsonProxies = jsonHandler.GetObjectFromJsonString(Task
+                .Run(() => downloader.GetPageContent(requestUrl))
+                .GetAwaiter().GetResult());
+            var ipAddresses = jsonHandler.GetProxyIps(jsonProxies);
+            var ports = jsonHandler.GetProxyPorts(jsonProxies);
+            for (var i = 0; i < ipAddresses.Count; i++)
             {
-                if (_proxyQueue.Count != 0) return;
-                var requestUrl = _proxyParams.Aggregate(_proxyUrl, (current, param) => current + (param + "&"));
-                var downloader = PageDownloader.GetInstance();
-                var jsonHandler = new JObjectHandler();
-                var jsonProxies = jsonHandler.GetObjectFromJsonString(Task
-                    .Run(() => downloader.GetPageContent(requestUrl))
-                    .GetAwaiter().GetResult());
-                var ipAddresses = jsonHandler.GetProxyIps(jsonProxies);
-                var ports = jsonHandler.GetProxyPorts(jsonProxies);
-                for (var i = 0; i < ipAddresses.Count; i++)
+                var ip = ipAddresses[i];
+                var port = ports[i];
+                var proxy = new WebProxy()
                 {
-                    var ip = ipAddresses[i];
-                    var port = ports[i];
-                    var proxy = new WebProxy()
-                    {
-                        Address = new Uri($"http://{ip}:{port}"),
-                        UseDefaultCredentials = true,
-                        BypassProxyOnLocal = false
-                    };
-                    _proxyQueue.Enqueue(proxy);
-                }
+                    Address = new Uri($"http://{ip}:{port}"),
+                    UseDefaultCredentials = true,
+                    BypassProxyOnLocal = false
+                };
+                _proxyQueue.Enqueue(proxy);
             }
         }
     }
