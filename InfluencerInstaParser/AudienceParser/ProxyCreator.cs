@@ -9,27 +9,46 @@ namespace InfluencerInstaParser.AudienceParser
 {
     public class ProxyCreator
     {
+        private const string DefaultProxyUrl = "https://api.getproxylist.com/proxy?";
+        private const string DefaultApiKey = "deeb3af2c0618ff4f4229b1fa30a1b866f022b0f";
+
+        private static readonly string[] DefaultProxyParams =
+            {$"apiKey={DefaultApiKey}", "protocol=http", "allowsUserAgentHeader=1", "allowsCustomHeaders=1", "all=1"};
+
         private ConcurrentQueue<WebProxy> _proxyQueue;
         private readonly string[] _proxyParams;
         private readonly string _proxyUrl;
         private readonly object _fillLocker;
+        private readonly object _getLocker;
 
         public ProxyCreator(string proxyUrl, string[] proxyParams)
         {
             _proxyParams = proxyParams;
             _proxyUrl = proxyUrl;
             _fillLocker = new object();
+            _getLocker = new object();
+        }
+
+        public ProxyCreator()
+        {
+            _proxyParams = DefaultProxyParams;
+            _proxyUrl = DefaultProxyUrl;
+            _fillLocker = new object();
+            _getLocker = new object();
         }
 
         public WebProxy GetProxy()
         {
-            if (_proxyQueue == null || _proxyQueue.IsEmpty) FillQueue();
-            WebProxy proxy;
-            while (!_proxyQueue.TryDequeue(out proxy))
+            lock (_getLocker)
             {
-            }
+                if (_proxyQueue == null || _proxyQueue.IsEmpty) FillQueue();
+                WebProxy proxy;
+                while (!_proxyQueue.TryDequeue(out proxy))
+                {
+                }
 
-            return proxy;
+                return proxy;
+            }
         }
 
         private void FillQueue()
