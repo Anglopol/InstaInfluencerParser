@@ -6,9 +6,9 @@ namespace InfluencerInstaParser.AudienceParser
     {
         private static SingletonParsingSet _instance;
         
-        private Queue<string> ShortCodesQueue { get; }
-        private HashSet<string> UnprocessedUsers { get; }
-        private HashSet<string> ProcessedUsers { get; }
+        public Queue<string> ShortCodesQueue { get; }
+        public HashSet<string> UnprocessedUsers { get; }
+        public HashSet<string> ProcessedUsers { get; }
 
         private SingletonParsingSet()
         {

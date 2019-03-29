@@ -92,22 +92,20 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public List<string> GetProxyIps(JObject jObject)
         {
             var ipAddresses = new List<string>();
-            var jIpAddresses = jObject.SelectTokens("ip").ToList();
-            foreach (var ip in ipAddresses)
+            foreach (var node in jObject.PropertyValues())
             {
-                ipAddresses.Add(ip.ToString());
+                ipAddresses.Add((string) node.SelectToken("ip"));
             }
 
             return ipAddresses;
         }
-        
+
         public List<string> GetProxyPorts(JObject jObject)
         {
             var ports = new List<string>();
-            var jPorts = jObject.SelectTokens("ip").ToList();
-            foreach (var port in jPorts)
+            foreach (var node in jObject.PropertyValues())
             {
-                ports.Add(port.ToString());
+                ports.Add((string) node.SelectToken("port"));
             }
 
             return ports;

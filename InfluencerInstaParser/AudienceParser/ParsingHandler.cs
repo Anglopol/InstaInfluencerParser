@@ -9,6 +9,5 @@ namespace InfluencerInstaParser.AudienceParser
             _parsingSet = SingletonParsingSet.GetInstance();
         }
         
-//        public 
     }
 }

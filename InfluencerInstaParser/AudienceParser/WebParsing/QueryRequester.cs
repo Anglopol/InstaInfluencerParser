@@ -33,7 +33,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             catch (Exception e)
             {
                 Console.WriteLine(e.StackTrace);
-                Thread.Sleep(60000);
+                Thread.Sleep(10000);
                 return await GetJsonPageContent(userPageContent, userId, rhxGis);
             }
         }
@@ -51,7 +51,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             catch (Exception e)
             {
                 Console.WriteLine(e.StackTrace);
-                Thread.Sleep(60000);
+                Thread.Sleep(10000);
                 return await GetJsonPageContent(userPageContent, shortCode, rhxGis);
             }
         }
@@ -68,7 +68,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             catch (Exception e)
             {
                 Console.WriteLine(e.StackTrace);
-                Thread.Sleep(60000);
+                Thread.Sleep(10000);
                 return await GetJson(userId, rhxGis, endOfCursor);
             }
         }
@@ -85,7 +85,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             catch (Exception e)
             {
                 Console.WriteLine(e.StackTrace);
-                Thread.Sleep(60000);
+                Thread.Sleep(10000);
                 return await GetJson(shortCode, rhxGis, endOfCursor);
             }
         }
@@ -103,7 +103,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             catch (Exception e)
             {
                 Console.WriteLine(e.StackTrace);
-                Thread.Sleep(60000);
+                Thread.Sleep(10000);
                 return await GetJsonForLikes(shortCode, rhxGis, endOfCursor);
             }
         }

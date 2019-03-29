@@ -13,7 +13,10 @@ namespace InfluencerInstaParser.AudienceParser
         private const string DefaultApiKey = "deeb3af2c0618ff4f4229b1fa30a1b866f022b0f";
 
         private static readonly string[] DefaultProxyParams =
-            {$"apiKey={DefaultApiKey}", "protocol=http", "allowsUserAgentHeader=1", "allowsCustomHeaders=1", "all=1"};
+        {
+            $"apiKey={DefaultApiKey}", "protocol=http", "allowsUserAgentHeader=1", "allowsCustomHeaders=1",
+            "minDownloadSpeed=1000", "anonymity=high%20anonymity", "allowsHttps=1", "all=1"
+        };
 
         private Queue<WebProxy> _proxyQueue;
         private readonly string[] _proxyParams;
@@ -50,7 +53,7 @@ namespace InfluencerInstaParser.AudienceParser
                 .GetAwaiter().GetResult());
             var ipAddresses = jsonHandler.GetProxyIps(jsonProxies);
             var ports = jsonHandler.GetProxyPorts(jsonProxies);
-            for (var i = 0; i < ipAddresses.Count; i++)
+            for (var i = 1; i < ipAddresses.Count; i++)
             {
                 var ip = ipAddresses[i];
                 var port = ports[i];

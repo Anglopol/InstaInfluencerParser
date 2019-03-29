@@ -18,7 +18,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public WebProxy Proxy
         {
-            set
+            private set
             {
                 _proxy = value;
                 _httpClientHandler.Proxy = value;
@@ -106,7 +106,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         private void SetProxy(WebProxy proxy)
         {
-            if (_requestCounter <= 180) return;
+            if (_requestCounter <= 180 && Proxy != null) return;
             _requestCounter = 0;
             Proxy = proxy;
             Console.WriteLine("Proxy changed");
