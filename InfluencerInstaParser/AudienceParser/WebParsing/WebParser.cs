@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
@@ -14,8 +13,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private string _rhxGis;
         private SingletonParsingSet _usersSet;
         private PageDownloader _downloader;
-        private JObjectHandler _jObjectHandler;
+        private readonly JObjectHandler _jObjectHandler;
 
+        private static readonly object QueueLocker = new object();
+        private static readonly object UnprocessedSetLocker = new object();
 
         public WebParser(string userAgent)
         {
@@ -27,13 +28,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _jObjectHandler = new JObjectHandler();
         }
 
-        private void ChangeUserAgent(string userAgent)
-        {
-            _userAgent = userAgent;
-            _queryRequester = new QueryRequester(userAgent);
-        }
-
-        public void GetPostsShortCodesFromUser(string username, int countOfLoading = 0)
+        public void GetPostsShortCodesFromUser(string username, int countOfLoading = 4)
         {
             var userUrl = "/" + username + "/";
             var userPageContent = Task.Run(() => _downloader.GetPageContentWithProxy(userUrl, _userAgent)).GetAwaiter()
@@ -43,9 +38,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var resultList = _webProcessor.GetListOfShortCodesFromPageContent(userPageContent);
             if (!_webProcessor.HasNextPageForPageContent(userPageContent))
             {
-                foreach (var shortCode in resultList)
+                lock (QueueLocker)
                 {
-                    _usersSet.AddInQueue(shortCode);
+                    foreach (var shortCode in resultList)
+                    {
+                        _usersSet.AddInShortCodesQueue(shortCode);
+                    }
                 }
 
                 return;
@@ -65,11 +63,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 resultList.AddRange(_jObjectHandler.GetListOfShortCodesFromQueryContent(jsonPage));
             }
 
-            foreach (var shortCode in resultList)
+            lock (QueueLocker)
             {
-                Console.WriteLine(shortCode);
-                _usersSet.AddInQueue(shortCode);
-                System.IO.File.WriteAllText("shortcodes.txt", shortCode);
+                foreach (var shortCode in resultList)
+                {
+                    _usersSet.AddInShortCodesQueue(shortCode);
+                }
             }
         }
 
@@ -92,9 +91,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             if (!_webProcessor.HasNextPageForPageContent(postPageContent))
             {
-                foreach (var user in resultList)
+                lock (UnprocessedSetLocker)
                 {
-                    _usersSet.AddInHandledSet(user);
+                    foreach (var user in resultList)
+                    {
+                        _usersSet.AddUnprocessedUser(user);
+                    }
                 }
 
                 return;
@@ -112,10 +114,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForPost(jsonPage));
             }
 
-            foreach (var user in resultList)
+            lock (UnprocessedSetLocker)
             {
-                _usersSet.AddInHandledSet(user);
-                Console.WriteLine(user);
+                foreach (var user in resultList)
+                {
+                    _usersSet.AddUnprocessedUser(user);
+                }
             }
         }
 
@@ -129,21 +133,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var jsonPage = Task.Run(() => _queryRequester.GetJsonForLikes(postShortCode, _rhxGis, ""))
                 .GetAwaiter().GetResult();
             resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
-            var count = 0;
             while (_jObjectHandler.HasNextPageForLikes(jsonPage))
             {
-                count++;
-                if (count > 190)
-                {
-                    ChangeUserAgent(
-                        "Mozilla/5.0 (X11; CrOS i686 4319.74.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.57 Safari/537.36"); //TODO refactor
-                    postPageContent = Task.Run(() => _downloader.GetPageContentWithProxy(postUrl, _userAgent))
-                        .GetAwaiter()
-                        .GetResult();
-                    _rhxGis = _webProcessor.GetRhxGisParameter(postPageContent);
-                    count = 0;
-                }
-
                 var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForLikes(jsonPage);
                 Thread.Sleep(600);
                 jsonPage = Task.Run(() => _queryRequester.GetJsonForLikes(postShortCode, _rhxGis, nextCursor))
@@ -151,10 +142,19 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
             }
 
-            foreach (var user in resultList)
+            lock (UnprocessedSetLocker)
             {
-                _usersSet.AddInHandledSet(user);
+                foreach (var user in resultList)
+                {
+                    _usersSet.AddUnprocessedUser(user);
+                }
             }
         }
+
+//        private void ChangeUserAgent(string userAgent)
+//        {
+//            _userAgent = userAgent;
+//            _queryRequester = new QueryRequester(userAgent);
+//        }
     }
 }
