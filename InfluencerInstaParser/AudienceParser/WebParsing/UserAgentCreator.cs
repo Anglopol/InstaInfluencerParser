@@ -8,10 +8,17 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
     {
         private string _pathToUserAgentsFile;
         private Queue<string> _userAgentsQueue;
+        private const string DefaultUserAgentsFilePath = "useragents.txt";
 
         public UserAgentCreator(string filePath)
         {
             _pathToUserAgentsFile = filePath;
+            _userAgentsQueue = new Queue<string>();
+        }
+
+        public UserAgentCreator()
+        {
+            _pathToUserAgentsFile = DefaultUserAgentsFilePath;
             _userAgentsQueue = new Queue<string>();
         }
 
