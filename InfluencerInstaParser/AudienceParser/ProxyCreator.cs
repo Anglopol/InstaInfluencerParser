@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -15,7 +15,7 @@ namespace InfluencerInstaParser.AudienceParser
         private static readonly string[] DefaultProxyParams =
             {$"apiKey={DefaultApiKey}", "protocol=http", "allowsUserAgentHeader=1", "allowsCustomHeaders=1", "all=1"};
 
-        private ConcurrentQueue<WebProxy> _proxyQueue;
+        private Queue<WebProxy> _proxyQueue;
         private readonly string[] _proxyParams;
         private readonly string _proxyUrl;
         private readonly object _fillLocker;
@@ -41,7 +41,7 @@ namespace InfluencerInstaParser.AudienceParser
         {
             lock (_getLocker)
             {
-                if (_proxyQueue == null || _proxyQueue.IsEmpty) FillQueue();
+                if (_proxyQueue == null || _proxyQueue.Count == 0) FillQueue();
                 WebProxy proxy;
                 while (!_proxyQueue.TryDequeue(out proxy))
                 {
@@ -55,8 +55,8 @@ namespace InfluencerInstaParser.AudienceParser
         {
             lock (_fillLocker)
             {
-                if (!(_proxyQueue == null || _proxyQueue.IsEmpty)) return;
-                if (_proxyQueue == null) _proxyQueue = new ConcurrentQueue<WebProxy>();
+                if (!(_proxyQueue == null || _proxyQueue.Count == 0)) return;
+                if (_proxyQueue == null) _proxyQueue = new Queue<WebProxy>();
                 var requestUrl = _proxyParams.Aggregate(_proxyUrl, (current, param) => current + (param + "&"));
                 var downloader = PageDownloader.GetInstance();
                 var jsonHandler = new JObjectHandler();
