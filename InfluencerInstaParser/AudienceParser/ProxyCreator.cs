@@ -25,6 +25,7 @@ namespace InfluencerInstaParser.AudienceParser
         {
             _proxyParams = proxyParams;
             _proxyUrl = proxyUrl;
+            _proxyQueue = new Queue<WebProxy>();
             _fillLocker = new object();
             _getLocker = new object();
         }
@@ -33,6 +34,7 @@ namespace InfluencerInstaParser.AudienceParser
         {
             _proxyParams = DefaultProxyParams;
             _proxyUrl = DefaultProxyUrl;
+            _proxyQueue = new Queue<WebProxy>();
             _fillLocker = new object();
             _getLocker = new object();
         }
@@ -41,13 +43,8 @@ namespace InfluencerInstaParser.AudienceParser
         {
             lock (_getLocker)
             {
-                if (_proxyQueue == null || _proxyQueue.Count == 0) FillQueue();
-                WebProxy proxy;
-                while (!_proxyQueue.TryDequeue(out proxy))
-                {
-                }
-
-                return proxy;
+                if (_proxyQueue.Count == 0) FillQueue();
+                return _proxyQueue.Dequeue();
             }
         }
 
@@ -55,8 +52,7 @@ namespace InfluencerInstaParser.AudienceParser
         {
             lock (_fillLocker)
             {
-                if (!(_proxyQueue == null || _proxyQueue.Count == 0)) return;
-                if (_proxyQueue == null) _proxyQueue = new Queue<WebProxy>();
+                if (_proxyQueue.Count != 0) return;
                 var requestUrl = _proxyParams.Aggregate(_proxyUrl, (current, param) => current + (param + "&"));
                 var downloader = PageDownloader.GetInstance();
                 var jsonHandler = new JObjectHandler();
