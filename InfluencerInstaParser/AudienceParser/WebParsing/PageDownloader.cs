@@ -29,7 +29,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         private HttpClientHandler _httpClientHandler;
         private HttpClient _proxyClient;
-        private HttpClient _client;
+        private readonly HttpClient _client;
         private readonly object _proxyChangerLock;
 
         private PageDownloader()
@@ -37,6 +37,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _httpClientHandler = new HttpClientHandler();
             _proxyChangerLock = new object();
             _client = new HttpClient();
+            _proxyCreator = new ProxyCreator();
         }
 
         public static PageDownloader GetInstance()
@@ -62,7 +63,17 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public async Task<string> GetPageContentWithProxy(string url, string userAgent, string instGis = "")
         {
-            if (Proxy == null) throw new ProxyNotInitializeException("You need to set proxy to use this method");
+            if (Proxy == null)
+            {
+                lock (_proxyChangerLock)
+                {
+                    if (Proxy == null)
+                    {
+                        SetProxy(_proxyCreator.GetProxy());
+                    }
+                }
+            }
+
             var link = InstagramUrl + url;
 
             _proxyClient.DefaultRequestHeaders.Clear();
@@ -71,36 +82,34 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             try
             {
-                _requestCounter++;
-                if (_requestCounter > 190)
+                if (_requestCounter > 180)
                 {
-                    SetProxy(null); //TODO refactor
+                    lock (_proxyChangerLock)
+                    {
+                        if (_requestCounter > 180) SetProxy(_proxyCreator.GetProxy());
+                    }
                 }
 
                 var response = await _proxyClient.GetAsync(link);
+                _requestCounter++;
                 response.EnsureSuccessStatusCode();
-                var body = await response.Content.ReadAsStringAsync();
-                Console.Write(" " + _requestCounter);
-                return body;
+                return await response.Content.ReadAsStringAsync();
             }
             catch (HttpRequestException e)
             {
                 Console.WriteLine("\nException Caught!   " + _requestCounter);
                 Console.WriteLine("Message :{0} ", e.Message);
-                Thread.Sleep(180000);
+                Thread.Sleep(1000);
                 return await GetPageContentWithProxy(url, userAgent, instGis);
             }
         }
 
         private void SetProxy(WebProxy proxy)
         {
-            lock (_proxyChangerLock)
-            {
-                if (_requestCounter <= 190) return;
-                _requestCounter = 0;
-                Proxy = proxy;
-                Console.WriteLine("Proxy changed");
-            }
+            if (_requestCounter <= 180) return;
+            _requestCounter = 0;
+            Proxy = proxy;
+            Console.WriteLine("Proxy changed");
         }
     }
 }
