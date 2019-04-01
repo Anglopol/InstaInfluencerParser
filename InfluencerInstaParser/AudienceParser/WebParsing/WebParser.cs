@@ -133,6 +133,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var postUrl = "/p/" + postShortCode + "/";
             var postPageContent = Task.Run(() => _downloader.GetPageContentWithProxy(postUrl, _userAgent)).GetAwaiter()
                 .GetResult();
+            if (_webProcessor.IsVideo(postPageContent))
+            {
+                Console.WriteLine($"Post {postShortCode} is video");
+                return;
+            }
             _rhxGis = _rhxGis ?? _webProcessor.GetRhxGisParameter(postPageContent);
             var resultList = new List<string>();
             var jsonPage = Task.Run(() => _queryRequester.GetJsonForLikes(postShortCode, _rhxGis, ""))

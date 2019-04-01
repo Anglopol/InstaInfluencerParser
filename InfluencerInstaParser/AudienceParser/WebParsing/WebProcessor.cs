@@ -134,5 +134,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             return pageContent.Contains("\"is_private\":true");
         }
+
+        public bool IsVideo(string pageContent)
+        {
+            return pageContent.Contains("\"is_video\":true");
+        }
     }
 }
