@@ -92,6 +92,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
                 var response = await _proxyClient.GetAsync(link);
                 _requestCounter++;
+                if (response.StatusCode == HttpStatusCode.BadGateway)
+                {
+                    SetProxy(_proxyCreator.GetProxy());
+                    return await GetPageContentWithProxy(url, userAgent, instGis);
+                }
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadAsStringAsync();
             }
