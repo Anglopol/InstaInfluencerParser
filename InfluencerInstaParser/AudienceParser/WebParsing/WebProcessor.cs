@@ -5,7 +5,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
-using Newtonsoft.Json.Linq;
+using System.Xml.XPath;
+using HtmlAgilityPack;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
@@ -42,7 +43,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             Console.WriteLine(signatureParams);
             return CalculateMD5Hash(signatureParams);
         }
-        
+
         public string MakeInstagramGisForLikes(string rhxGis, string shortCode, int count, string endOfCursor)
         {
             var signatureParams = $"{rhxGis}:{MakeSignatureStringForLikes(shortCode, count, endOfCursor)}";
@@ -120,7 +121,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public List<string> GetListOfUsernamesFromPageContent(string pageContent)
         {
-            
             return Regex.Matches(pageContent, "username\".{2}[^\"]*").Select(match => match.Value.ToString()
                 .Split(":")[1].Remove(0, 1)).ToList();
         }
@@ -130,6 +130,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return pageContent.Contains("\"has_next_page\":true");
         }
 
-       
+        public bool IsPrivate(string pageContent)
+        {
+            return pageContent.Contains("\"is_private\":true");
+        }
     }
 }

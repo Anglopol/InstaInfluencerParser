@@ -33,6 +33,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var userUrl = "/" + username + "/";
             var userPageContent = Task.Run(() => _downloader.GetPageContentWithProxy(userUrl, _userAgent)).GetAwaiter()
                 .GetResult();
+            if (_webProcessor.IsPrivate(userPageContent))
+            {
+                Console.WriteLine($"{username} is private");
+                return;
+            }
             var userId = long.Parse(_webProcessor.GetUserIdFromPageContent(userPageContent));
             _rhxGis = _rhxGis ?? _webProcessor.GetRhxGisParameter(userPageContent);
             var resultList = _webProcessor.GetListOfShortCodesFromPageContent(userPageContent);
