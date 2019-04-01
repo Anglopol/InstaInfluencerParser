@@ -15,7 +15,7 @@ namespace InfluencerInstaParser.AudienceParser
         private static readonly string[] DefaultProxyParams =
         {
             $"apiKey={DefaultApiKey}", "protocol=http", "allowsUserAgentHeader=1", "allowsCustomHeaders=1",
-            "minDownloadSpeed=800", "anonymity[]=high%20anonymity", "allowsHttps=1", "all=1"
+            "minDownloadSpeed=1000", "anonymity[]=high%20anonymity", "allowsHttps=1", "all=1"
         };
 
         private Queue<WebProxy> _proxyQueue;

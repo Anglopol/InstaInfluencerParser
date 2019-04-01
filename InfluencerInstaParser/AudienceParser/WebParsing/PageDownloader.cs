@@ -15,6 +15,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private static int _requestCounter;
         private WebProxy _proxy;
         private ProxyCreator _proxyCreator;
+        private object _headersLocker;
 
         public WebProxy Proxy
         {
@@ -34,6 +35,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         private PageDownloader()
         {
+            _headersLocker = new object();
             _httpClientHandler = new HttpClientHandler();
             _proxyChangerLock = new object();
             _client = new HttpClient();
@@ -75,10 +77,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
 
             var link = InstagramUrl + url;
-
-            _proxyClient.DefaultRequestHeaders.Clear();
-            _proxyClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
-            _proxyClient.DefaultRequestHeaders.Add("x-instagram-gis", instGis);
+            lock (_headersLocker)
+            {
+                _proxyClient.DefaultRequestHeaders.Clear();
+                _proxyClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
+                _proxyClient.DefaultRequestHeaders.Add("x-instagram-gis", instGis);
+            }
 
             try
             {
@@ -92,18 +96,16 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
                 var response = await _proxyClient.GetAsync(link);
                 _requestCounter++;
-                if (response.StatusCode == HttpStatusCode.BadGateway)
-                {
-                    SetProxy(_proxyCreator.GetProxy());
-                    return await GetPageContentWithProxy(url, userAgent, instGis);
-                }
+
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadAsStringAsync();
             }
-            catch (HttpRequestException e)
+            catch (Exception e)
             {
+                SetProxy(_proxyCreator.GetProxy());
                 Console.WriteLine("\nException Caught!   " + _requestCounter);
                 Console.WriteLine("Message :{0} ", e.Message);
+                Console.WriteLine($"on {url}");
                 Thread.Sleep(1000);
                 return await GetPageContentWithProxy(url, userAgent, instGis);
             }

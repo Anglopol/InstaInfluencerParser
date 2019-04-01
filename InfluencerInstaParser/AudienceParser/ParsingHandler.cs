@@ -22,7 +22,7 @@ namespace InfluencerInstaParser.AudienceParser
             var web = new WebParser(agents.GetUserAgent());
             web.GetPostsShortCodesFromUser(_targetAccount);
             Console.WriteLine("Short Codes downloaded");
-            using (var countdownEvent = new CountdownEvent(_parsingSet.ShortCodesQueue.Count * 2))
+            using (var countdownEvent = new CountdownEvent(_parsingSet.ShortCodesQueue.Count * 2 - 1 ))
             {
                 foreach (var shortcode in _parsingSet.ShortCodesQueue)
                 {
@@ -38,6 +38,8 @@ namespace InfluencerInstaParser.AudienceParser
                         countdownEvent.Signal();
                     });
                 }
+                
+                Console.WriteLine("All threads started");
 
                 countdownEvent.Wait();
             }

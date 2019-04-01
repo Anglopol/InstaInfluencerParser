@@ -80,6 +80,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public void GetUsernamesFromPostComments(string postShortCode)
         {
             var postUrl = "/p/" + postShortCode + "/";
+            Console.WriteLine(postShortCode + "Comments");
             var postPageContent = Task.Run(() => _downloader.GetPageContentWithProxy(postUrl, _userAgent)).GetAwaiter()
                 .GetResult();
             _rhxGis = _rhxGis ?? _webProcessor.GetRhxGisParameter(postPageContent);
@@ -131,6 +132,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public void GetUsernamesFromPostLikes(string postShortCode)
         {
             var postUrl = "/p/" + postShortCode + "/";
+            Console.WriteLine(postShortCode + "Likes");
             var postPageContent = Task.Run(() => _downloader.GetPageContentWithProxy(postUrl, _userAgent)).GetAwaiter()
                 .GetResult();
             if (_webProcessor.IsVideo(postPageContent))
