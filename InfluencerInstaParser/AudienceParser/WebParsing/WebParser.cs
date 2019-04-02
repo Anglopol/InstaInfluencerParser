@@ -14,7 +14,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private string _userAgent;
         private string _rhxGis;
         private SingletonParsingSet _usersSet;
-        private PageDownloaderSingleton _downloaderSingleton;
+        private PageDownloaderProxy _downloaderProxy;
         private readonly JObjectHandler _jObjectHandler;
 
         private Logger _logger;
@@ -32,7 +32,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _queryRequester = new QueryRequester(userAgent);
             _userAgent = userAgent;
             _usersSet = SingletonParsingSet.GetInstance();
-            _downloaderSingleton = PageDownloaderSingleton.GetInstance();
+            _downloaderProxy = new PageDownloaderProxy();
             _jObjectHandler = new JObjectHandler();
         }
 
@@ -42,7 +42,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             string userPageContent;
             lock (_downloaderLocker)
             {
-                userPageContent = Task.Run(() => _downloaderSingleton.GetPageContentWithProxy(userUrl, _userAgent))
+                userPageContent = Task.Run(() => _downloaderProxy.GetPageContentWithProxy(userUrl, _userAgent))
                     .GetAwaiter()
                     .GetResult();
             }
@@ -109,7 +109,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             string postPageContent;
             lock (_downloaderLocker)
             {
-                postPageContent = Task.Run(() => _downloaderSingleton.GetPageContentWithProxy(postUrl, _userAgent))
+                postPageContent = Task.Run(() => _downloaderProxy.GetPageContentWithProxy(postUrl, _userAgent))
                     .GetAwaiter()
                     .GetResult();
             }
@@ -178,7 +178,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             string postPageContent;
             lock (_downloaderLocker)
             {
-                postPageContent = Task.Run(() => _downloaderSingleton.GetPageContentWithProxy(postUrl, _userAgent))
+                postPageContent = Task.Run(() => _downloaderProxy.GetPageContentWithProxy(postUrl, _userAgent))
                     .GetAwaiter()
                     .GetResult();
             }

@@ -57,10 +57,9 @@ namespace InfluencerInstaParser.AudienceParser
             if (_proxyQueue.Count != 0) return;
             _logger.Info("Downloading new proxys");
             var requestUrl = _proxyParams.Aggregate(_proxyUrl, (current, param) => current + (param + "&"));
-            var downloader = PageDownloaderSingleton.GetInstance();
             var jsonHandler = new JObjectHandler();
             var jsonProxies = jsonHandler.GetObjectFromJsonString(Task
-                .Run(() => downloader.GetPageContent(requestUrl))
+                .Run(() => PageDownloader.GetPageContent(requestUrl))
                 .GetAwaiter().GetResult());
             var ipAddresses = jsonHandler.GetProxyIps(jsonProxies);
             var ports = jsonHandler.GetProxyPorts(jsonProxies);
