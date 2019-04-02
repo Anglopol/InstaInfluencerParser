@@ -10,7 +10,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
     {
         private string _userAgent;
         private WebProcessor _proc;
-        private PageDownloader _downloader;
+        private PageDownloaderSingleton _downloaderSingleton;
         private JObjectHandler _jObjectHandler;
 
         private Logger _logger;
@@ -20,7 +20,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _logger = LogManager.GetCurrentClassLogger();
             _userAgent = userAgent;
             _proc = new WebProcessor();
-            _downloader = PageDownloader.GetInstance();
+            _downloaderSingleton = PageDownloaderSingleton.GetInstance();
             _jObjectHandler = new JObjectHandler();
         }
 
@@ -32,7 +32,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             try
             {
                 return _jObjectHandler.GetObjectFromJsonString(
-                    await _downloader.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
+                    _downloaderSingleton.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
@@ -51,7 +51,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             try
             {
                 return _jObjectHandler.GetObjectFromJsonString(
-                    await _downloader.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
+                    _downloaderSingleton.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
@@ -69,7 +69,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             try
             {
                 return _jObjectHandler.GetObjectFromJsonString(
-                    await _downloader.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
+                    _downloaderSingleton.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
@@ -87,7 +87,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             try
             {
                 return _jObjectHandler.GetObjectFromJsonString(
-                    await _downloader.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
+                    _downloaderSingleton.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {
@@ -106,7 +106,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             try
             {
                 return _jObjectHandler.GetObjectFromJsonString(
-                    await _downloader.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
+                    _downloaderSingleton.GetPageContentWithProxy(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
             {

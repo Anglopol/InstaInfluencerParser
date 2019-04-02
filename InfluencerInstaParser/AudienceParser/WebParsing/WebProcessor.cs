@@ -5,8 +5,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
-using System.Xml.XPath;
-using HtmlAgilityPack;
 using NLog;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
