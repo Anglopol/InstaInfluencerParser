@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using NLog;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
@@ -12,8 +13,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private PageDownloader _downloader;
         private JObjectHandler _jObjectHandler;
 
+        private Logger _logger;
+
         public QueryRequester(string userAgent)
         {
+            _logger = LogManager.GetCurrentClassLogger();
             _userAgent = userAgent;
             _proc = new WebProcessor();
             _downloader = PageDownloader.GetInstance();
@@ -32,6 +36,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
             catch (Exception e)
             {
+                _logger.Error(e, $"GetJsonPageContent on user: {userId}");
                 Console.WriteLine(e.StackTrace);
                 Thread.Sleep(10000);
                 return await GetJsonPageContent(userPageContent, userId, rhxGis);
@@ -50,6 +55,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
             catch (Exception e)
             {
+                _logger.Error(e, $"GetJsonPageContent on short code: {shortCode}");
                 Console.WriteLine(e.StackTrace);
                 Thread.Sleep(10000);
                 return await GetJsonPageContent(userPageContent, shortCode, rhxGis);
@@ -67,6 +73,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
             catch (Exception e)
             {
+                _logger.Error(e, $"GetJson on user: {userId}");
                 Console.WriteLine(e.StackTrace);
                 Thread.Sleep(10000);
                 return await GetJson(userId, rhxGis, endOfCursor);
@@ -84,6 +91,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
             catch (Exception e)
             {
+                _logger.Error(e, $"GetJson on short code: {shortCode}");
                 Console.WriteLine(e.StackTrace);
                 Thread.Sleep(10000);
                 return await GetJson(shortCode, rhxGis, endOfCursor);
@@ -102,6 +110,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
             catch (Exception e)
             {
+                _logger.Error(e, $"GetJsonForLikes on short code: {shortCode}");
                 Console.WriteLine(e.StackTrace);
                 Thread.Sleep(10000);
                 return await GetJsonForLikes(shortCode, rhxGis, endOfCursor);

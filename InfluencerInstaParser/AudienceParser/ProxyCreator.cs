@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.WebParsing;
+using NLog;
 
 namespace InfluencerInstaParser.AudienceParser
 {
@@ -18,12 +19,15 @@ namespace InfluencerInstaParser.AudienceParser
             "minDownloadSpeed=1000", "anonymity[]=high%20anonymity", "allowsHttps=1", "all=1"
         };
 
+        private Logger _logger;
+        
         private Queue<WebProxy> _proxyQueue;
         private readonly string[] _proxyParams;
         private readonly string _proxyUrl;
 
         public ProxyCreator(string proxyUrl, string[] proxyParams)
         {
+            _logger = LogManager.GetCurrentClassLogger();
             _proxyParams = proxyParams;
             _proxyUrl = proxyUrl;
             _proxyQueue = new Queue<WebProxy>();
@@ -31,6 +35,7 @@ namespace InfluencerInstaParser.AudienceParser
 
         public ProxyCreator()
         {
+            _logger = LogManager.GetCurrentClassLogger();
             _proxyParams = DefaultProxyParams;
             _proxyUrl = DefaultProxyUrl;
             _proxyQueue = new Queue<WebProxy>();
@@ -40,13 +45,13 @@ namespace InfluencerInstaParser.AudienceParser
         {
             if (_proxyQueue.Count == 0) FillQueue();
             var proxy = _proxyQueue.Dequeue();
-            Console.WriteLine(proxy.Address);
             return proxy;
         }
 
         private void FillQueue()
         {
             if (_proxyQueue.Count != 0) return;
+            _logger.Info("Downloading new proxys");
             var requestUrl = _proxyParams.Aggregate(_proxyUrl, (current, param) => current + (param + "&"));
             var downloader = PageDownloader.GetInstance();
             var jsonHandler = new JObjectHandler();

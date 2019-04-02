@@ -7,11 +7,17 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.XPath;
 using HtmlAgilityPack;
+using NLog;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
     public class WebProcessor
     {
+        private Logger _logger;
+        public WebProcessor()
+        {
+            _logger = LogManager.GetCurrentClassLogger();
+        }
         public string GetRhxGisParameter(string pageContent)
         {
             return Regex.Matches(pageContent, "rhx_gis.{3}[^\"]*")[0].ToString()
@@ -34,6 +40,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var signatureParams = $"{rhxGis}:{MakeSignatureString(userId, count, endOfCursor)}";
             Console.WriteLine(signatureParams);
+            _logger.Info(signatureParams);
             return CalculateMD5Hash(signatureParams);
         }
 
@@ -41,6 +48,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var signatureParams = $"{rhxGis}:{MakeSignatureString(shortCode, count, endOfCursor)}";
             Console.WriteLine(signatureParams);
+            _logger.Info(signatureParams);
             return CalculateMD5Hash(signatureParams);
         }
 
@@ -48,6 +56,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var signatureParams = $"{rhxGis}:{MakeSignatureStringForLikes(shortCode, count, endOfCursor)}";
             Console.WriteLine(signatureParams);
+            _logger.Info(signatureParams);
             return CalculateMD5Hash(signatureParams);
         }
 
