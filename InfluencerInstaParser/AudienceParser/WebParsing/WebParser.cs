@@ -19,33 +19,27 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         private Logger _logger;
 
-        private static readonly object DownloaderLocker = new object();
-
         private static readonly object QueueLocker = new object();
         private static readonly object UnprocessedSetLocker = new object();
 
         public WebParser(string userAgent)
         {
-            
             _logger = LogManager.GetCurrentClassLogger();
             _webProcessor = new WebProcessor();
-            _queryRequester = new QueryRequester(userAgent);
             _userAgent = userAgent;
             _usersSet = SingletonParsingSet.GetInstance();
             _downloaderProxy = new PageDownloaderProxy();
             _jObjectHandler = new JObjectHandler();
+            _queryRequester = new QueryRequester(userAgent, _downloaderProxy);
         }
 
         public void GetPostsShortCodesFromUser(string username, int countOfLoading = 4)
         {
             var userUrl = "/" + username + "/";
-            string userPageContent;
-            lock (DownloaderLocker)
-            {
-                userPageContent = Task.Run(() => _downloaderProxy.GetPageContentWithProxy(userUrl, _userAgent))
-                    .GetAwaiter()
-                    .GetResult();
-            }
+
+            var userPageContent = Task.Run(() => _downloaderProxy.GetPageContentWithProxy(userUrl, _userAgent))
+                .GetAwaiter()
+                .GetResult();
 
             if (_webProcessor.IsPrivate(userPageContent))
             {
@@ -70,11 +64,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
 
             JObject jsonPage;
-            lock (DownloaderLocker)
-            {
-                jsonPage = Task.Run(() => _queryRequester.GetJsonPageContent(userPageContent, userId, _rhxGis))
-                    .GetAwaiter().GetResult();
-            }
+            jsonPage = Task.Run(() => _queryRequester.GetJsonPageContent(userPageContent, userId, _rhxGis))
+                .GetAwaiter().GetResult();
+
 
             resultList.AddRange(_jObjectHandler.GetListOfShortCodesFromQueryContent(jsonPage));
             var count = 0;
@@ -82,12 +74,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             {
                 count++;
                 var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForPosts(jsonPage);
-
-                lock (DownloaderLocker)
-                {
-                    jsonPage = Task.Run(() => _queryRequester.GetJson(userId, _rhxGis, nextCursor)).GetAwaiter()
-                        .GetResult();
-                }
+                jsonPage = Task.Run(() => _queryRequester.GetJson(userId, _rhxGis, nextCursor)).GetAwaiter()
+                    .GetResult();
 
                 resultList.AddRange(_jObjectHandler.GetListOfShortCodesFromQueryContent(jsonPage));
             }
@@ -106,13 +94,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var postUrl = "/p/" + postShortCode + "/";
             Console.WriteLine(postShortCode + "Comments");
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post: {postShortCode}");
-            string postPageContent;
-            lock (DownloaderLocker)
-            {
-                postPageContent = Task.Run(() => _downloaderProxy.GetPageContentWithProxy(postUrl, _userAgent))
-                    .GetAwaiter()
-                    .GetResult();
-            }
+
+            var postPageContent = Task.Run(() => _downloaderProxy.GetPageContentWithProxy(postUrl, _userAgent))
+                .GetAwaiter()
+                .GetResult();
 
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post successed: {postShortCode}");
             _rhxGis = _rhxGis ?? _webProcessor.GetRhxGisParameter(postPageContent);
@@ -141,23 +126,17 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
 
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting json users from post: {postShortCode}");
-            JObject jsonPage;
-            lock (DownloaderLocker)
-            {
-                jsonPage = Task.Run(() => _queryRequester.GetJsonPageContent(postPageContent, postShortCode, _rhxGis))
-                    .GetAwaiter().GetResult();
-            }
+
+            var jsonPage = Task.Run(() => _queryRequester.GetJsonPageContent(postPageContent, postShortCode, _rhxGis))
+                .GetAwaiter().GetResult();
+
 
             resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForPost(jsonPage));
             while (_jObjectHandler.HasNextPageForComments(jsonPage))
             {
                 var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForComments(jsonPage);
-                lock (DownloaderLocker)
-                {
-                    jsonPage = Task.Run(() => _queryRequester.GetJson(postShortCode, _rhxGis, nextCursor)).GetAwaiter()
-                        .GetResult();
-                }
-
+                jsonPage = Task.Run(() => _queryRequester.GetJson(postShortCode, _rhxGis, nextCursor)).GetAwaiter()
+                    .GetResult();
                 resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForPost(jsonPage));
             }
 
@@ -175,13 +154,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var postUrl = "/p/" + postShortCode + "/";
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post likes: {postShortCode}");
             Console.WriteLine(postShortCode + " Likes");
-            string postPageContent;
-            lock (DownloaderLocker)
-            {
-                postPageContent = Task.Run(() => _downloaderProxy.GetPageContentWithProxy(postUrl, _userAgent))
-                    .GetAwaiter()
-                    .GetResult();
-            }
+
+            var postPageContent = Task.Run(() => _downloaderProxy.GetPageContentWithProxy(postUrl, _userAgent))
+                .GetAwaiter()
+                .GetResult();
 
             _logger.Info(
                 $"Thread: {Thread.CurrentThread.Name} getting users from post likes seccessed: {postShortCode}");
@@ -194,12 +170,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _rhxGis = _rhxGis ?? _webProcessor.GetRhxGisParameter(postPageContent);
             var resultList = new List<string>();
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting json users from post likes: {postShortCode}");
-            JObject jsonPage;
-            lock (DownloaderLocker)
-            {
-                jsonPage = Task.Run(() => _queryRequester.GetJsonForLikes(postShortCode, _rhxGis, ""))
-                    .GetAwaiter().GetResult();
-            }
+
+
+            var jsonPage = Task.Run(() => _queryRequester.GetJsonForLikes(postShortCode, _rhxGis, ""))
+                .GetAwaiter().GetResult();
 
             resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
             while (_jObjectHandler.HasNextPageForLikes(jsonPage))
@@ -208,11 +182,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
                 _logger.Info(
                     $"Thread: {Thread.CurrentThread.Name} getting json users from post likes: {postShortCode}");
-                lock (DownloaderLocker)
-                {
-                    jsonPage = Task.Run(() => _queryRequester.GetJsonForLikes(postShortCode, _rhxGis, nextCursor))
-                        .GetAwaiter().GetResult();
-                }
+                jsonPage = Task.Run(() => _queryRequester.GetJsonForLikes(postShortCode, _rhxGis, nextCursor))
+                    .GetAwaiter().GetResult();
 
                 resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
             }

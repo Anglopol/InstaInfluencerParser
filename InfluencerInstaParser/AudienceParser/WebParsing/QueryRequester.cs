@@ -15,12 +15,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         private Logger _logger;
 
-        public QueryRequester(string userAgent)
+        public QueryRequester(string userAgent, PageDownloaderProxy downloaderProxy)
         {
             _logger = LogManager.GetCurrentClassLogger();
             _userAgent = userAgent;
             _proc = new WebProcessor();
-            _downloaderProxy = new PageDownloaderProxy();
+            _downloaderProxy = downloaderProxy;
             _jObjectHandler = new JObjectHandler();
         }
 
