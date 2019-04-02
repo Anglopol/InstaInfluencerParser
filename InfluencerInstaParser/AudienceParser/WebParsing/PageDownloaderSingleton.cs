@@ -20,7 +20,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
 
         private WebProxy _proxy;
-        private ProxyCreator _proxyCreator;
+        private ProxyCreatorSingleton _proxyCreatorSingleton;
 
         private object _headersLocker;
 
@@ -47,7 +47,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _httpClientHandler = new HttpClientHandler();
             _proxyChangerLock = new object();
             _client = new HttpClient();
-            _proxyCreator = new ProxyCreator();
+            _proxyCreatorSingleton = ProxyCreatorSingleton.GetInstance();
         }
 
         public static PageDownloaderSingleton GetInstance()
@@ -79,7 +79,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                     {
                         if (Proxy == null)
                         {
-                            SetProxy(_proxyCreator.GetProxy());
+                            SetProxy(_proxyCreatorSingleton.GetProxy());
                             _proxySetterCounter++;
                         }
                     }
@@ -99,7 +99,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                     {
                         lock (_proxyChangerLock)
                         {
-                            if (_requestCounter > 180) SetProxy(_proxyCreator.GetProxy());
+                            if (_requestCounter > 180) SetProxy(_proxyCreatorSingleton.GetProxy());
                             _proxySetterCounter++;
                         }
                     }
@@ -121,7 +121,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                     {
                         if (checkCounter == _proxySetterCounter)
                         {
-                            SetProxy(_proxyCreator.GetProxy());
+                            SetProxy(_proxyCreatorSingleton.GetProxy());
                             _proxySetterCounter++;
                         }
                     }

@@ -8,8 +8,10 @@ using NLog;
 
 namespace InfluencerInstaParser.AudienceParser
 {
-    public class ProxyCreator
+    public class ProxyCreatorSingleton
     {
+        private static ProxyCreatorSingleton _instance;
+
         private const string DefaultProxyUrl = "https://api.getproxylist.com/proxy?";
         private const string DefaultApiKey = "deeb3af2c0618ff4f4229b1fa30a1b866f022b0f";
 
@@ -20,25 +22,27 @@ namespace InfluencerInstaParser.AudienceParser
         };
 
         private Logger _logger;
-        
+
         private Queue<WebProxy> _proxyQueue;
-        private readonly string[] _proxyParams;
-        private readonly string _proxyUrl;
-
-        public ProxyCreator(string proxyUrl, string[] proxyParams)
-        {
-            _logger = LogManager.GetCurrentClassLogger();
-            _proxyParams = proxyParams;
-            _proxyUrl = proxyUrl;
-            _proxyQueue = new Queue<WebProxy>();
-        }
-
-        public ProxyCreator()
+        private string[] _proxyParams;
+        private string _proxyUrl;
+        private ProxyCreatorSingleton()
         {
             _logger = LogManager.GetCurrentClassLogger();
             _proxyParams = DefaultProxyParams;
             _proxyUrl = DefaultProxyUrl;
             _proxyQueue = new Queue<WebProxy>();
+        }
+
+        public static ProxyCreatorSingleton GetInstance()
+        {
+            return _instance ?? (_instance = new ProxyCreatorSingleton());
+        }
+
+        public void SetNewProxyRotator(string proxyUrl, string[] proxyParams)
+        {
+            _proxyParams = proxyParams;
+            _proxyUrl = proxyUrl;
         }
 
         public WebProxy GetProxy()
