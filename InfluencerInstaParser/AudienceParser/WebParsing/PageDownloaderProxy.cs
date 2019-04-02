@@ -13,17 +13,19 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private const string InstagramUrl = @"https://www.instagram.com";
         private int _requestCounter;
         private WebProxy _proxy;
-        private HttpClientHandler _httpClientHandler;
         private HttpClient _proxyClient;
         private ProxyCreatorSingleton _proxyCreatorSingleton;
 
-        public WebProxy Proxy
+        private static readonly object GetProxyLocker = new object();
+
+        private WebProxy Proxy
         {
-            private set
+            set
             {
                 _proxy = value;
-                _httpClientHandler.Proxy = value;
-                _proxyClient = new HttpClient(handler: _httpClientHandler, disposeHandler: true);
+                _proxyClient = new HttpClient(new HttpClientHandler {Proxy = value}, true);
+                _requestCounter = 0;
+                _logger.Info($"Proxy changed on {value.Address}");
             }
             get => _proxy;
         }
@@ -31,7 +33,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public PageDownloaderProxy()
         {
             _logger = LogManager.GetCurrentClassLogger();
-            _httpClientHandler = new HttpClientHandler();
             _proxyCreatorSingleton = ProxyCreatorSingleton.GetInstance();
         }
 
@@ -39,7 +40,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             if (Proxy == null)
             {
-                SetProxy(_proxyCreatorSingleton.GetProxy());
+                lock (GetProxyLocker)
+                {
+                    SetProxy(_proxyCreatorSingleton.GetProxy());
+                }
             }
 
             var link = InstagramUrl + url;
@@ -51,7 +55,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             {
                 if (_requestCounter > 180)
                 {
-                    SetProxy(_proxyCreatorSingleton.GetProxy());
+                    lock (GetProxyLocker)
+                    {
+                        SetProxy(_proxyCreatorSingleton.GetProxy());
+                    }
                 }
 
                 _logger.Info($"Getting url: {url}\nDownload counter: {_requestCounter}");
@@ -66,7 +73,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             catch (Exception e)
             {
                 _logger.Error(e, e.Message + $"\nOn url: {url}\nWith proxy: {_proxy.Address}");
-                SetProxy(_proxyCreatorSingleton.GetProxy());
+                lock (GetProxyLocker)
+                {
+                    SetProxy(_proxyCreatorSingleton.GetProxy());
+                }
+
                 Console.WriteLine("\nException Caught!   " + _requestCounter);
                 Console.WriteLine($"on {url}");
                 Thread.Sleep(1000);
@@ -76,10 +87,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         private void SetProxy(WebProxy proxy)
         {
-            _requestCounter = 0;
+            _proxyClient?.CancelPendingRequests();
             Proxy = proxy;
             Console.WriteLine("Proxy changed");
-            _logger.Info($"Proxy changed on {proxy.Address}");
         }
     }
 }

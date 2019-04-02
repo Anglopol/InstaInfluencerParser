@@ -26,6 +26,7 @@ namespace InfluencerInstaParser.AudienceParser
         private Queue<WebProxy> _proxyQueue;
         private string[] _proxyParams;
         private string _proxyUrl;
+
         private ProxyCreatorSingleton()
         {
             _logger = LogManager.GetCurrentClassLogger();
