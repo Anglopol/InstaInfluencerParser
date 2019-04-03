@@ -8,12 +8,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
     public class QueryRequester
     {
-        private string _userAgent;
-        private WebProcessor _proc;
-        private PageDownloaderProxy _downloaderProxy;
-        private JObjectHandler _jObjectHandler;
+        private readonly PageDownloaderProxy _downloaderProxy;
+        private readonly JObjectHandler _jObjectHandler;
 
-        private Logger _logger;
+        private readonly Logger _logger;
+        private readonly WebProcessor _proc;
+        private readonly string _userAgent;
 
         public QueryRequester(string userAgent, PageDownloaderProxy downloaderProxy)
         {

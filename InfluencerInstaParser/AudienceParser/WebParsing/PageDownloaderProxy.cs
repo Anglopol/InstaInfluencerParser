@@ -9,14 +9,20 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
     public class PageDownloaderProxy
     {
-        private Logger _logger;
         private const string InstagramUrl = @"https://www.instagram.com";
-        private int _requestCounter;
-        private WebProxy _proxy;
-        private HttpClient _proxyClient;
-        private ProxyCreatorSingleton _proxyCreatorSingleton;
 
         private static readonly object GetProxyLocker = new object();
+        private readonly Logger _logger;
+        private readonly ProxyCreatorSingleton _proxyCreatorSingleton;
+        private WebProxy _proxy;
+        private HttpClient _proxyClient;
+        private int _requestCounter;
+
+        public PageDownloaderProxy()
+        {
+            _logger = LogManager.GetCurrentClassLogger();
+            _proxyCreatorSingleton = ProxyCreatorSingleton.GetInstance();
+        }
 
         private WebProxy Proxy
         {
@@ -30,21 +36,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             get => _proxy;
         }
 
-        public PageDownloaderProxy()
-        {
-            _logger = LogManager.GetCurrentClassLogger();
-            _proxyCreatorSingleton = ProxyCreatorSingleton.GetInstance();
-        }
-
         public string GetPageContentWithProxy(string url, string userAgent, string instGis = "")
         {
             if (Proxy == null)
-            {
                 lock (GetProxyLocker)
                 {
                     SetProxy(_proxyCreatorSingleton.GetProxy());
                 }
-            }
 
             var link = InstagramUrl + url;
             _proxyClient.DefaultRequestHeaders.Clear();
@@ -54,12 +52,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             try
             {
                 if (_requestCounter > 180)
-                {
                     lock (GetProxyLocker)
                     {
                         SetProxy(_proxyCreatorSingleton.GetProxy());
                     }
-                }
 
                 _logger.Info($"Getting url: {url}\nDownload counter: {_requestCounter}");
                 var response = Task.Run(() => _proxyClient.GetAsync(link)).GetAwaiter().GetResult();

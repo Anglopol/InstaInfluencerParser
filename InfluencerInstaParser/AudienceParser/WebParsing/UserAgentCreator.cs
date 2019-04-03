@@ -6,9 +6,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
     public class UserAgentCreator
     {
-        private string _pathToUserAgentsFile;
-        private Queue<string> _userAgentsQueue;
         private const string DefaultUserAgentsFilePath = "useragents.txt";
+        private readonly string _pathToUserAgentsFile;
+        private readonly Queue<string> _userAgentsQueue;
 
         public UserAgentCreator(string filePath)
         {
@@ -33,10 +33,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             using (var reader = new StreamReader(_pathToUserAgentsFile, Encoding.Default))
             {
                 string line;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    _userAgentsQueue.Enqueue(line);
-                }
+                while ((line = reader.ReadLine()) != null) _userAgentsQueue.Enqueue(line);
             }
         }
     }
