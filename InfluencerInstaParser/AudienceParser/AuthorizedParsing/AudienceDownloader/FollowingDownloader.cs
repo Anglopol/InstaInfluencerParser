@@ -7,7 +7,7 @@ using InstagramApiSharp.API;
 using InstagramApiSharp.Classes;
 using InstagramApiSharp.Classes.Models;
 
-namespace InfluencerInstaParser.AudienceParser.AudienceDownloader
+namespace InfluencerInstaParser.AudienceParser.AuthorizedParsing.AudienceDownloader
 {
     public class FollowingDownloader : IFollowingDownloader
     {
@@ -17,10 +17,10 @@ namespace InfluencerInstaParser.AudienceParser.AudienceDownloader
             var followersList = from instaUserShort in followers
                 select instaUserShort.UserName;
             return followersList;
-
         }
 
-        private async Task<List<InstaUserShort>> SafeFollowingDownload(string username, IInstaApi api, PaginationParameters parameters,
+        private async Task<List<InstaUserShort>> SafeFollowingDownload(string username, IInstaApi api,
+            PaginationParameters parameters,
             List<InstaUserShort> following = null)
         {
             if (following == null)
@@ -44,7 +44,7 @@ namespace InfluencerInstaParser.AudienceParser.AudienceDownloader
                 delay = TimeSpan.FromSeconds(new Random(DateTime.Now.Millisecond).Next(120, 360));
             Console.WriteLine($"Not able to load full list of followers, retry in {delay.TotalSeconds} seconds");
             await Task.Delay(delay);
-            return await SafeFollowingDownload(username,api,parameters.StartFromMaxId(nextId), following);
+            return await SafeFollowingDownload(username, api, parameters.StartFromMaxId(nextId), following);
         }
     }
 }

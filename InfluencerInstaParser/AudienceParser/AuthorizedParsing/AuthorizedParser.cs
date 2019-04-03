@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Threading.Tasks;
-using InfluencerInstaParser.AudienceParser.AudienceDownloader;
+using InfluencerInstaParser.AudienceParser.AuthorizedParsing.AudienceDownloader;
 using InstagramApiSharp.API;
 using InstagramApiSharp.Classes.Models;
 
@@ -33,10 +33,7 @@ namespace InfluencerInstaParser.AudienceParser.AuthorizedParsing
             foreach (var user in rawFollowers)
             {
                 var userInformation = await api.UserProcessor.GetUserInfoByUsernameAsync(user);
-                if (CheckUser(userInformation.Value))
-                {
-                    parsedFollowers.Add(userInformation.Value);
-                }
+                if (CheckUser(userInformation.Value)) parsedFollowers.Add(userInformation.Value);
             }
 
             return parsedFollowers;
@@ -45,7 +42,7 @@ namespace InfluencerInstaParser.AudienceParser.AuthorizedParsing
         private bool CheckUser(InstaUserInfo user)
         {
             return user.FollowerCount > _minNumberOfFollowers &&
-                   (user.FollowingCount / (double) user.FollowerCount) < _subscriptionProportion;
+                   user.FollowingCount / (double) user.FollowerCount < _subscriptionProportion;
         }
     }
 }

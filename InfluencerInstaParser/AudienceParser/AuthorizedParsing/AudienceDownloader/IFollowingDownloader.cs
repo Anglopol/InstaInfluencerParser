@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using InstagramApiSharp.API;
 
-namespace InfluencerInstaParser.AudienceParser.AudienceDownloader
+namespace InfluencerInstaParser.AudienceParser.AuthorizedParsing.AudienceDownloader
 {
     public interface IFollowingDownloader
     {

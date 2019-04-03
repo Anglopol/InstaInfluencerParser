@@ -15,20 +15,18 @@ namespace InfluencerInstaParser.AudienceParser.AuthorizedParsing
         {
             var apis = new List<IInstaApi>(countOfApis);
             for (var i = 0; i < countOfApis; i++)
-            {
                 apis.Add(InstaApiBuilder.CreateBuilder()
                     .SetUser(userSession)
                     .UseLogger(new DebugLogger(LogLevel.Exceptions)) //TODO add logger 
                     .SetRequestDelay(delay)
                     .Build());
-            }
 
             Authorizator.MassAuthorize(apis, delay);
 
             return apis;
         }
 
-        public static async Task<IInstaApi> MakeAuthApi(UserSessionData userSession, IRequestDelay delay) 
+        public static async Task<IInstaApi> MakeAuthApi(UserSessionData userSession, IRequestDelay delay)
         {
             var api = InstaApiBuilder.CreateBuilder()
                 .SetUser(userSession)
