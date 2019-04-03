@@ -6,9 +6,9 @@ namespace InfluencerInstaParser.AudienceParser
 {
     public class ParsingHandler
     {
-        private int _countOfThreads;
         private readonly SingletonParsingSet _parsingSet;
         private readonly string _targetAccount;
+        private int _countOfThreads;
 
         public ParsingHandler(string username)
         {
@@ -22,10 +22,9 @@ namespace InfluencerInstaParser.AudienceParser
             var web = new WebParser(agents.GetUserAgent());
             web.GetPostsShortCodesFromUser(_targetAccount);
             Console.WriteLine("Short Codes downloaded");
-            ThreadPool.SetMaxThreads(5, 5);
+            ThreadPool.SetMaxThreads(3, 3);
             using (var countdownEvent = new CountdownEvent(_parsingSet.ShortCodesQueue.Count * 2))
             {
-                ThreadPool.SetMaxThreads(5, 5);
                 foreach (var shortcode in _parsingSet.ShortCodesQueue)
                 {
                     ThreadPool.QueueUserWorkItem(obj =>

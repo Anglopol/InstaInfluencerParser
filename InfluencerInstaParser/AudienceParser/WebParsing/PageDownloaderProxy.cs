@@ -12,6 +12,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private const string InstagramUrl = @"https://www.instagram.com";
 
         private static readonly object GetProxyLocker = new object();
+
+        private static object TestLock = new object();
         private readonly Logger _logger;
         private readonly ProxyCreatorSingleton _proxyCreatorSingleton;
         private WebProxy _proxy;
@@ -58,11 +60,16 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                     }
 
                 _logger.Info($"Getting url: {url}\nDownload counter: {_requestCounter}");
-                var response = Task.Run(() => _proxyClient.GetAsync(link)).GetAwaiter().GetResult();
+                var responseTask = Task.Run(async () => await GetResponseMessageAsync(link));
+                responseTask.Wait();
+                var response = responseTask.Result;
                 _requestCounter++;
 
+
                 response.EnsureSuccessStatusCode();
-                var responseBody = Task.Run(() => response.Content.ReadAsStringAsync()).GetAwaiter().GetResult();
+                var responseBodyTask = Task.Run(async () => await GetResponseBodyAsync(response));
+                responseBodyTask.Wait();
+                var responseBody = responseBodyTask.Result;
                 Thread.Sleep(600);
                 return responseBody;
             }
@@ -77,8 +84,18 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 Console.WriteLine("\nException Caught!   " + _requestCounter);
                 Console.WriteLine($"on {url}");
                 Thread.Sleep(1000);
-                return Task.Run(() => GetPageContentWithProxy(url, userAgent, instGis)).GetAwaiter().GetResult();
+                return GetPageContentWithProxy(url, userAgent, instGis);
             }
+        }
+
+        private async Task<HttpResponseMessage> GetResponseMessageAsync(string link)
+        {
+            return await _proxyClient.GetAsync(link).ConfigureAwait(false);
+        }
+
+        private async Task<string> GetResponseBodyAsync(HttpResponseMessage responseMessage)
+        {
+            return await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
         }
 
         private void SetProxy(WebProxy proxy)
