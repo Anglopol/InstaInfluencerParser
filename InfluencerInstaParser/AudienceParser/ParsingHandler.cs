@@ -7,8 +7,9 @@ namespace InfluencerInstaParser.AudienceParser
     public class ParsingHandler
     {
         private readonly SingletonParsingSet _parsingSet;
+
         private readonly string _targetAccount;
-        private int _countOfThreads;
+//        private int _countOfThreads;
 
         public ParsingHandler(string username)
         {

@@ -13,7 +13,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         private static readonly object GetProxyLocker = new object();
 
-        private static object TestLock = new object();
         private readonly Logger _logger;
         private readonly ProxyCreatorSingleton _proxyCreatorSingleton;
         private WebProxy _proxy;
