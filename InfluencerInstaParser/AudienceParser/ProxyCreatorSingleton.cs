@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.WebParsing;
 using NLog;
@@ -21,7 +22,6 @@ namespace InfluencerInstaParser.AudienceParser
         };
 
         private readonly TimeSpan _defaultDelayTime = TimeSpan.Parse("00:03:00");
-        private readonly object _fillLocker;
 
         private readonly Logger _logger;
 
@@ -32,7 +32,6 @@ namespace InfluencerInstaParser.AudienceParser
 
         private ProxyCreatorSingleton()
         {
-            _fillLocker = new object();
             _logger = LogManager.GetCurrentClassLogger();
             _proxyParams = DefaultProxyParams;
             _proxyUrl = DefaultProxyUrl;
@@ -53,8 +52,11 @@ namespace InfluencerInstaParser.AudienceParser
 
         public WebProxy GetProxy()
         {
-            if (_proxyQueue.Count == 0) FillQueue();
-
+            if (_proxyQueue.Count == 0)
+            {
+                FillQueue();
+                if (_proxyQueue.Count == 0) return GetFirstValidProxy();
+            }
 
             var proxy = _proxyQueue.Dequeue();
             return proxy;
@@ -63,15 +65,7 @@ namespace InfluencerInstaParser.AudienceParser
         public WebProxy GetProxy(WebProxy usedProxy)
         {
             if (!_usedProxy.TryAdd(usedProxy, DateTime.Now)) _usedProxy[usedProxy] = DateTime.Now;
-
-            if (_proxyQueue.Count == 0)
-                lock (_fillLocker)
-                {
-                    if (_proxyQueue.Count == 0) FillQueue();
-                }
-
-            var proxy = _proxyQueue.Dequeue();
-            return proxy;
+            return GetProxy();
         }
 
         private void FillQueue()
@@ -104,6 +98,18 @@ namespace InfluencerInstaParser.AudienceParser
             if (!_usedProxy.ContainsKey(proxy)) return true;
             var delay = DateTime.Now.Subtract(_usedProxy[proxy]);
             return TimeSpan.Compare(delay, _defaultDelayTime) >= 0;
+        }
+
+        private WebProxy GetFirstValidProxy()
+        {
+            while (true)
+            {
+                foreach (var (proxy, _) in _usedProxy)
+                    if (IsProxyCanBeUsed(proxy))
+                        return proxy;
+
+                Thread.Sleep(1000);
+            }
         }
     }
 }
