@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Threading.Tasks;
-using InfluencerInstaParser.AudienceParser.AuthorizedParsing.AudienceDownloader;
 using InstagramApiSharp.API;
 using InstagramApiSharp.Classes.Models;
 
@@ -22,7 +21,7 @@ namespace InfluencerInstaParser.AudienceParser.AuthorizedParsing
 
         public async Task<List<InstaUserInfo>> GetParsedFollowers(string username, IInstaApi api)
         {
-            var followers = await new FollowersDownloader().GetFollowers(username, api);
+            var followers = new AudienceDownloader().GetFollowers(username, api);
 
             return await Parse(followers, api);
         }
