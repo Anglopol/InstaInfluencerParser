@@ -27,6 +27,7 @@ namespace InfluencerInstaParser.AudienceParser
 
         private readonly Queue<WebProxy> _proxyQueue;
         private readonly Dictionary<WebProxy, DateTime> _usedProxy;
+        private readonly PageDownloader _pageDownloader;
         private string[] _proxyParams;
         private string _proxyUrl;
 
@@ -37,6 +38,7 @@ namespace InfluencerInstaParser.AudienceParser
             _proxyUrl = DefaultProxyUrl;
             _proxyQueue = new Queue<WebProxy>();
             _usedProxy = new Dictionary<WebProxy, DateTime>();
+            _pageDownloader = new PageDownloader();
         }
 
         public static ProxyCreatorSingleton GetInstance()
@@ -75,7 +77,7 @@ namespace InfluencerInstaParser.AudienceParser
             var requestUrl = _proxyParams.Aggregate(_proxyUrl, (current, param) => current + param + "&");
             var jsonHandler = new JObjectHandler();
             var jsonProxies = jsonHandler.GetObjectFromJsonString(Task
-                .Run(() => PageDownloader.GetPageContent(requestUrl))
+                .Run(() => _pageDownloader.GetPageContent(requestUrl))
                 .GetAwaiter().GetResult());
             var ipAddresses = jsonHandler.GetProxyIps(jsonProxies);
             var ports = jsonHandler.GetProxyPorts(jsonProxies);
