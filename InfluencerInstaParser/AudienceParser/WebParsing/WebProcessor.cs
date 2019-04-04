@@ -11,11 +11,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
     public class WebProcessor
     {
-        private Logger _logger;
+        private readonly Logger _logger;
+
         public WebProcessor()
         {
             _logger = LogManager.GetCurrentClassLogger();
         }
+
         public string GetRhxGisParameter(string pageContent)
         {
             return Regex.Matches(pageContent, "rhx_gis.{3}[^\"]*")[0].ToString()
@@ -25,11 +27,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public string GetEndOfCursorFromPageContent(string pageContent)
         {
             if (HasNextPageForPageContent(pageContent))
-            {
                 return Regex.Match(pageContent,
                         "\"has_next_page\":true,\"end_cursor.{3}[^\"]*").ToString()
                     .Split(":")[2].Remove(0, 1);
-            }
 
             return "";
         }
@@ -65,10 +65,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var hash = md5.ComputeHash(inputBytes);
 
             var sb = new StringBuilder();
-            foreach (var character in hash)
-            {
-                sb.Append(character.ToString("x2"));
-            }
+            foreach (var character in hash) sb.Append(character.ToString("x2"));
 
             return sb.ToString();
         }
@@ -145,6 +142,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public bool IsVideo(string pageContent)
         {
             return pageContent.Contains("\"is_video\":true");
+        }
+
+        public bool IsEmpty(string pageContent)
+        {
+            return pageContent.Contains("edge_owner_to_timeline_media\":{\"count\":0");
         }
     }
 }

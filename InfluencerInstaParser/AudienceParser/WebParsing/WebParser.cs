@@ -36,9 +36,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             var userPageContent = _downloaderProxy.GetPageContentWithProxy(userUrl, _userAgent);
 
-            if (_webProcessor.IsPrivate(userPageContent))
+            if (_webProcessor.IsPrivate(userPageContent) || _webProcessor.IsEmpty(userPageContent))
             {
-                Console.WriteLine($"{username} is private");
+                Console.WriteLine($"{username} is invalid");
                 return;
             }
 
