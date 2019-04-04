@@ -15,7 +15,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private readonly Logger _logger;
         private readonly QueryRequester _queryRequester;
         private readonly string _userAgent;
-        private readonly SingletonParsingSet _usersSet;
+        private readonly ParsingSetSingleton _usersSet;
         private readonly WebProcessor _webProcessor;
         private string _rhxGis;
 
@@ -24,7 +24,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _logger = LogManager.GetCurrentClassLogger();
             _webProcessor = new WebProcessor();
             _userAgent = userAgent;
-            _usersSet = SingletonParsingSet.GetInstance();
+            _usersSet = ParsingSetSingleton.GetInstance();
             _downloaderProxy = new PageDownloaderProxy();
             _jObjectHandler = new JObjectHandler();
             _queryRequester = new QueryRequester(userAgent, _downloaderProxy);

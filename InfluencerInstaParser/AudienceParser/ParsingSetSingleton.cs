@@ -2,24 +2,24 @@ using System.Collections.Generic;
 
 namespace InfluencerInstaParser.AudienceParser
 {
-    public class SingletonParsingSet
+    public class ParsingSetSingleton
     {
-        private static SingletonParsingSet _instance;
-        
-        public Queue<string> ShortCodesQueue { get; }
-        public HashSet<string> UnprocessedUsers { get; }
-        public HashSet<string> ProcessedUsers { get; }
+        private static ParsingSetSingleton _instance;
 
-        private SingletonParsingSet()
+        private ParsingSetSingleton()
         {
             ShortCodesQueue = new Queue<string>();
             UnprocessedUsers = new HashSet<string>();
             ProcessedUsers = new HashSet<string>();
         }
 
-        public static SingletonParsingSet GetInstance()
+        public Queue<string> ShortCodesQueue { get; }
+        public HashSet<string> UnprocessedUsers { get; }
+        public HashSet<string> ProcessedUsers { get; }
+
+        public static ParsingSetSingleton GetInstance()
         {
-            return _instance ?? (_instance = new SingletonParsingSet());
+            return _instance ?? (_instance = new ParsingSetSingleton());
         }
 
         public void AddUnprocessedUser(string username)
