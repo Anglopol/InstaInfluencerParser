@@ -20,11 +20,13 @@ namespace InfluencerInstaParser.AudienceParser
             "minDownloadSpeed=800", "anonymity[]=high%20anonymity", "allowsHttps=1", "all=1"
         };
 
+        private readonly TimeSpan _defaultDelayTime = TimeSpan.Parse("00:03:00");
         private readonly object _fillLocker;
 
         private readonly Logger _logger;
 
         private readonly Queue<WebProxy> _proxyQueue;
+        private readonly Dictionary<WebProxy, DateTime> _usedProxy;
         private string[] _proxyParams;
         private string _proxyUrl;
 
@@ -35,6 +37,7 @@ namespace InfluencerInstaParser.AudienceParser
             _proxyParams = DefaultProxyParams;
             _proxyUrl = DefaultProxyUrl;
             _proxyQueue = new Queue<WebProxy>();
+            _usedProxy = new Dictionary<WebProxy, DateTime>();
         }
 
         public static ProxyCreatorSingleton GetInstance()
@@ -50,6 +53,17 @@ namespace InfluencerInstaParser.AudienceParser
 
         public WebProxy GetProxy()
         {
+            if (_proxyQueue.Count == 0) FillQueue();
+
+
+            var proxy = _proxyQueue.Dequeue();
+            return proxy;
+        }
+
+        public WebProxy GetProxy(WebProxy usedProxy)
+        {
+            if (!_usedProxy.TryAdd(usedProxy, DateTime.Now)) _usedProxy[usedProxy] = DateTime.Now;
+
             if (_proxyQueue.Count == 0)
                 lock (_fillLocker)
                 {
@@ -81,8 +95,15 @@ namespace InfluencerInstaParser.AudienceParser
                     UseDefaultCredentials = true,
                     BypassProxyOnLocal = false
                 };
-                _proxyQueue.Enqueue(proxy);
+                if (IsProxyCanBeUsed(proxy)) _proxyQueue.Enqueue(proxy);
             }
+        }
+
+        private bool IsProxyCanBeUsed(WebProxy proxy)
+        {
+            if (!_usedProxy.ContainsKey(proxy)) return true;
+            var delay = DateTime.Now.Subtract(_usedProxy[proxy]);
+            return TimeSpan.Compare(delay, _defaultDelayTime) >= 0;
         }
     }
 }
