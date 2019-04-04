@@ -39,11 +39,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public string GetPageContentWithProxy(string url, string userAgent, string instGis = "")
         {
-            if (Proxy == null)
-                lock (GetProxyLocker)
-                {
-                    SetProxy(_proxyCreatorSingleton.GetProxy());
-                }
+            if (Proxy == null) SetProxy(_proxyCreatorSingleton.GetProxy());
 
             var link = InstagramUrl + url;
             _proxyClient.DefaultRequestHeaders.Clear();
@@ -52,19 +48,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             try
             {
-                if (_requestCounter > 180)
-                    lock (GetProxyLocker)
-                    {
-                        SetProxy(_proxyCreatorSingleton.GetProxy());
-                    }
+                if (_requestCounter > 180) SetProxy(_proxyCreatorSingleton.GetProxy(Proxy));
 
                 _logger.Info($"Getting url: {url}\nDownload counter: {_requestCounter}");
                 var responseTask = Task.Run(async () => await GetResponseMessageAsync(link));
                 responseTask.Wait();
                 var response = responseTask.Result;
                 _requestCounter++;
-
-
                 response.EnsureSuccessStatusCode();
                 var responseBodyTask = Task.Run(async () => await GetResponseBodyAsync(response));
                 responseBodyTask.Wait();
@@ -75,11 +65,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             catch (Exception e)
             {
                 _logger.Error(e, e.Message + $"\nOn url: {url}\nWith proxy: {_proxy.Address}");
-                lock (GetProxyLocker)
-                {
-                    SetProxy(_proxyCreatorSingleton.GetProxy());
-                }
-
+                SetProxy(_requestCounter > 2
+                    ? _proxyCreatorSingleton.GetProxy(Proxy)
+                    : _proxyCreatorSingleton.GetProxy());
                 Console.WriteLine("\nException Caught!   " + _requestCounter);
                 Console.WriteLine($"on {url}");
                 Thread.Sleep(1000);
@@ -99,9 +87,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         private void SetProxy(WebProxy proxy)
         {
-            _proxyClient?.CancelPendingRequests();
-            Proxy = proxy;
-            Console.WriteLine("Proxy changed");
+            lock (GetProxyLocker)
+            {
+                _proxyClient?.CancelPendingRequests();
+                Proxy = proxy;
+                Console.WriteLine("Proxy changed");
+            }
         }
     }
 }
