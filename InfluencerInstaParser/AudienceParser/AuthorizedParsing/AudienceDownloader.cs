@@ -19,6 +19,7 @@ namespace InfluencerInstaParser.AudienceParser.AuthorizedParsing
             var followers = followersTask.Result;
 
             var followersList = from instaUserShort in followers
+                where !instaUserShort.IsPrivate
                 select instaUserShort.UserName;
             return followersList;
         }
@@ -30,6 +31,7 @@ namespace InfluencerInstaParser.AudienceParser.AuthorizedParsing
             followingTask.Wait();
             var following = followingTask.Result;
             var followingList = from instaUserShort in following
+                where !instaUserShort.IsPrivate
                 select instaUserShort.UserName;
             return followingList;
         }
