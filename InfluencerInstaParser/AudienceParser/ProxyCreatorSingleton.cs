@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
-using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.WebParsing;
 using NLog;
 
@@ -11,25 +10,25 @@ namespace InfluencerInstaParser.AudienceParser
 {
     public class ProxyCreatorSingleton
     {
-        private const string DefaultProxyUrl = "https://api.getproxylist.com/proxy?";
-        private const string DefaultApiKey = "deeb3af2c0618ff4f4229b1fa30a1b866f022b0f";
+        private const string DefaultProxyUrl = "http://falcon.proxyrotator.com:51337/?";
+        private const string DefaultApiKey = "7fekhDEoU2dPvJVpYryzCgFbRqtSQsnw";
         private static ProxyCreatorSingleton _instance;
 
         private static readonly string[] DefaultProxyParams =
         {
-            $"apiKey={DefaultApiKey}", "protocol=http", "allowsUserAgentHeader=1", "allowsCustomHeaders=1",
-            "minDownloadSpeed=800", "anonymity[]=high%20anonymity", "allowsHttps=1", "all=1"
+            $"apiKey={DefaultApiKey}", "referer=true", "userAgent=true", "get=true"
         };
 
         private readonly TimeSpan _defaultDelayTime = TimeSpan.Parse("00:03:00");
 
         private readonly Logger _logger;
         private readonly PageDownloader _pageDownloader;
-
         private readonly Queue<WebProxy> _proxyQueue;
         private readonly Dictionary<WebProxy, DateTime> _usedProxy;
-        private string[] _proxyParams;
-        private string _proxyUrl;
+        private readonly WebProcessor _webProcessor;
+
+        private readonly string[] _proxyParams;
+        private readonly string _proxyUrl;
 
         private ProxyCreatorSingleton()
         {
@@ -39,6 +38,7 @@ namespace InfluencerInstaParser.AudienceParser
             _proxyQueue = new Queue<WebProxy>();
             _usedProxy = new Dictionary<WebProxy, DateTime>();
             _pageDownloader = new PageDownloader();
+            _webProcessor = new WebProcessor();
         }
 
         public static ProxyCreatorSingleton GetInstance()
@@ -46,18 +46,12 @@ namespace InfluencerInstaParser.AudienceParser
             return _instance ?? (_instance = new ProxyCreatorSingleton());
         }
 
-        public void SetNewProxyRotator(string proxyUrl, string[] proxyParams)
-        {
-            _proxyParams = proxyParams;
-            _proxyUrl = proxyUrl;
-        }
-
         public WebProxy GetProxy()
         {
             if (_proxyQueue.Count == 0)
             {
                 FillQueue();
-                if (_proxyQueue.Count == 0) return GetFirstValidProxy();
+                if (_proxyQueue.Count == 0) return GetFirstValidProxyFromUsedSet();
             }
 
             var proxy = _proxyQueue.Dequeue();
@@ -70,15 +64,15 @@ namespace InfluencerInstaParser.AudienceParser
             return GetProxy();
         }
 
-        private void FillQueue()
+        private bool FillQueue()
         {
-            if (_proxyQueue.Count != 0) return;
+            if (_proxyQueue.Count != 0) return true;
             _logger.Info("Downloading new proxys");
             var requestUrl = _proxyParams.Aggregate(_proxyUrl, (current, param) => current + param + "&");
+            var pageContent = _pageDownloader.GetPageContent(requestUrl);
+            if (!_webProcessor.IsProxyListAvailable(pageContent)) return false;
             var jsonHandler = new JObjectHandler();
-            var jsonProxies = jsonHandler.GetObjectFromJsonString(Task
-                .Run(() => _pageDownloader.GetPageContent(requestUrl))
-                .GetAwaiter().GetResult());
+            var jsonProxies = jsonHandler.GetObjectFromJsonString(pageContent);
             var ipAddresses = jsonHandler.GetProxyIps(jsonProxies);
             var ports = jsonHandler.GetProxyPorts(jsonProxies);
             for (var i = 1; i < ipAddresses.Count; i++)
@@ -95,6 +89,7 @@ namespace InfluencerInstaParser.AudienceParser
             }
 
             _logger.Info($"Added {_proxyQueue.Count} proxies");
+            return _proxyQueue.Count != 0;
         }
 
         private bool IsProxyCanBeUsed(WebProxy proxy)
@@ -105,16 +100,24 @@ namespace InfluencerInstaParser.AudienceParser
             return TimeSpan.Compare(delay, _defaultDelayTime) >= 0;
         }
 
-        private WebProxy GetFirstValidProxy()
+        private WebProxy GetFirstValidProxyFromUsedSet()
         {
+            if (_usedProxy.Count == 0) return GetRandomProxyFromRotator();
             while (true)
             {
                 foreach (var (proxy, _) in _usedProxy)
-                    if (IsProxyCanBeUsed(proxy))
-                        return proxy;
+                {
+                    if (!IsProxyCanBeUsed(proxy)) continue;
+                    _usedProxy.Remove(proxy);
+                    return proxy;
+                }
 
                 Thread.Sleep(1000);
             }
+        }
+
+        private WebProxy GetRandomProxyFromRotator()
+        {
         }
     }
 }

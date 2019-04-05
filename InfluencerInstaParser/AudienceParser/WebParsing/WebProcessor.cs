@@ -160,5 +160,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             return pageContent.Contains("edge_owner_to_timeline_media\":{\"count\":0");
         }
+
+        public bool IsProxyListAvailable(string pageContent)
+        {
+            return !pageContent.Contains("error");
+        }
     }
 }
