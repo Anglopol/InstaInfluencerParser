@@ -1,19 +1,20 @@
 using System;
-using System.Threading;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using InfluencerInstaParser.AudienceParser.AuthorizedParsing;
+using InfluencerInstaParser.AudienceParser.AuthorizedParsing.SessionData;
 using InfluencerInstaParser.AudienceParser.WebParsing;
 
 namespace InfluencerInstaParser.AudienceParser
 {
     public class ParsingHandler
     {
-        private readonly SingletonParsingSet _parsingSet;
-
+        private readonly ParsingSetSingleton _parsingSet;
         private readonly string _targetAccount;
-//        private int _countOfThreads;
 
         public ParsingHandler(string username)
         {
-            _parsingSet = SingletonParsingSet.GetInstance();
+            _parsingSet = ParsingSetSingleton.GetInstance();
             _targetAccount = username;
         }
 
@@ -23,28 +24,29 @@ namespace InfluencerInstaParser.AudienceParser
             var web = new WebParser(agents.GetUserAgent());
             web.GetPostsShortCodesFromUser(_targetAccount);
             Console.WriteLine("Short Codes downloaded");
-            ThreadPool.SetMaxThreads(3, 3);
-            using (var countdownEvent = new CountdownEvent(_parsingSet.ShortCodesQueue.Count * 2))
+            var sessionData = new ConfigSessionDataFactory().MakeSessionData();
+            var api = Task.Run(() => AuthApiCreator.MakeAuthApi(sessionData)).GetAwaiter().GetResult();
+            var tasks = new List<Task>();
+            var followers = Task.Run(() => new AudienceDownloader().GetFollowers(_targetAccount, api));
+            tasks.Add(followers);
+            while (_parsingSet.ShortCodesQueue.Count != 0)
             {
-                foreach (var shortcode in _parsingSet.ShortCodesQueue)
-                {
-                    ThreadPool.QueueUserWorkItem(obj =>
-                    {
-                        new WebParser(agents.GetUserAgent()).GetUsernamesFromPostLikes(shortcode);
-                        countdownEvent.Signal();
-                    });
-
-                    ThreadPool.QueueUserWorkItem(obj =>
-                    {
-                        new WebParser(agents.GetUserAgent()).GetUsernamesFromPostComments(shortcode);
-                        countdownEvent.Signal();
-                    });
-                }
-
-                Console.WriteLine("All threads started");
-
-                countdownEvent.Wait();
+                var shortCode = _parsingSet.ShortCodesQueue.Dequeue();
+                var likes = new Task(() => new WebParser(agents.GetUserAgent()).GetUsernamesFromPostLikes(shortCode));
+                var comments = new Task(() =>
+                    new WebParser(agents.GetUserAgent()).GetUsernamesFromPostComments(shortCode));
+                tasks.Add(likes);
+                tasks.Add(comments);
+                likes.Start();
+                comments.Start();
             }
+
+
+            Console.WriteLine("All threads started");
+
+            foreach (var follower in followers.Result) _parsingSet.UnprocessedUsers.Add(follower);
+
+            Task.WaitAll(tasks.ToArray());
         }
     }
 }

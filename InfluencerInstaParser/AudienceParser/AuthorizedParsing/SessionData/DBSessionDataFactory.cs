@@ -1,3 +1,5 @@
+using System;
+using InfluencerInstaParser.AudienceParser.AuthorizedParsing.SessionData;
 using InstagramApiSharp.Classes;
 
 namespace InfluencerInstaParser.SessionData
@@ -6,12 +8,12 @@ namespace InfluencerInstaParser.SessionData
     {
         public UserSessionData MakeSessionData()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public UserSessionData MakeSessionDataFromLogin(string login)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }

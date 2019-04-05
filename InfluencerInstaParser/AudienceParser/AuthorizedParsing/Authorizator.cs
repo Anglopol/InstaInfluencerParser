@@ -1,23 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using InstagramApiSharp.API;
-using InstagramApiSharp.Classes;
 
 namespace InfluencerInstaParser.AudienceParser.AuthorizedParsing
 {
     public class Authorizator
     {
-        public static async void MassAuthorize(IEnumerable<IInstaApi> instaApiList, IRequestDelay delay)
-        {
-            foreach (var api in instaApiList)
-            {
-                await Authorize(api, delay);
-            }
-        }
+        private const string StateFile = "state.bin";
 
-        public static async Task Authorize(IInstaApi instaApi, IRequestDelay delay)
+        public static async Task Authorize(IInstaApi instaApi)
         {
             if (instaApi.IsUserAuthenticated)
             {
@@ -25,44 +17,39 @@ namespace InfluencerInstaParser.AudienceParser.AuthorizedParsing
                 return;
             }
 
-//            try
-//            {
-//                StateFileLoad(instaApi, stateFile);
-//            }
-//            catch (Exception e) //TODO custom exception
-//            {
-//                Console.WriteLine(e);
-//            }
+            try
+            {
+                if (File.Exists(StateFile))
+                {
+                    Console.WriteLine("Loading state from file");
+                    using (var fs = File.OpenRead(StateFile))
+                    {
+                        instaApi.LoadStateDataFromStream(fs);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
 
             if (!instaApi.IsUserAuthenticated)
             {
-//                Console.WriteLine($"Logging {username}");
-                delay.Disable();
                 var logInResult = await instaApi.LoginAsync();
-                delay.Enable();
                 if (!logInResult.Succeeded)
                 {
-                    Console.WriteLine("Unable to login");
+                    Console.WriteLine($"Unable to login: {logInResult.Info.Message}");
+                    return;
                 }
             }
 
-//            StateFileCreate(instaApi, stateFile);
-        }
-
-        private static void StateFileLoad(IInstaApi instaApi, string stateFile)
-        {
-            if (!File.Exists(stateFile)) return;
-            Console.WriteLine($"Loading state from file: {stateFile}");
-            using (var fs = File.OpenRead(stateFile))
-            {
-                instaApi.LoadStateDataFromStream(fs);
-            }
-        }
-
-        private static void StateFileCreate(IInstaApi instaApi, string stateFile)
-        {
+// save session in file
             var state = instaApi.GetStateDataAsStream();
-            using (var fileStream = File.Create(stateFile))
+// in .net core or uwp apps don't use GetStateDataAsStream.
+// use this one:
+// var state = _instaApi.GetStateDataAsString();
+// this returns you session as json string.
+            using (var fileStream = File.Create(StateFile))
             {
                 state.Seek(0, SeekOrigin.Begin);
                 state.CopyTo(fileStream);

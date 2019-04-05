@@ -1,6 +1,6 @@
 using InstagramApiSharp.Classes;
 
-namespace InfluencerInstaParser.SessionData
+namespace InfluencerInstaParser.AudienceParser.AuthorizedParsing.SessionData
 {
     public interface IUserSessionDataFactory
     {

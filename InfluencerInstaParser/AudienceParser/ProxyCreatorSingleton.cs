@@ -24,10 +24,10 @@ namespace InfluencerInstaParser.AudienceParser
         private readonly TimeSpan _defaultDelayTime = TimeSpan.Parse("00:03:00");
 
         private readonly Logger _logger;
+        private readonly PageDownloader _pageDownloader;
 
         private readonly Queue<WebProxy> _proxyQueue;
         private readonly Dictionary<WebProxy, DateTime> _usedProxy;
-        private readonly PageDownloader _pageDownloader;
         private string[] _proxyParams;
         private string _proxyUrl;
 
@@ -93,11 +93,14 @@ namespace InfluencerInstaParser.AudienceParser
                 };
                 if (IsProxyCanBeUsed(proxy)) _proxyQueue.Enqueue(proxy);
             }
+
+            _logger.Info($"Added {_proxyQueue.Count} proxies");
         }
 
         private bool IsProxyCanBeUsed(WebProxy proxy)
         {
             if (!_usedProxy.ContainsKey(proxy)) return true;
+            if (_proxyQueue.Contains(proxy)) return false;
             var delay = DateTime.Now.Subtract(_usedProxy[proxy]);
             return TimeSpan.Compare(delay, _defaultDelayTime) >= 0;
         }
