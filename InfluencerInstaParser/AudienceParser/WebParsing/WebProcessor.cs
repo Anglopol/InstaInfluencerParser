@@ -123,10 +123,15 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 .Split(":")[1].Remove(0, 1)).ToList();
         }
 
-        public List<string> GetListOfUsernamesFromPageContent(string pageContent)
+        public IEnumerable<string> GetListOfUsernamesFromPageContent(string pageContent)
         {
             return Regex.Matches(pageContent, "username\".{2}[^\"]*").Select(match => match.Value.ToString()
                 .Split(":")[1].Remove(0, 1)).ToList();
+        }
+
+        public IEnumerable<string> GetListOfProxies(string pageContent)
+        {
+            return pageContent.Split("\n").ToList();
         }
 
         public int GetNumberOfFollowers(string pageContent)
