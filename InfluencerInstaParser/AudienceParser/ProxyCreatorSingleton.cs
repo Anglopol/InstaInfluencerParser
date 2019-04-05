@@ -23,12 +23,12 @@ namespace InfluencerInstaParser.AudienceParser
 
         private readonly Logger _logger;
         private readonly PageDownloader _pageDownloader;
-        private readonly Queue<WebProxy> _proxyQueue;
-        private readonly Dictionary<WebProxy, DateTime> _usedProxy;
-        private readonly WebProcessor _webProcessor;
 
         private readonly string[] _proxyParams;
+        private readonly Queue<WebProxy> _proxyQueue;
         private readonly string _proxyUrl;
+        private readonly Dictionary<WebProxy, DateTime> _usedProxy;
+        private readonly WebProcessor _webProcessor;
 
         private ProxyCreatorSingleton()
         {
@@ -49,10 +49,8 @@ namespace InfluencerInstaParser.AudienceParser
         public WebProxy GetProxy()
         {
             if (_proxyQueue.Count == 0)
-            {
-                FillQueue();
-                if (_proxyQueue.Count == 0) return GetFirstValidProxyFromUsedSet();
-            }
+                if (!FillQueue())
+                    return GetFirstValidProxy();
 
             var proxy = _proxyQueue.Dequeue();
             return proxy;
@@ -71,17 +69,12 @@ namespace InfluencerInstaParser.AudienceParser
             var requestUrl = _proxyParams.Aggregate(_proxyUrl, (current, param) => current + param + "&");
             var pageContent = _pageDownloader.GetPageContent(requestUrl);
             if (!_webProcessor.IsProxyListAvailable(pageContent)) return false;
-            var jsonHandler = new JObjectHandler();
-            var jsonProxies = jsonHandler.GetObjectFromJsonString(pageContent);
-            var ipAddresses = jsonHandler.GetProxyIps(jsonProxies);
-            var ports = jsonHandler.GetProxyPorts(jsonProxies);
-            for (var i = 1; i < ipAddresses.Count; i++)
+            var proxies = _webProcessor.GetListOfProxies(pageContent);
+            foreach (var uri in proxies)
             {
-                var ip = ipAddresses[i];
-                var port = ports[i];
                 var proxy = new WebProxy
                 {
-                    Address = new Uri($"http://{ip}:{port}"),
+                    Address = new Uri($"http://{uri}"),
                     UseDefaultCredentials = true,
                     BypassProxyOnLocal = false
                 };
@@ -100,7 +93,7 @@ namespace InfluencerInstaParser.AudienceParser
             return TimeSpan.Compare(delay, _defaultDelayTime) >= 0;
         }
 
-        private WebProxy GetFirstValidProxyFromUsedSet()
+        private WebProxy GetFirstValidProxy()
         {
             if (_usedProxy.Count == 0) return GetRandomProxyFromRotator();
             while (true)
@@ -118,6 +111,17 @@ namespace InfluencerInstaParser.AudienceParser
 
         private WebProxy GetRandomProxyFromRotator()
         {
+            var requestUrl = _proxyParams.Aggregate(_proxyUrl, (current, param) => current + param + "&");
+            var pageContent = _pageDownloader.GetPageContent(requestUrl);
+            var jsonHandler = new JObjectHandler();
+            var jsonProxy = jsonHandler.GetObjectFromJsonString(pageContent);
+            var proxyString = jsonHandler.GetProxyString(jsonProxy);
+            return new WebProxy
+            {
+                Address = new Uri($"http://{proxyString}"),
+                UseDefaultCredentials = true,
+                BypassProxyOnLocal = false
+            };
         }
     }
 }
