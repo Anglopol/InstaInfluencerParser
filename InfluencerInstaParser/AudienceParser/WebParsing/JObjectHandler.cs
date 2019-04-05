@@ -44,10 +44,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var edges = (JArray) queryContent.SelectToken("data.shortcode_media.edge_media_to_comment.edges");
             var users = new List<string>();
-            foreach (var edge in edges)
-            {
-                users.Add((string) edge.SelectToken("node.owner.username"));
-            }
+            foreach (var edge in edges) users.Add((string) edge.SelectToken("node.owner.username"));
 
             return users;
         }
@@ -56,10 +53,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var edges = (JArray) queryContent.SelectToken("data.shortcode_media.edge_liked_by.edges");
             var users = new List<string>();
-            foreach (var edge in edges)
-            {
-                users.Add((string) edge.SelectToken("node.username"));
-            }
+            foreach (var edge in edges) users.Add((string) edge.SelectToken("node.username"));
 
             return users;
         }
@@ -68,10 +62,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var edges = (JArray) queryContent.SelectToken("data.user.edge_owner_to_timeline_media.edges");
             var shortCodes = new List<string>();
-            foreach (var edge in edges)
-            {
-                shortCodes.Add((string) edge.SelectToken("node.shortcode"));
-            }
+            foreach (var edge in edges) shortCodes.Add((string) edge.SelectToken("node.shortcode"));
 
             return shortCodes;
         }
@@ -88,26 +79,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return JObject.Parse(jsonString);
         }
 
-        public List<string> GetProxyIps(JObject jObject)
+        public string GetProxyString(JObject jObject)
         {
-            var ipAddresses = new List<string>();
-            foreach (var node in jObject.PropertyValues())
-            {
-                ipAddresses.Add((string) node.SelectToken("ip"));
-            }
-
-            return ipAddresses;
-        }
-
-        public List<string> GetProxyPorts(JObject jObject)
-        {
-            var ports = new List<string>();
-            foreach (var node in jObject.PropertyValues())
-            {
-                ports.Add((string) node.SelectToken("port"));
-            }
-
-            return ports;
+            return jObject.Property("proxy").Value.ToString();
         }
     }
 }
