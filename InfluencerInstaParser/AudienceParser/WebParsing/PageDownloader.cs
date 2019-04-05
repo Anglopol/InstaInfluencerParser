@@ -15,21 +15,25 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _logger = LogManager.GetCurrentClassLogger();
         }
 
-        public async Task<string> GetPageContent(string url)
+        public string GetPageContent(string url)
         {
             using (var client = new HttpClient())
             {
                 try
                 {
-                    var response = await client.GetAsync(url);
+                    var responseTask = Task.Run(async () => await client.GetAsync(url));
+                    responseTask.Wait();
+                    var response = responseTask.Result;
                     response.EnsureSuccessStatusCode();
-                    return await response.Content.ReadAsStringAsync();
+                    var contentTask = Task.Run(async () => await response.Content.ReadAsStringAsync());
+                    contentTask.Wait();
+                    return contentTask.Result;
                 }
                 catch (Exception e)
                 {
                     _logger.Error(e.Message);
                     Thread.Sleep(3000);
-                    return await GetPageContent(url);
+                    return GetPageContent(url);
                 }
             }
         }
