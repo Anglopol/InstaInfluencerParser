@@ -21,9 +21,9 @@ namespace InfluencerInstaParser.AudienceParser
 
         public void Parse()
         {
-            var owner = new User(_targetAccount,);
+            var owner = new User(_targetAccount);
             var agents = new UserAgentCreator();
-            var web = new WebParser(agents.GetUserAgent());
+            var web = new WebParser(agents.GetUserAgent(), owner);
             web.GetPostsShortCodesFromUser(_targetAccount);
             Console.WriteLine("Short Codes downloaded");
             var sessionData = new ConfigSessionDataFactory().MakeSessionData();
@@ -34,9 +34,10 @@ namespace InfluencerInstaParser.AudienceParser
             while (_parsingSet.ShortCodesQueue.Count != 0)
             {
                 var shortCode = _parsingSet.ShortCodesQueue.Dequeue();
-                var like = new Task(() => new WebParser(agents.GetUserAgent()).GetUsernamesFromPostLikes(shortCode));
+                var like = new Task(() =>
+                    new WebParser(agents.GetUserAgent(), owner).GetUsernamesFromPostLikes(shortCode));
                 var comment = new Task(() =>
-                    new WebParser(agents.GetUserAgent()).GetUsernamesFromPostComments(shortCode));
+                    new WebParser(agents.GetUserAgent(), owner).GetUsernamesFromPostComments(shortCode));
                 tasks.Add(like);
                 tasks.Add(comment);
                 like.Start();
@@ -46,10 +47,10 @@ namespace InfluencerInstaParser.AudienceParser
 
             Console.WriteLine("All threads started");
 
-            foreach (var follower in followers.Result) _parsingSet.UnprocessedUsers.Add(follower);
+            foreach (var follower in followers.Result)
+                _parsingSet.AddUnprocessedUser(follower, owner);
 
             Task.WaitAll(tasks.ToArray());
-            foreach (var t in tasks.ToArray()) t.GetAwaiter().GetResult();
         }
     }
 }
