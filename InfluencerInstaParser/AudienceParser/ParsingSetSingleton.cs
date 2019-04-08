@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using InfluencerInstaParser.Database;
 
 namespace InfluencerInstaParser.AudienceParser
 {
@@ -9,28 +10,28 @@ namespace InfluencerInstaParser.AudienceParser
         private ParsingSetSingleton()
         {
             ShortCodesQueue = new Queue<string>();
-            UnprocessedUsers = new HashSet<string>();
-            ProcessedUsers = new HashSet<string>();
+            UnprocessedUsers = new Dictionary<string, User>();
+            ProcessedUsers = new Dictionary<string, User>();
         }
 
         public Queue<string> ShortCodesQueue { get; }
-        public HashSet<string> UnprocessedUsers { get; }
-        public HashSet<string> ProcessedUsers { get; }
+        public Dictionary<string, User> UnprocessedUsers { get; }
+        public Dictionary<string, User> ProcessedUsers { get; }
 
         public static ParsingSetSingleton GetInstance()
         {
             return _instance ?? (_instance = new ParsingSetSingleton());
         }
 
-        public void AddUnprocessedUser(string username)
+        public void AddUnprocessedUser(string username, User from, CommunicationType type = CommunicationType.Follower)
         {
-            if (ProcessedUsers.Contains(username)) return;
-            UnprocessedUsers.Add(username);
+            if (ProcessedUsers.ContainsKey(username)) return;
+            UnprocessedUsers.Add(username, new User(username, communicationType: type, from: from));
         }
 
-        public void AddProcessedUser(string username)
+        public void AddProcessedUser(User user)
         {
-            ProcessedUsers.Add(username);
+            ProcessedUsers.Add(user.Username, user);
         }
 
         public void AddInShortCodesQueue(string shortCode)
