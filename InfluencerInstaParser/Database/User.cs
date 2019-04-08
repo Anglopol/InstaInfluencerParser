@@ -17,10 +17,10 @@ namespace InfluencerInstaParser.Database
         }
 
         [JsonProperty("name")] public string Username { get; }
-        [JsonProperty("likes")] public int Likes { get; }
-        [JsonProperty("comments")] public int Comments { get; }
-        [JsonProperty("following")] public int Following { get; }
-        [JsonProperty("followers")] public int Followers { get; }
+        [JsonProperty("likes")] public int Likes { get; set; }
+        [JsonProperty("comments")] public int Comments { get; set; }
+        [JsonProperty("following")] public int Following { get; set; }
+        [JsonProperty("followers")] public int Followers { get; set; }
         [JsonProperty("from")] public User From { get; }
         [JsonProperty("communication")] public CommunicationType CommunicationType { get; }
     }

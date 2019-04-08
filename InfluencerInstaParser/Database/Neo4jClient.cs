@@ -53,7 +53,7 @@ namespace InfluencerInstaParser.Database
                 // Create Relationships:
                 .AppendLine("UNWIND user.from AS master")
                 .AppendLine("MATCH (m:User { name: master.name })")
-                .AppendLine("MERGE (s)-[r:FROM]->(m)")
+                .AppendLine("MERGE (s)-[r:{user.communication}]->(m)")
                 .ToString();
 
 
