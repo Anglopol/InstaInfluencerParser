@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.AuthorizedParsing;
 using InfluencerInstaParser.AudienceParser.AuthorizedParsing.SessionData;
 using InfluencerInstaParser.AudienceParser.WebParsing;
+using InfluencerInstaParser.Database;
 
 namespace InfluencerInstaParser.AudienceParser
 {
@@ -20,6 +21,7 @@ namespace InfluencerInstaParser.AudienceParser
 
         public void Parse()
         {
+            var owner = new User(_targetAccount,);
             var agents = new UserAgentCreator();
             var web = new WebParser(agents.GetUserAgent());
             web.GetPostsShortCodesFromUser(_targetAccount);
@@ -32,13 +34,13 @@ namespace InfluencerInstaParser.AudienceParser
             while (_parsingSet.ShortCodesQueue.Count != 0)
             {
                 var shortCode = _parsingSet.ShortCodesQueue.Dequeue();
-                var likes = new Task(() => new WebParser(agents.GetUserAgent()).GetUsernamesFromPostLikes(shortCode));
-                var comments = new Task(() =>
+                var like = new Task(() => new WebParser(agents.GetUserAgent()).GetUsernamesFromPostLikes(shortCode));
+                var comment = new Task(() =>
                     new WebParser(agents.GetUserAgent()).GetUsernamesFromPostComments(shortCode));
-                tasks.Add(likes);
-                tasks.Add(comments);
-                likes.Start();
-                comments.Start();
+                tasks.Add(like);
+                tasks.Add(comment);
+                like.Start();
+                comment.Start();
             }
 
 
@@ -47,6 +49,7 @@ namespace InfluencerInstaParser.AudienceParser
             foreach (var follower in followers.Result) _parsingSet.UnprocessedUsers.Add(follower);
 
             Task.WaitAll(tasks.ToArray());
+            foreach (var t in tasks.ToArray()) t.GetAwaiter().GetResult();
         }
     }
 }

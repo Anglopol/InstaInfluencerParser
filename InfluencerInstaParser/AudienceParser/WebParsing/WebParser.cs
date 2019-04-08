@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using InfluencerInstaParser.Database;
 using NLog;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
@@ -17,10 +18,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private readonly string _userAgent;
         private readonly ParsingSetSingleton _usersSet;
         private readonly WebProcessor _webProcessor;
+        private readonly User _owner;
         private string _rhxGis;
 
-        public WebParser(string userAgent)
+        public WebParser(string userAgent, User owner)
         {
+            _owner = owner;
             _logger = LogManager.GetCurrentClassLogger();
             _webProcessor = new WebProcessor();
             _userAgent = userAgent;
@@ -68,7 +71,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             FillShortCodesQueue(resultList);
         }
 
-        public void GetUsernamesFromPostComments(string postShortCode)
+        public int GetUsernamesFromPostComments(string postShortCode)
         {
             var postUrl = "/p/" + postShortCode + "/";
             Console.WriteLine(postShortCode + "Comments");
@@ -91,8 +94,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             if (!_webProcessor.HasNextPageForPageContent(postPageContent))
             {
-                FillUnprocessedSet(resultList);
-                return;
+                FillUnprocessedSet(resultList, CommunicationType.Commentator);
+                return resultList.Count;
             }
 
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting json users from post: {postShortCode}");
@@ -107,10 +110,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForPost(jsonPage));
             }
 
-            FillUnprocessedSet(resultList);
+            FillUnprocessedSet(resultList, CommunicationType.Commentator);
+            return resultList.Count;
         }
 
-        public void GetUsernamesFromPostLikes(string postShortCode)
+        public int GetUsernamesFromPostLikes(string postShortCode)
         {
             var postUrl = "/p/" + postShortCode + "/";
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post likes: {postShortCode}");
@@ -123,7 +127,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             if (_webProcessor.IsVideo(postPageContent))
             {
                 Console.WriteLine($"Post {postShortCode} is video");
-                return;
+                return 0;
             }
 
             _rhxGis = _rhxGis ?? _webProcessor.GetRhxGisParameter(postPageContent);
@@ -145,14 +149,15 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
             }
 
-            FillUnprocessedSet(resultList);
+            FillUnprocessedSet(resultList, CommunicationType.Liker);
+            return resultList.Count;
         }
 
-        private void FillUnprocessedSet(IEnumerable<string> list)
+        private void FillUnprocessedSet(IEnumerable<string> list, CommunicationType type)
         {
             lock (UnprocessedSetLocker)
             {
-                foreach (var user in list) _usersSet.AddUnprocessedUser(user);
+                foreach (var user in list) _usersSet.AddUnprocessedUser(user, _owner, type);
             }
         }
 
