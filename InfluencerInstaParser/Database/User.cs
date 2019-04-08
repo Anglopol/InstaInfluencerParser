@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace InfluencerInstaParser.AudienceParser
+namespace InfluencerInstaParser.Database
 {
     public class User
     {
@@ -17,17 +17,11 @@ namespace InfluencerInstaParser.AudienceParser
         }
 
         [JsonProperty("name")] public string Username { get; }
-
         [JsonProperty("likes")] public int Likes { get; }
-
         [JsonProperty("comments")] public int Comments { get; }
-
         [JsonProperty("following")] public int Following { get; }
-
         [JsonProperty("followers")] public int Followers { get; }
-
         [JsonProperty("from")] public User From { get; }
-
         [JsonProperty("communication")] public CommunicationType CommunicationType { get; }
     }
 }
