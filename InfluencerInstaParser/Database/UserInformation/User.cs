@@ -1,24 +1,38 @@
 using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace InfluencerInstaParser.Database
+namespace InfluencerInstaParser.Database.UserInformation
 {
     public class User
     {
         private readonly object _setCommentsLocker;
         private readonly object _setLikesLocker;
-        private int _comments;
+        private readonly List<RelationInformation> _relations;
         private int _likes;
-        public User(string username = null, int likes = 0, int comments = 0, int following = 0, int followers = 0,
-            User from = null, CommunicationType communicationType = CommunicationType.Target)
+        private int _comments;
+
+        public User(string username, User parent, CommunicationType type,
+            int likes = 0, int comments = 0, int following = 0, int followers = 0)
         {
             Username = username;
             Likes = likes;
             Comments = comments;
             Following = following;
             Followers = followers;
-            From = from;
-            CommunicationType = communicationType;
+            Parent = parent;
+            _setCommentsLocker = new object();
+            _setLikesLocker = new object();
+            _relations = new List<RelationInformation> {new RelationInformation(parent, type)};
+        }
+        
+        public User(string username, int likes = 0, int comments = 0, int following = 0, int followers = 0)
+        {
+            Username = username;
+            Likes = likes;
+            Comments = comments;
+            Following = following;
+            Followers = followers;
             _setCommentsLocker = new object();
             _setLikesLocker = new object();
         }
@@ -55,7 +69,12 @@ namespace InfluencerInstaParser.Database
 
         [JsonProperty("following")] public int Following { get; set; }
         [JsonProperty("followers")] public int Followers { get; set; }
-        [JsonProperty("from")] public User From { get; }
+        [JsonProperty("from")] public User Parent { get; }
         [JsonProperty("communication")] public CommunicationType CommunicationType { get; }
+
+        public void AddNewRelation(User parent, CommunicationType type)
+        {
+            _relations.Add(new RelationInformation(parent, type));
+        }
     }
 }

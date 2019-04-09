@@ -1,5 +1,4 @@
 using System;
-using InfluencerInstaParser.Database.User;
 using Newtonsoft.Json;
 
 namespace InfluencerInstaParser.Database.UserInformation
