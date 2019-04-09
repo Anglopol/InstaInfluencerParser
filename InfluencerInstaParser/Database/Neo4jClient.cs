@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,7 +8,7 @@ using Neo4j.Driver.V1;
 
 namespace InfluencerInstaParser.Database
 {
-    public class Neo4jClient
+    public class Neo4jClient : IDisposable
     {
         private readonly IDriver _driver;
 
