@@ -8,11 +8,11 @@ using Neo4j.Driver.V1;
 
 namespace InfluencerInstaParser.Database
 {
-    public class Neo4jClient : IDisposable
+    public class Neo4JClient : IDisposable
     {
         private readonly IDriver _driver;
 
-        public Neo4jClient(IConnectionSettings settings)
+        public Neo4JClient(IConnectionSettings settings)
         {
             _driver = GraphDatabase.Driver(settings.Uri, settings.AuthToken);
         }
