@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.AuthorizedParsing;
 using InfluencerInstaParser.AudienceParser.AuthorizedParsing.SessionData;
@@ -22,6 +23,7 @@ namespace InfluencerInstaParser.AudienceParser
         public void Parse()
         {
             var owner = new User(_targetAccount);
+            _parsingSet.AddProcessedUser(owner);
             var agents = new UserAgentCreator();
             var web = new WebParser(agents.GetUserAgent(), owner);
             web.GetPostsShortCodesFromUser(_targetAccount);
@@ -30,7 +32,6 @@ namespace InfluencerInstaParser.AudienceParser
             var api = Task.Run(() => AuthApiCreator.MakeAuthApi(sessionData)).GetAwaiter().GetResult();
             var tasks = new List<Task>();
             var followers = Task.Run(() => new AudienceDownloader().GetFollowers(_targetAccount, api));
-            tasks.Add(followers);
             while (_parsingSet.ShortCodesQueue.Count != 0)
             {
                 var shortCode = _parsingSet.ShortCodesQueue.Dequeue();
@@ -43,14 +44,12 @@ namespace InfluencerInstaParser.AudienceParser
                 like.Start();
                 comment.Start();
             }
-
-
             Console.WriteLine("All threads started");
-
+            followers.Wait();
+            _parsingSet.ProcessedUsers[_targetAccount].Followers = followers.Result.Count();
+            Task.WaitAll(tasks.ToArray());
             foreach (var follower in followers.Result)
                 _parsingSet.AddUnprocessedUser(follower, owner);
-
-            Task.WaitAll(tasks.ToArray());
         }
     }
 }

@@ -71,7 +71,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             FillShortCodesQueue(resultList);
         }
 
-        public int GetUsernamesFromPostComments(string postShortCode)
+        public void GetUsernamesFromPostComments(string postShortCode)
         {
             var postUrl = "/p/" + postShortCode + "/";
             Console.WriteLine(postShortCode + "Comments");
@@ -95,7 +95,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             if (!_webProcessor.HasNextPageForPageContent(postPageContent))
             {
                 FillUnprocessedSet(resultList, CommunicationType.Commentator);
-                return resultList.Count;
+                _owner.Comments += resultList.Count;
             }
 
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting json users from post: {postShortCode}");
@@ -111,10 +111,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
 
             FillUnprocessedSet(resultList, CommunicationType.Commentator);
-            return resultList.Count;
+            _owner.Comments += resultList.Count;
         }
 
-        public int GetUsernamesFromPostLikes(string postShortCode)
+        public void GetUsernamesFromPostLikes(string postShortCode)
         {
             var postUrl = "/p/" + postShortCode + "/";
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post likes: {postShortCode}");
@@ -127,7 +127,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             if (_webProcessor.IsVideo(postPageContent))
             {
                 Console.WriteLine($"Post {postShortCode} is video");
-                return 0;
+                return;
             }
 
             _rhxGis = _rhxGis ?? _webProcessor.GetRhxGisParameter(postPageContent);
@@ -150,7 +150,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
 
             FillUnprocessedSet(resultList, CommunicationType.Liker);
-            return resultList.Count;
+            _owner.Likes += resultList.Count;
         }
 
         private void FillUnprocessedSet(IEnumerable<string> list, CommunicationType type)
