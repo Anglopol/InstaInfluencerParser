@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using InfluencerInstaParser.Database;
+using InfluencerInstaParser.Database.UserInformation;
 
 namespace InfluencerInstaParser.AudienceParser
 {
@@ -23,10 +23,18 @@ namespace InfluencerInstaParser.AudienceParser
             return _instance ?? (_instance = new ParsingSetSingleton());
         }
 
-        public void AddUnprocessedUser(string username, User from, CommunicationType type = CommunicationType.Follower)
+        public void AddUnprocessedUser(string username, User parent,
+            CommunicationType type = CommunicationType.Follower)
         {
             if (ProcessedUsers.ContainsKey(username)) return;
-            UnprocessedUsers.Add(username, new User(username, communicationType: type, from: from));
+            if (!UnprocessedUsers.ContainsKey(username))
+                UnprocessedUsers.Add(username, new User(username, parent, type));
+            else
+                CreateNewRelation();
+        }
+
+        private void CreateNewRelation()
+        {
         }
 
         public void AddProcessedUser(User user)

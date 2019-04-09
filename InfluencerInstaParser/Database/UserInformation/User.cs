@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace InfluencerInstaParser.Database.UserInformation
 {
     public class User
     {
+        private readonly HashSet<RelationInformation> _relations;
         private readonly object _setCommentsLocker;
         private readonly object _setLikesLocker;
-        private readonly List<RelationInformation> _relations;
-        private int _likes;
         private int _comments;
+        private int _likes;
 
         public User(string username, User parent, CommunicationType type,
             int likes = 0, int comments = 0, int following = 0, int followers = 0)
@@ -23,9 +24,9 @@ namespace InfluencerInstaParser.Database.UserInformation
             Parent = parent;
             _setCommentsLocker = new object();
             _setLikesLocker = new object();
-            _relations = new List<RelationInformation> {new RelationInformation(parent, type)};
+            _relations = new HashSet<RelationInformation> {new RelationInformation(parent, type)};
         }
-        
+
         public User(string username, int likes = 0, int comments = 0, int following = 0, int followers = 0)
         {
             Username = username;
@@ -74,7 +75,21 @@ namespace InfluencerInstaParser.Database.UserInformation
 
         public void AddNewRelation(User parent, CommunicationType type)
         {
-            _relations.Add(new RelationInformation(parent, type));
+            if (_relations.) _relations.Add(new RelationInformation(parent, type));
+        }
+
+        public void AddLikesForRelation(User parent, int count)
+        {
+            var relation = FindRelation(parent);
+            if (relation == null) throw new
+        }
+
+        private RelationInformation FindRelation(User user)
+        {
+            var relationInformatics =
+                (from relation in _relations.AsEnumerable() where relation.Parent == user select relation)
+                .ToList();
+            return relationInformatics.Count != 0 ? relationInformatics[0] : null;
         }
     }
 }
