@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using InfluencerInstaParser.Database;
+using InfluencerInstaParser.Database.UserInformation;
 using NLog;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
@@ -14,11 +14,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private readonly JObjectHandler _jObjectHandler;
 
         private readonly Logger _logger;
+        private readonly User _owner;
         private readonly QueryRequester _queryRequester;
         private readonly string _userAgent;
         private readonly ParsingSetSingleton _usersSet;
         private readonly WebProcessor _webProcessor;
-        private readonly User _owner;
         private string _rhxGis;
 
         public WebParser(string userAgent, User owner)

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.AuthorizedParsing;
 using InfluencerInstaParser.AudienceParser.AuthorizedParsing.SessionData;
 using InfluencerInstaParser.AudienceParser.WebParsing;
-using InfluencerInstaParser.Database;
+using InfluencerInstaParser.Database.UserInformation;
 
 namespace InfluencerInstaParser.AudienceParser
 {
@@ -44,6 +44,7 @@ namespace InfluencerInstaParser.AudienceParser
                 like.Start();
                 comment.Start();
             }
+
             Console.WriteLine("All threads started");
             followers.Wait();
             _parsingSet.ProcessedUsers[_targetAccount].Followers = followers.Result.Count();

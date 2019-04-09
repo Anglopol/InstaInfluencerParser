@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using InfluencerInstaParser.Database.Serializer;
 using InfluencerInstaParser.Database.Settings;
+using InfluencerInstaParser.Database.UserInformation;
 using Neo4j.Driver.V1;
 
 namespace InfluencerInstaParser.Database
@@ -15,6 +16,11 @@ namespace InfluencerInstaParser.Database
         public Neo4JClient(IConnectionSettings settings)
         {
             _driver = GraphDatabase.Driver(settings.Uri, settings.AuthToken);
+        }
+
+        public void Dispose()
+        {
+            _driver?.Dispose();
         }
 
         public async Task CreateIndices()
@@ -63,11 +69,6 @@ namespace InfluencerInstaParser.Database
                 await session.RunAsync(cypher,
                     new Dictionary<string, object> {{"users", ParameterSerializer.ToDictionary(users)}});
             }
-        }
-
-        public void Dispose()
-        {
-            _driver?.Dispose();
         }
     }
 }
