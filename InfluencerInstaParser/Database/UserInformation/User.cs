@@ -77,11 +77,18 @@ namespace InfluencerInstaParser.Database.UserInformation
             if (FindRelation(parent) != null) _relations.Add(parent, new RelationInformation(parent, type));
         }
 
-        public void AddLikesForRelation(User parent, int count)
+        public void AddLikesForRelation(User parent, int count) //Todo проверить в нормальном состоянии 
         {
             var relation = FindRelation(parent);
             if (relation == null) AddNewRelation(parent);
             _relations[parent].Likes += count;
+        }
+
+        public void AddCommentsForRelation(User parent, int count) //Todo проверить в нормальном состоянии 
+        {
+            var relation = FindRelation(parent);
+            if (relation == null) AddNewRelation(parent);
+            _relations[parent].Comments += count;
         }
 
         private RelationInformation FindRelation(User user)
