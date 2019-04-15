@@ -157,7 +157,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             lock (UnprocessedSetLocker)
             {
-                foreach (var user in list) _usersSet.AddUnprocessedUser(user, _owner, type);
+                foreach (var userName in list) _usersSet.AddUnprocessedUser(userName, _owner, type);
             }
         }
 
