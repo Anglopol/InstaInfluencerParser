@@ -40,7 +40,7 @@ namespace InfluencerInstaParser.Database.UserInformation
             }
         }
 
-        public User Parent { get; }
+        [JsonProperty("parent")] public User Parent { get; }
 
         public RelationInformation(User parent, CommunicationType communicationType, int likes = 0, int comments = 0)
         {

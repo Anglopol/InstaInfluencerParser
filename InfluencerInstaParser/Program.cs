@@ -12,13 +12,14 @@ namespace InfluencerInstaParser
     {
         private static void Main()
         {
-            var parser = new ParsingHandler("tasyabraun");
+            var targetUsername = "tasyabraun";
+            var parser = new ParsingHandler(targetUsername);
             parser.Parse();
             var set = ParsingSetSingleton.GetInstance();
-            Task.Run(() => FillDb(set.UnprocessedUsers.Values.ToList())).GetAwaiter();
+            Task.Run(() => FillDb(set.UnprocessedUsers.Values.ToList(), targetUsername)).GetAwaiter();
         }
 
-        private static async Task FillDb(IList<User> users)
+        private static async Task FillDb(IList<User> users, string target)
         {
             var settings = ConnectionSettings.CreateBasicAuth("bolt://localhost:7687/db/users", "neo4j", "1111");
 
@@ -29,7 +30,8 @@ namespace InfluencerInstaParser
 
                 // Create Base Data:
                 await client.CreateUsers(users);
-                await client.CreateRelationships(users);
+                var relationUsers = from user in users where user.Username != target select user;
+                await client.CreateRelationships(relationUsers.ToList());
             }
         }
     }
