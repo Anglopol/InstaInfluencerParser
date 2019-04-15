@@ -28,7 +28,9 @@ namespace InfluencerInstaParser.AudienceParser
         {
             if (ProcessedUsers.ContainsKey(username) || UnprocessedUsers.ContainsKey(username))
             {
-                var currentUser = UnprocessedUsers[username] ?? ProcessedUsers[username]; //TODO refactor 
+                var currentUser = UnprocessedUsers.ContainsKey(username)
+                    ? UnprocessedUsers[username]
+                    : ProcessedUsers[username];
                 switch (type)
                 {
                     case CommunicationType.Liker:
