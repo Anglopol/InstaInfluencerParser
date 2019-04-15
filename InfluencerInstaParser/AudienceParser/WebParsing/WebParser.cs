@@ -42,6 +42,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             if (_webProcessor.IsPrivate(userPageContent) || _webProcessor.IsEmpty(userPageContent))
             {
                 Console.WriteLine($"{username} is invalid");
+                _downloaderProxy.SetProxyFree();
                 return;
             }
 
@@ -51,6 +52,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             if (!_webProcessor.HasNextPageForPageContent(userPageContent))
             {
                 FillShortCodesQueue(resultList);
+                _downloaderProxy.SetProxyFree();
                 return;
             }
 
@@ -69,6 +71,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
 
             FillShortCodesQueue(resultList);
+            _downloaderProxy.SetProxyFree();
         }
 
         public void GetUsernamesFromPostComments(string postShortCode)
@@ -89,6 +92,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             catch (Exception e)
             {
                 Console.WriteLine(e + "\n" + postShortCode);
+                _downloaderProxy.SetProxyFree();
                 throw;
             }
 
@@ -96,6 +100,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             {
                 FillUnprocessedSet(resultList, CommunicationType.Commentator);
                 _owner.Comments += resultList.Count;
+                _downloaderProxy.SetProxyFree();
+                return;
             }
 
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting json users from post: {postShortCode}");
@@ -112,6 +118,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             FillUnprocessedSet(resultList, CommunicationType.Commentator);
             _owner.Comments += resultList.Count;
+            _downloaderProxy.SetProxyFree();
         }
 
         public void GetUsernamesFromPostLikes(string postShortCode)
@@ -127,6 +134,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             if (_webProcessor.IsVideo(postPageContent))
             {
                 Console.WriteLine($"Post {postShortCode} is video");
+                _downloaderProxy.SetProxyFree();
                 return;
             }
 
@@ -151,6 +159,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             FillUnprocessedSet(resultList, CommunicationType.Liker);
             _owner.Likes += resultList.Count;
+            _downloaderProxy.SetProxyFree();
         }
 
         private void FillUnprocessedSet(IEnumerable<string> list, CommunicationType type)

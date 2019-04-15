@@ -76,6 +76,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
         }
 
+        public void SetProxyFree()
+        {
+            _proxyCreator.SetProxyFree(Proxy);
+        }
+
         private async Task<HttpResponseMessage> GetResponseMessageAsync(string link)
         {
             return await _proxyClient.GetAsync(link).ConfigureAwait(false);

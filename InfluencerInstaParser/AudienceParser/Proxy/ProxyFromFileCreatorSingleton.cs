@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using NLog;
 
 namespace InfluencerInstaParser.AudienceParser.Proxy
@@ -17,6 +18,8 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
         private readonly Queue<WebProxy> _proxyQueue;
         private bool _isQueueInit;
         private readonly Dictionary<WebProxy, DateTime> _usedProxy;
+
+        private readonly TimeSpan _defaultDelayTime = TimeSpan.Parse("00:03:00");
 
         private ProxyFromFileCreatorSingleton()
         {
@@ -33,6 +36,7 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
         public WebProxy GetProxy()
         {
             if (!_proxyQueue.Any() && !_isQueueInit) FillQueue();
+            if (!_proxyQueue.Any() && _isQueueInit) return GetFirstFreeProxy();
             return _proxyQueue.Dequeue();
         }
 
@@ -65,6 +69,28 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
                 };
                 _proxyQueue.Enqueue(proxy);
             }
+        }
+
+        private WebProxy GetFirstFreeProxy()
+        {
+            while (true)
+            {
+                foreach (var (proxy, lastUse) in _usedProxy)
+                {
+                    if (!IsProxyCanBeUsed(proxy, lastUse)) continue;
+                    _usedProxy.Remove(proxy);
+                    return proxy;
+                }
+
+                Thread.Sleep(1000);
+            }
+        }
+
+        private bool IsProxyCanBeUsed(WebProxy proxy, DateTime lastUse)
+        {
+            if (_proxyQueue.Contains(proxy)) return false;
+            var delay = DateTime.Now.Subtract(lastUse);
+            return TimeSpan.Compare(delay, _defaultDelayTime) >= 0;
         }
     }
 }
