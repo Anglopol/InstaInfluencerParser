@@ -6,13 +6,13 @@ using System.Threading;
 using InfluencerInstaParser.AudienceParser.WebParsing;
 using NLog;
 
-namespace InfluencerInstaParser.AudienceParser
+namespace InfluencerInstaParser.AudienceParser.Proxy
 {
-    public class ProxyCreatorSingleton
+    public class ProxyRotatorCreatorSingleton : IProxyCreatorSingleton
     {
         private const string DefaultProxyUrl = "http://falcon.proxyrotator.com:51337/?";
         private const string DefaultApiKey = "7fekhDEoU2dPvJVpYryzCgFbRqtSQsnw";
-        private static ProxyCreatorSingleton _instance;
+        private static ProxyRotatorCreatorSingleton _instance;
 
         private static readonly string[] DefaultProxyParams =
         {
@@ -30,7 +30,7 @@ namespace InfluencerInstaParser.AudienceParser
         private readonly Dictionary<WebProxy, DateTime> _usedProxy;
         private readonly WebProcessor _webProcessor;
 
-        private ProxyCreatorSingleton()
+        private ProxyRotatorCreatorSingleton()
         {
             _logger = LogManager.GetCurrentClassLogger();
             _proxyParams = DefaultProxyParams;
@@ -41,9 +41,9 @@ namespace InfluencerInstaParser.AudienceParser
             _webProcessor = new WebProcessor();
         }
 
-        public static ProxyCreatorSingleton GetInstance()
+        public static IProxyCreatorSingleton GetInstance()
         {
-            return _instance ?? (_instance = new ProxyCreatorSingleton());
+            return _instance ?? (_instance = new ProxyRotatorCreatorSingleton());
         }
 
         public WebProxy GetProxy()
