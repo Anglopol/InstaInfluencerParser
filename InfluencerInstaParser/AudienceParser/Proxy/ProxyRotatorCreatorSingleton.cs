@@ -58,8 +58,13 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
 
         public WebProxy GetProxy(WebProxy usedProxy)
         {
-            if (!_usedProxy.TryAdd(usedProxy, DateTime.Now)) _usedProxy[usedProxy] = DateTime.Now;
+            SetProxyFree(usedProxy);
             return GetProxy();
+        }
+
+        public void SetProxyFree(WebProxy usedProxy)
+        {
+            if (!_usedProxy.TryAdd(usedProxy, DateTime.Now)) _usedProxy[usedProxy] = DateTime.Now;
         }
 
         private bool FillQueue()

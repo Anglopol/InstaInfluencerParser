@@ -6,5 +6,6 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
     {
         WebProxy GetProxy();
         WebProxy GetProxy(WebProxy usedProxy);
+        void SetProxyFree(WebProxy usedProxy);
     }
 }
