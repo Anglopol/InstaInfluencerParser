@@ -23,7 +23,21 @@ namespace InfluencerInstaParser.Database.UserInformation
             Parent = parent;
             _setCommentsLocker = new object();
             _setLikesLocker = new object();
-            _relations = new Dictionary<User, RelationInformation> {{parent, new RelationInformation(parent, type)}};
+            switch (type)
+            {
+                case CommunicationType.Liker:
+                    _relations = new Dictionary<User, RelationInformation>
+                        {{parent, new RelationInformation(parent, type, likes: 1)}};
+                    break;
+                case CommunicationType.Commentator:
+                    _relations = new Dictionary<User, RelationInformation>
+                        {{parent, new RelationInformation(parent, type, comments: 1)}};
+                    break;
+                default:
+                    _relations = new Dictionary<User, RelationInformation>
+                        {{parent, new RelationInformation(parent, type)}};
+                    break;
+            }
         }
 
         public User(string username, int likes = 0, int comments = 0, int following = 0, int followers = 0)
@@ -77,17 +91,17 @@ namespace InfluencerInstaParser.Database.UserInformation
             if (FindRelation(parent) != null) _relations.Add(parent, new RelationInformation(parent, type));
         }
 
-        public void AddLikesForRelation(User parent, int count) //Todo проверить в нормальном состоянии 
+        public void AddLikesForRelation(User parent, int count = 1)
         {
             var relation = FindRelation(parent);
-            if (relation == null) AddNewRelation(parent);
+            if (relation == null) AddNewRelation(parent, CommunicationType.Liker);
             _relations[parent].Likes += count;
         }
 
-        public void AddCommentsForRelation(User parent, int count) //Todo проверить в нормальном состоянии 
+        public void AddCommentsForRelation(User parent, int count = 1)
         {
             var relation = FindRelation(parent);
-            if (relation == null) AddNewRelation(parent);
+            if (relation == null) AddNewRelation(parent, CommunicationType.Commentator);
             _relations[parent].Comments += count;
         }
 

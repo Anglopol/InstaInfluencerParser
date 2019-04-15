@@ -26,15 +26,31 @@ namespace InfluencerInstaParser.AudienceParser
         public void AddUnprocessedUser(string username, User parent,
             CommunicationType type = CommunicationType.Follower)
         {
-            if (ProcessedUsers.ContainsKey(username)) return;
+            if (ProcessedUsers.ContainsKey(username) || UnprocessedUsers.ContainsKey(username))
+            {
+                var currentUser = UnprocessedUsers[username] ?? ProcessedUsers[username]; //TODO refactor 
+                switch (type)
+                {
+                    case CommunicationType.Liker:
+                    {
+                        currentUser.AddLikesForRelation(parent);
+                        break;
+                    }
+                    case CommunicationType.Commentator:
+                    {
+                        currentUser.AddCommentsForRelation(parent);
+                        break;
+                    }
+                    case CommunicationType.Follower:
+                    {
+                        currentUser.AddNewRelation(parent);
+                        break;
+                    }
+                }
+            }
+
             if (!UnprocessedUsers.ContainsKey(username))
                 UnprocessedUsers.Add(username, new User(username, parent, type));
-            else
-                CreateNewRelation();
-        }
-
-        private void CreateNewRelation()
-        {
         }
 
         public void AddProcessedUser(User user)
