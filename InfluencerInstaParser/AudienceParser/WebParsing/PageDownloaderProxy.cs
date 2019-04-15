@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using InfluencerInstaParser.AudienceParser.Proxy;
 using NLog;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
@@ -14,7 +15,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private static readonly object GetProxyLocker = new object();
 
         private readonly Logger _logger;
-        private readonly ProxyCreatorSingleton _proxyCreatorSingleton;
+        private readonly IProxyCreatorSingleton _proxyCreator;
         private WebProxy _proxy;
         private HttpClient _proxyClient;
         private int _requestCounter;
@@ -22,7 +23,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public PageDownloaderProxy()
         {
             _logger = LogManager.GetCurrentClassLogger();
-            _proxyCreatorSingleton = ProxyCreatorSingleton.GetInstance();
+            _proxyCreator = ProxyFromFileCreatorSingleton.GetInstance();
         }
 
         private WebProxy Proxy
@@ -39,7 +40,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public string GetPageContentWithProxy(string url, string userAgent, string instGis = "")
         {
-            if (Proxy == null) SetProxy(_proxyCreatorSingleton.GetProxy());
+            if (Proxy == null) SetProxy(_proxyCreator.GetProxy());
 
             var link = InstagramUrl + url;
             _proxyClient.DefaultRequestHeaders.Clear();
@@ -48,7 +49,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             try
             {
-                if (_requestCounter > 180) SetProxy(_proxyCreatorSingleton.GetProxy(Proxy));
+                if (_requestCounter > 180) SetProxy(_proxyCreator.GetProxy(Proxy));
 
                 _logger.Info($"Getting url: {url}\nDownload counter: {_requestCounter}");
                 var responseTask = Task.Run(async () => await GetResponseMessageAsync(link));
@@ -66,8 +67,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             {
                 _logger.Error(e, e.Message + $"\nOn url: {url}\nWith proxy: {_proxy.Address}");
                 SetProxy(_requestCounter > 2
-                    ? _proxyCreatorSingleton.GetProxy(Proxy)
-                    : _proxyCreatorSingleton.GetProxy());
+                    ? _proxyCreator.GetProxy(Proxy)
+                    : _proxyCreator.GetProxy());
                 Console.WriteLine("\nException Caught!   " + _requestCounter);
                 Console.WriteLine($"on {url}");
                 Thread.Sleep(1000);
