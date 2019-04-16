@@ -147,6 +147,19 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return city.Remove(city.Length - 1);
         }
 
+        public string GetLocationSlug(string pageContent)
+        {
+            return Regex.Match(pageContent, "\"slug.{3}[^\"]*").ToString()
+                .Split(":")[1].Remove(0, 1);
+        }
+
+        public string GetLocationId(string pageContent)
+        {
+            var location = Regex.Match(pageContent, "\"location\":[^}]*").ToString();
+            return Regex.Match(location, "id.{3}[^\"]*").ToString()
+                .Split(":")[1].Remove(0, 1);
+        }
+
         public IEnumerable<string> GetListOfProxies(string pageContent)
         {
             return pageContent.Split("\n").ToList();
