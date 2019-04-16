@@ -9,11 +9,11 @@ using NLog;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
-    public class WebProcessor
+    public class PageContentScrapper
     {
         private readonly Logger _logger;
 
-        public WebProcessor()
+        public PageContentScrapper()
         {
             _logger = LogManager.GetCurrentClassLogger();
         }
@@ -137,13 +137,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public bool IsLocationHasAddress(string pageContent)
         {
             return !pageContent.Contains("\"address_json\":null")
-                   || !pageContent.Contains("city_name\": \"\",");
+                   && !pageContent.Contains("city_name\": \"\",");
         }
 
         public string GetPostAddressLocation(string pageContent)
         {
-            return Regex.Match(pageContent, "addressLocality.{3}[^\"]*").ToString()
-                .Split(":")[1].Remove(0, 1);
+            var city = Regex.Match(pageContent, "city_name\": \"[^\"]*").ToString()
+                .Split(":")[1].Remove(0, 3);
+            return city.Remove(city.Length - 1);
         }
 
         public IEnumerable<string> GetListOfProxies(string pageContent)
