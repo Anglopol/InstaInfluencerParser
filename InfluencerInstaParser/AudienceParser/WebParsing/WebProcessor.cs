@@ -129,6 +129,23 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 .Split(":")[1].Remove(0, 1)).ToList();
         }
 
+        public bool IsPostHasLocation(string pageContent)
+        {
+            return !pageContent.Contains("\"location\":null");
+        }
+
+        public bool IsLocationHasAddress(string pageContent)
+        {
+            return !pageContent.Contains("\"address_json\":null")
+                   || !pageContent.Contains("city_name\": \"\",");
+        }
+
+        public string GetPostAddressLocation(string pageContent)
+        {
+            return Regex.Match(pageContent, "addressLocality.{3}[^\"]*").ToString()
+                .Split(":")[1].Remove(0, 1);
+        }
+
         public IEnumerable<string> GetListOfProxies(string pageContent)
         {
             return pageContent.Split("\n").ToList();
