@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing
+namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
 {
     public class PageDownloader
     {

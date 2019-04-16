@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.Proxy;
 using NLog;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing
+namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
 {
     public class PageDownloaderProxy
     {
@@ -38,7 +38,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             get => _proxy;
         }
 
-        public string GetPageContentWithProxy(string url, string userAgent, string instGis = "")
+        public string GetPageContent(string url, string userAgent, string instGis = "")
         {
             if (Proxy == null) SetProxy(_proxyCreator.GetProxy());
 
@@ -72,7 +72,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 Console.WriteLine("\nException Caught!   " + _requestCounter);
                 Console.WriteLine($"on {url}");
                 Thread.Sleep(1000);
-                return GetPageContentWithProxy(url, userAgent, instGis);
+                return GetPageContent(url, userAgent, instGis);
             }
         }
 
