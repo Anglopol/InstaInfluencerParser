@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
 using InfluencerInstaParser.Database.UserInformation;
 using NLog;
 
@@ -18,14 +19,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private readonly QueryRequester _queryRequester;
         private readonly string _userAgent;
         private readonly ParsingSetSingleton _usersSet;
-        private readonly WebProcessor _webProcessor;
+        private readonly PageContentScrapper _pageContentScrapper;
         private string _rhxGis;
 
         public WebParser(string userAgent, User owner)
         {
             _owner = owner;
             _logger = LogManager.GetCurrentClassLogger();
-            _webProcessor = new WebProcessor();
+            _pageContentScrapper = new PageContentScrapper();
             _userAgent = userAgent;
             _usersSet = ParsingSetSingleton.GetInstance();
             _downloaderProxy = new PageDownloaderProxy();
@@ -37,19 +38,19 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var userUrl = "/" + username + "/";
 
-            var userPageContent = _downloaderProxy.GetPageContentWithProxy(userUrl, _userAgent);
+            var userPageContent = _downloaderProxy.GetPageContent(userUrl, _userAgent);
 
-            if (_webProcessor.IsPrivate(userPageContent) || _webProcessor.IsEmpty(userPageContent))
+            if (_pageContentScrapper.IsPrivate(userPageContent) || _pageContentScrapper.IsEmpty(userPageContent))
             {
                 Console.WriteLine($"{username} is invalid");
                 _downloaderProxy.SetProxyFree();
                 return;
             }
 
-            var userId = long.Parse(_webProcessor.GetUserIdFromPageContent(userPageContent));
-            _rhxGis = _rhxGis ?? _webProcessor.GetRhxGisParameter(userPageContent);
-            var resultList = _webProcessor.GetListOfShortCodesFromPageContent(userPageContent);
-            if (!_webProcessor.HasNextPageForPageContent(userPageContent))
+            var userId = long.Parse(_pageContentScrapper.GetUserIdFromPageContent(userPageContent));
+            _rhxGis = _rhxGis ?? _pageContentScrapper.GetRhxGisParameter(userPageContent);
+            var resultList = _pageContentScrapper.GetListOfShortCodesFromPageContent(userPageContent);
+            if (!_pageContentScrapper.HasNextPageForPageContent(userPageContent))
             {
                 FillShortCodesQueue(resultList);
                 _downloaderProxy.SetProxyFree();
@@ -80,14 +81,20 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             Console.WriteLine(postShortCode + "Comments");
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post: {postShortCode}");
 
-            var postPageContent = _downloaderProxy.GetPageContentWithProxy(postUrl, _userAgent);
+            var postPageContent = _downloaderProxy.GetPageContent(postUrl, _userAgent);
+
+            if (_pageContentScrapper.IsPostHasLocation(postPageContent))
+            {
+                var locator = new Locator(_downloaderProxy, _pageContentScrapper, _userAgent);
+                _owner.AddLocation(locator.GetPostLocation(postPageContent));
+            }
 
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post successed: {postShortCode}");
-            _rhxGis = _rhxGis ?? _webProcessor.GetRhxGisParameter(postPageContent);
+            _rhxGis = _rhxGis ?? _pageContentScrapper.GetRhxGisParameter(postPageContent);
             var resultList = new List<string>();
             try
             {
-                resultList.AddRange(_webProcessor.GetListOfUsernamesFromPageContent(postPageContent));
+                resultList.AddRange(_pageContentScrapper.GetListOfUsernamesFromPageContent(postPageContent));
             }
             catch (Exception e)
             {
@@ -96,7 +103,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 throw;
             }
 
-            if (!_webProcessor.HasNextPageForPageContent(postPageContent))
+            if (!_pageContentScrapper.HasNextPageForPageContent(postPageContent))
             {
                 FillUnprocessedSet(resultList, CommunicationType.Commentator);
                 _owner.Comments += resultList.Count;
@@ -127,18 +134,18 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post likes: {postShortCode}");
             Console.WriteLine(postShortCode + " Likes");
 
-            var postPageContent = _downloaderProxy.GetPageContentWithProxy(postUrl, _userAgent);
+            var postPageContent = _downloaderProxy.GetPageContent(postUrl, _userAgent);
 
             _logger.Info(
                 $"Thread: {Thread.CurrentThread.Name} getting users from post likes seccessed: {postShortCode}");
-            if (_webProcessor.IsVideo(postPageContent))
+            if (_pageContentScrapper.IsVideo(postPageContent))
             {
                 Console.WriteLine($"Post {postShortCode} is video");
                 _downloaderProxy.SetProxyFree();
                 return;
             }
 
-            _rhxGis = _rhxGis ?? _webProcessor.GetRhxGisParameter(postPageContent);
+            _rhxGis = _rhxGis ?? _pageContentScrapper.GetRhxGisParameter(postPageContent);
             var resultList = new List<string>();
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting json users from post likes: {postShortCode}");
 

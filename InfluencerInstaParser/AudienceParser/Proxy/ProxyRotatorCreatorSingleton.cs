@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using InfluencerInstaParser.AudienceParser.WebParsing;
+using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
 using NLog;
 
 namespace InfluencerInstaParser.AudienceParser.Proxy
@@ -28,7 +29,7 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
         private readonly Queue<WebProxy> _proxyQueue;
         private readonly string _proxyUrl;
         private readonly Dictionary<WebProxy, DateTime> _usedProxy;
-        private readonly WebProcessor _webProcessor;
+        private readonly PageContentScrapper _pageContentScrapper;
 
         private ProxyRotatorCreatorSingleton()
         {
@@ -38,7 +39,7 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
             _proxyQueue = new Queue<WebProxy>();
             _usedProxy = new Dictionary<WebProxy, DateTime>();
             _pageDownloader = new PageDownloader();
-            _webProcessor = new WebProcessor();
+            _pageContentScrapper = new PageContentScrapper();
         }
 
         public static IProxyCreatorSingleton GetInstance()
@@ -73,8 +74,8 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
             _logger.Info("Downloading new proxys");
             var requestUrl = _proxyParams.Aggregate(_proxyUrl, (current, param) => current + param + "&");
             var pageContent = _pageDownloader.GetPageContent(requestUrl);
-            if (!_webProcessor.IsProxyListAvailable(pageContent)) return false;
-            var proxies = _webProcessor.GetListOfProxies(pageContent);
+            if (!_pageContentScrapper.IsProxyListAvailable(pageContent)) return false;
+            var proxies = _pageContentScrapper.GetListOfProxies(pageContent);
             foreach (var uri in proxies)
             {
                 var proxy = new WebProxy
