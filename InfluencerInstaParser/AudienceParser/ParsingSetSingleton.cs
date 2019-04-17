@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using InfluencerInstaParser.Database.UserInformation;
+using InfluencerInstaParser.AudienceParser.UserInformation;
 
 namespace InfluencerInstaParser.AudienceParser
 {

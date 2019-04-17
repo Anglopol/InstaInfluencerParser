@@ -1,4 +1,4 @@
-namespace InfluencerInstaParser.Database.UserInformation
+namespace InfluencerInstaParser.AudienceParser.UserInformation
 {
     public enum CommunicationType
     {

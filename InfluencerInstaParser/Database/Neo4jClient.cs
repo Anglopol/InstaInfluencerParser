@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using InfluencerInstaParser.AudienceParser.UserInformation;
 using InfluencerInstaParser.Database.Serializer;
 using InfluencerInstaParser.Database.Settings;
-using InfluencerInstaParser.Database.UserInformation;
 using Neo4j.Driver.V1;
 
 namespace InfluencerInstaParser.Database

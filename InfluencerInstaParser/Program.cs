@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser;
+using InfluencerInstaParser.AudienceParser.UserInformation;
 using InfluencerInstaParser.Database;
 using InfluencerInstaParser.Database.Settings;
-using InfluencerInstaParser.Database.UserInformation;
 
 namespace InfluencerInstaParser
 {
@@ -16,12 +16,12 @@ namespace InfluencerInstaParser
             var parser = new ParsingHandler(targetUsername);
             parser.Parse();
             var set = ParsingSetSingleton.GetInstance();
-            Task.Run(() => FillDb(set.UnprocessedUsers.Values.ToList(), targetUsername)).GetAwaiter();
+            Task.Run(() => FillDb(set.UnprocessedUsers.Values.ToList(), targetUsername)).GetAwaiter().GetResult();
         }
 
         private static async Task FillDb(IList<User> users, string target)
         {
-            var settings = ConnectionSettings.CreateBasicAuth("bolt://localhost:7687/users", "neo4j", "1111");
+            var settings = ConnectionSettings.CreateBasicAuth("bolt://localhost:7687/db/users", "neo4j", "1111");
 
             using (var client = new Neo4JClient(settings))
             {

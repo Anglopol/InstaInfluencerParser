@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace InfluencerInstaParser.Database.UserInformation
+namespace InfluencerInstaParser.AudienceParser.UserInformation
 {
     public class User
     {

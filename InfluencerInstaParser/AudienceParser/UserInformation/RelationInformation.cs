@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace InfluencerInstaParser.Database.UserInformation
+namespace InfluencerInstaParser.AudienceParser.UserInformation
 {
     public class RelationInformation
     {

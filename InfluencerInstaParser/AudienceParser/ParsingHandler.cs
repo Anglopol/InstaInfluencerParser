@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.AuthorizedParsing;
 using InfluencerInstaParser.AudienceParser.AuthorizedParsing.SessionData;
+using InfluencerInstaParser.AudienceParser.UserInformation;
 using InfluencerInstaParser.AudienceParser.WebParsing;
-using InfluencerInstaParser.Database.UserInformation;
 
 namespace InfluencerInstaParser.AudienceParser
 {

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using InfluencerInstaParser.AudienceParser.UserInformation;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
-using InfluencerInstaParser.Database.UserInformation;
 using NLog;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
