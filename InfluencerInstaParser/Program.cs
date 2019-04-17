@@ -12,7 +12,7 @@ namespace InfluencerInstaParser
     {
         private static void Main()
         {
-            var targetUsername = "tasyabraun";
+            var targetUsername = "neprostohronika";
             var parser = new ParsingHandler(targetUsername);
             parser.Parse();
             var set = ParsingSetSingleton.GetInstance();
@@ -21,7 +21,7 @@ namespace InfluencerInstaParser
 
         private static async Task FillDb(IList<User> users, string target)
         {
-            var settings = ConnectionSettings.CreateBasicAuth("bolt://localhost:7687/db/users", "neo4j", "1111");
+            var settings = ConnectionSettings.CreateBasicAuth("bolt://localhost:7687/users", "neo4j", "1111");
 
             using (var client = new Neo4JClient(settings))
             {
