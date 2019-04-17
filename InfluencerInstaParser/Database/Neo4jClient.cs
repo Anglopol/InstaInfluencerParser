@@ -39,23 +39,25 @@ namespace InfluencerInstaParser.Database
 
         public async Task CreateUsers(IList<User> users)
         {
+            var modelUsers = (from user in users select user.ModelViewUser).ToList();
             var cypher = new StringBuilder()
                 .AppendLine("UNWIND {users} AS user")
                 .AppendLine(
-                    "MERGE (u:User {name: user.name, parent: user.parent.name, likes: user.likes, comments: user.comments, followers: user.followers, following: user.following})")
+                    "MERGE (u:User {name: user.name, likes: user.likes, comments: user.comments, followers: user.followers, following: user.following})")
                 .AppendLine("SET u = user")
                 .ToString();
 
             using (var session = _driver.Session())
             {
                 await session.RunAsync(cypher,
-                    new Dictionary<string, object> {{"users", ParameterSerializer.ToDictionary(users)}});
+                    new Dictionary<string, object> {{"users", ParameterSerializer.ToDictionary(modelUsers)}});
             }
         }
 
-        public async Task CreateRelationships(IList<User> users)
+        public async Task CreateRelationships(IList<User> users) //TODO refactor 
         {
-            var relationsList = (from user in users from relation in user.Relations select relation.Value).ToList();
+            var relationsList = (from user in users from relation in user.Relations select relation.Value.Relation)
+                .ToList();
             var cypher = new StringBuilder()
                 .AppendLine("UNWIND {relations} AS relation")
                 // Find the User:

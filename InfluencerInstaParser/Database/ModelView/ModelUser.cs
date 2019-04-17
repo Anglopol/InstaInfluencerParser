@@ -1,11 +1,10 @@
-using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace InfluencerInstaParser.Database.ModelView
 {
     public class ModelUser
     {
-        public IList<string> Locations { get; set; }
+//        public IList<string> Locations { get; set; }
         [JsonProperty("name")] public string Username { get; set; }
         [JsonProperty("likes")] public int Likes { get; set; }
         [JsonProperty("comments")] public int Comments { get; set; }

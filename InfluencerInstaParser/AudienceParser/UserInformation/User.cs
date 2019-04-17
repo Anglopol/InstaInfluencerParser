@@ -56,8 +56,11 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
 
         public User(string username, int likes = 0, int comments = 0, int following = 0, int followers = 0)
         {
+            _setFollowersLocker = new object();
+            _setFollowingLocker = new object();
             _setCommentsLocker = new object();
             _setLikesLocker = new object();
+            _relationLocker = new object();
             ModelViewUser = new ModelUser
                 {Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following};
             Relations = new Dictionary<User, RelationInformation>();
@@ -67,6 +70,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             Comments = comments;
             Following = following;
             Followers = followers;
+            Parent = this;
         }
 
         public string Username { get; }
