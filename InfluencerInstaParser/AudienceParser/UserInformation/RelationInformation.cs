@@ -1,5 +1,5 @@
 using System;
-using Newtonsoft.Json;
+using InfluencerInstaParser.Database.ModelView;
 
 namespace InfluencerInstaParser.AudienceParser.UserInformation
 {
@@ -10,9 +10,8 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
         private int _likes;
         private int _comments;
 
-        [JsonProperty("communication")] public CommunicationType CommunicationType { get; }
+        public ModelRelation Relation { get; }
 
-        [JsonProperty("likes")]
         public int Likes
         {
             get => _likes;
@@ -22,11 +21,11 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                 lock (_setLikesLocker)
                 {
                     _likes = value;
+                    Relation.Likes = _likes;
                 }
             }
         }
 
-        [JsonProperty("comments")]
         public int Comments
         {
             get => _comments;
@@ -36,19 +35,15 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                 lock (_setCommentsLocker)
                 {
                     _comments = value;
+                    Relation.Comments = _comments;
                 }
             }
         }
 
-        [JsonProperty("parent")] public string Parent { get; }
-        [JsonProperty("child")] public string Child { get; }
-
-        public RelationInformation(string parentName, string childName, CommunicationType communicationType,
+        public RelationInformation(string parentName, string childName,
             int likes = 0, int comments = 0)
         {
-            Parent = parentName;
-            Child = childName;
-            CommunicationType = communicationType;
+            Relation = new ModelRelation {Child = childName, Parent = parentName, Likes = likes, Comments = comments};
             _likes = likes;
             _comments = comments;
             _setLikesLocker = new object();

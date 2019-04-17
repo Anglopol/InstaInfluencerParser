@@ -1,25 +1,35 @@
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using InfluencerInstaParser.Database.ModelView;
 
 namespace InfluencerInstaParser.AudienceParser.UserInformation
 {
     public class User
     {
         private readonly object _setCommentsLocker;
+        private readonly object _setFollowingLocker;
+        private readonly object _setFollowersLocker;
         private readonly object _setLikesLocker;
         private readonly object _relationLocker;
         private int _comments;
         private int _likes;
+        private int _following;
+        private int _followers;
+
+        public ModelUser ModelViewUser { get; }
         public Dictionary<string, int> Locations { get; }
         public Dictionary<User, RelationInformation> Relations { get; }
 
         public User(string username, User parent, CommunicationType type,
             int likes = 0, int comments = 0, int following = 0, int followers = 0)
         {
+            _setFollowersLocker = new object();
+            _setFollowingLocker = new object();
             _setCommentsLocker = new object();
             _setLikesLocker = new object();
             _relationLocker = new object();
+            ModelViewUser = new ModelUser
+                {Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following};
             Locations = new Dictionary<string, int>();
             Username = username;
             Likes = likes;
@@ -31,15 +41,15 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             {
                 case CommunicationType.Liker:
                     Relations = new Dictionary<User, RelationInformation>
-                        {{parent, new RelationInformation(parent.Username, Username, type, likes: 1)}};
+                        {{parent, new RelationInformation(parent.Username, Username, likes: 1)}};
                     break;
                 case CommunicationType.Commentator:
                     Relations = new Dictionary<User, RelationInformation>
-                        {{parent, new RelationInformation(parent.Username, Username, type, comments: 1)}};
+                        {{parent, new RelationInformation(parent.Username, Username, comments: 1)}};
                     break;
                 default:
                     Relations = new Dictionary<User, RelationInformation>
-                        {{parent, new RelationInformation(parent.Username, Username, type)}};
+                        {{parent, new RelationInformation(parent.Username, Username)}};
                     break;
             }
         }
@@ -48,6 +58,8 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
         {
             _setCommentsLocker = new object();
             _setLikesLocker = new object();
+            ModelViewUser = new ModelUser
+                {Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following};
             Relations = new Dictionary<User, RelationInformation>();
             Locations = new Dictionary<string, int>();
             Username = username;
@@ -57,9 +69,8 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             Followers = followers;
         }
 
-        [JsonProperty("name")] public string Username { get; }
+        public string Username { get; }
 
-        [JsonProperty("likes")]
         public int Likes
         {
             get => _likes;
@@ -69,11 +80,11 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                 lock (_setLikesLocker)
                 {
                     _likes = value;
+                    ModelViewUser.Likes = _likes;
                 }
             }
         }
 
-        [JsonProperty("comments")]
         public int Comments
         {
             get => _comments;
@@ -83,20 +94,47 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                 lock (_setCommentsLocker)
                 {
                     _comments = value;
+                    ModelViewUser.Comments = _comments;
                 }
             }
         }
 
-        [JsonProperty("following")] public int Following { get; set; }
-        [JsonProperty("followers")] public int Followers { get; set; }
-        [JsonProperty("parent")] public User Parent { get; }
+        public int Following
+        {
+            get => _following;
+            set
+            {
+                if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
+                lock (_setFollowingLocker)
+                {
+                    _following = value;
+                    ModelViewUser.Following = _following;
+                }
+            }
+        }
 
-        public void AddNewRelation(User parent, CommunicationType type = CommunicationType.Follower)
+        public int Followers
+        {
+            get => _followers;
+            set
+            {
+                if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
+                lock (_setFollowersLocker)
+                {
+                    _followers = value;
+                    ModelViewUser.Followers = _followers;
+                }
+            }
+        }
+
+        public User Parent { get; }
+
+        public void AddNewRelation(User parent)
         {
             if (parent.Username == Username) return;
             lock (_relationLocker)
             {
-                Relations.TryAdd(parent, new RelationInformation(parent.Username, Username, type));
+                Relations.TryAdd(parent, new RelationInformation(parent.Username, Username));
             }
         }
 
@@ -106,7 +144,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             lock (_relationLocker)
             {
                 if (!Relations.TryAdd(parent,
-                    new RelationInformation(parent.Username, Username, CommunicationType.Liker, count)))
+                    new RelationInformation(parent.Username, Username, count)))
                     Relations[Parent].Likes++;
             }
         }
@@ -117,8 +155,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             lock (_relationLocker)
             {
                 if (!Relations.TryAdd(parent,
-                    new RelationInformation(parent.Username, Username,
-                        CommunicationType.Commentator, comments: count)))
+                    new RelationInformation(parent.Username, Username, comments: count)))
                     Relations[Parent].Comments++;
             }
         }
