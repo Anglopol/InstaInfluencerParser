@@ -55,7 +55,6 @@ namespace InfluencerInstaParser.Database.UserInformation
             Comments = comments;
             Following = following;
             Followers = followers;
-            CommunicationType = CommunicationType.Target;
         }
 
         [JsonProperty("name")] public string Username { get; }
@@ -90,8 +89,7 @@ namespace InfluencerInstaParser.Database.UserInformation
 
         [JsonProperty("following")] public int Following { get; set; }
         [JsonProperty("followers")] public int Followers { get; set; }
-        [JsonProperty("from")] public User Parent { get; }
-        [JsonProperty("communication")] public CommunicationType CommunicationType { get; }
+        [JsonProperty("parent")] public User Parent { get; }
 
         public void AddNewRelation(User parent, CommunicationType type = CommunicationType.Follower)
         {

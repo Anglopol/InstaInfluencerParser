@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using InfluencerInstaParser.Database.Serializer;
@@ -40,7 +41,8 @@ namespace InfluencerInstaParser.Database
         {
             var cypher = new StringBuilder()
                 .AppendLine("UNWIND {users} AS user")
-                .AppendLine("MERGE (p:User {name: user.name})")
+                .AppendLine(
+                    "MERGE (u:User {name: user.name, parent: user.parent.name, likes: user.likes, comments: user.comments, followers: user.followers, following: user.following})")
                 .AppendLine("SET u = user")
                 .ToString();
 
@@ -53,21 +55,22 @@ namespace InfluencerInstaParser.Database
 
         public async Task CreateRelationships(IList<User> users)
         {
+            var relationsList = (from user in users from relation in user.Relations select relation.Value).ToList();
             var cypher = new StringBuilder()
-                .AppendLine("UNWIND {users} AS user")
+                .AppendLine("UNWIND {relations} AS relation")
                 // Find the User:
-                .AppendLine("MATCH (s:User { name: user.name })")
+                .AppendLine("MATCH (p:User { name: relation.parent })")
+                .AppendLine("MATCH (c:User { name: relation.child })")
                 // Create Relationships:
-                .AppendLine("UNWIND user.from AS master")
-                .AppendLine("MATCH (m:User { name: master.name })")
-                .AppendLine("MERGE (s)-[r:{user.communication}]->(m)")
+                .AppendLine(
+                    "MERGE (c)-[:CHILD]->(r:Relation {likes: relation.likes, comments: relation.comments})-[:PARENT]->(p)")
                 .ToString();
 
 
             using (var session = _driver.Session())
             {
                 await session.RunAsync(cypher,
-                    new Dictionary<string, object> {{"users", ParameterSerializer.ToDictionary(users)}});
+                    new Dictionary<string, object> {{"relations", ParameterSerializer.ToDictionary(relationsList)}});
             }
         }
     }
