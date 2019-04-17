@@ -160,6 +160,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 .Split(":")[1].Remove(0, 1);
         }
 
+        public string GetCity(string locationPageContent)
+        {
+            var cityJson = Regex.Match(locationPageContent, "\"city\":[^}]*").ToString();
+            var cityName = Regex.Match(cityJson, "\"name\".{2}[^\"]*").ToString()
+                .Split(":")[1].Remove(0, 1);
+            return cityName;
+        }
+
         public IEnumerable<string> GetListOfProxies(string pageContent)
         {
             return pageContent.Split("\n").ToList();

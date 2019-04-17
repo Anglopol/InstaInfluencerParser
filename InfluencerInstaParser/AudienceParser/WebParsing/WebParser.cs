@@ -86,7 +86,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             if (_pageContentScrapper.IsPostHasLocation(postPageContent))
             {
                 var locator = new Locator(_downloaderProxy, _pageContentScrapper, _userAgent);
-                _owner.AddLocation(locator.GetPostLocation(postPageContent));
+                if (locator.TryGetPostLocation(postPageContent, out var city)) _owner.AddLocation(city);
             }
 
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post successed: {postShortCode}");
