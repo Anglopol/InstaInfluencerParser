@@ -137,14 +137,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public bool IsLocationHasAddress(string pageContent)
         {
             return !pageContent.Contains("\"address_json\":null")
-                   && !pageContent.Contains("city_name\": \"\",");
+                   && !pageContent.Contains("city_name\\\": \\\"\\\"");
         }
 
         public string GetPostAddressLocation(string pageContent)
         {
-            var city = Regex.Match(pageContent, "city_name\": \"[^\"]*").ToString()
-                .Split(":")[1].Remove(0, 3);
-            return city.Remove(city.Length - 1);
+            var city = Regex.Match(pageContent, "\"city_name[^,]*")
+                .ToString().Split("\\")[2].Remove(0, 1);
+            return city;
         }
 
         public string GetLocationSlug(string pageContent)

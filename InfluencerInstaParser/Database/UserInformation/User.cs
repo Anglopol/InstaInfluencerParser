@@ -93,6 +93,7 @@ namespace InfluencerInstaParser.Database.UserInformation
 
         public void AddNewRelation(User parent, CommunicationType type = CommunicationType.Follower)
         {
+            if (parent.Username == Username) return;
             lock (_relationLocker)
             {
                 Relations.TryAdd(parent, new RelationInformation(parent.Username, Username, type));
@@ -101,6 +102,7 @@ namespace InfluencerInstaParser.Database.UserInformation
 
         public void AddLikesForRelation(User parent, int count = 1)
         {
+            if (parent.Username == Username) return;
             lock (_relationLocker)
             {
                 if (!Relations.TryAdd(parent,
@@ -111,6 +113,7 @@ namespace InfluencerInstaParser.Database.UserInformation
 
         public void AddCommentsForRelation(User parent, int count = 1)
         {
+            if (parent.Username == Username) return;
             lock (_relationLocker)
             {
                 if (!Relations.TryAdd(parent,

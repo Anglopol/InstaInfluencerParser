@@ -26,9 +26,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var locationUrl =
                 $"/explore/locations/{_scrapper.GetLocationId(pageContent)}/{_scrapper.GetLocationSlug(pageContent)}/";
             var locationPage = _proxy.GetPageContent(locationUrl, _userAgent);
-            if (locationPage.Contains("\"city\""))
+            if (locationPage.Contains("\"city\":"))
             {
-                city = _scrapper.GetCity(pageContent);
+                city = _scrapper.GetCity(locationPage);
                 return true;
             }
 
