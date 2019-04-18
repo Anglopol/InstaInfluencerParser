@@ -23,7 +23,7 @@ namespace InfluencerInstaParser.AudienceParser
             return _instance ?? (_instance = new ParsingSetSingleton());
         }
 
-        public void AddUnprocessedUser(string username, User parent,
+        public void AddUnprocessedUser(string username, User parent, int followers, int following,
             CommunicationType type = CommunicationType.Follower)
         {
             if (ProcessedUsers.ContainsKey(username) || UnprocessedUsers.ContainsKey(username))
@@ -52,7 +52,8 @@ namespace InfluencerInstaParser.AudienceParser
             }
 
             if (!ProcessedUsers.ContainsKey(username))
-                UnprocessedUsers.TryAdd(username, new User(username, parent, type));
+                UnprocessedUsers.TryAdd(username,
+                    new User(username, parent, type, followers: followers, following: following));
         }
 
         public void AddProcessedUser(User user)

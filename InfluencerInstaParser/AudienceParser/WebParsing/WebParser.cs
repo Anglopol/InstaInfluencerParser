@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Configuration;
 using System.Threading;
 using InfluencerInstaParser.AudienceParser.UserInformation;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
@@ -173,7 +175,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             lock (UnprocessedSetLocker)
             {
-                foreach (var userName in list) _usersSet.AddUnprocessedUser(userName, _owner, type);
+                foreach (var userName in list)
+                {
+                    if (CheckUser(userName, out var followers, out var following))
+                        _usersSet.AddUnprocessedUser(userName, _owner, followers, following, type);
+                }
             }
         }
 
@@ -183,6 +189,19 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             {
                 foreach (var shortCode in list) _usersSet.AddInShortCodesQueue(shortCode);
             }
+        }
+
+        private bool CheckUser(string username, out int followers, out int following)
+        {
+            var userUrl = "/" + username + "/";
+            var userPageContent = _downloaderProxy.GetPageContent(userUrl, _userAgent);
+            var parsingArguments = (NameValueCollection) ConfigurationManager.GetSection("parsingarguments");
+            var minNumberOfFollowers = int.Parse(parsingArguments.Get("MinFollowersValue"));
+            var subscriptionProportion = float.Parse(parsingArguments.Get("SubscriptionProportion"));
+            followers = _pageContentScrapper.GetNumberOfFollowers(userPageContent);
+            following = _pageContentScrapper.GetNumberOfFollowing(userPageContent);
+            return followers > minNumberOfFollowers &&
+                   following / (double) followers < subscriptionProportion;
         }
     }
 }
