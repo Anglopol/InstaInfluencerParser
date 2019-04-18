@@ -51,13 +51,13 @@ namespace InfluencerInstaParser.AudienceParser
                 }
             }
 
-            if (!UnprocessedUsers.ContainsKey(username))
-                UnprocessedUsers.Add(username, new User(username, parent, type));
+            if (!ProcessedUsers.ContainsKey(username))
+                UnprocessedUsers.TryAdd(username, new User(username, parent, type));
         }
 
         public void AddProcessedUser(User user)
         {
-            ProcessedUsers.Add(user.Username, user);
+            ProcessedUsers.TryAdd(user.Username, user);
         }
 
         public void AddInShortCodesQueue(string shortCode)

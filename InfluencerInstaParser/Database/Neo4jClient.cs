@@ -65,7 +65,7 @@ namespace InfluencerInstaParser.Database
                 .AppendLine("MATCH (c:User { name: relation.child })")
                 // Create Relationships:
                 .AppendLine(
-                    "MERGE (c)-[:CHILD]->(r:Relation {likes: relation.likes, comments: relation.comments})-[:PARENT]->(p)")
+                    "MERGE (c)-[:CHILD]->(r:RelationInformation {parent: relation.parent, child: relation.child, likes: relation.likes, comments: relation.comments})-[:PARENT]->(p)")
                 .ToString();
 
 
