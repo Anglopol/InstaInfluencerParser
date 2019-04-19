@@ -169,9 +169,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public void GetUserLocations()
         {
+            _logger.Info($"Getting locations for {_owner.Username}");
             if (_owner.IsLocationProcessed)
             {
                 _downloaderProxy.SetProxyFree();
+                _logger.Info($"Getting locations for {_owner.Username} completed");
                 return;
             }
 
@@ -179,6 +181,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             if (!TryGetPostsShortCodesFromUser(_owner.Username, out var shortCodes))
             {
                 _downloaderProxy.SetProxyFree();
+                _logger.Info($"Getting locations for {_owner.Username} completed");
                 return;
             }
 
@@ -191,6 +194,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 if (locator.TryGetPostLocation(postPageContent, out var city)) _owner.AddLocation(city);
             }
 
+            _logger.Info($"Getting locations for {_owner.Username} completed");
             _downloaderProxy.SetProxyFree();
         }
 

@@ -53,6 +53,7 @@ namespace InfluencerInstaParser.AudienceParser
             web.FillUnprocessedSet(followers.Result, CommunicationType.Follower);
             foreach (var user in _parsingSet.UnprocessedUsers.Values.ToList())
             {
+                Console.WriteLine($"Getting location for {user.Username}");
                 var locationTask = new Task(() => new WebParser(agents.GetUserAgent(), user).GetUserLocations());
                 tasks.Add(locationTask);
             }
