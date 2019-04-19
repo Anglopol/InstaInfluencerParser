@@ -43,7 +43,7 @@ namespace InfluencerInstaParser.Database
             var cypher = new StringBuilder()
                 .AppendLine("UNWIND {users} AS user")
                 .AppendLine(
-                    "MERGE (u:User {name: user.name, likes: user.likes, comments: user.comments, followers: user.followers, following: user.following})")
+                    "MERGE (u:User {name: user.name, likes: user.likes, comments: user.comments, influencer: user.influencer, followers: user.followers, following: user.following})")
                 .AppendLine("SET u = user")
                 .ToString();
 
@@ -63,7 +63,6 @@ namespace InfluencerInstaParser.Database
                 // Find the User:
                 .AppendLine("MATCH (p:User { name: relation.parent })")
                 .AppendLine("MATCH (c:User { name: relation.child })")
-                // Create Relationships:
                 .AppendLine(
                     "MERGE (c)-[:CHILD]->(r:RelationInformation {parent: relation.parent, child: relation.child, likes: relation.likes, comments: relation.comments})-[:PARENT]->(p)")
                 .ToString();

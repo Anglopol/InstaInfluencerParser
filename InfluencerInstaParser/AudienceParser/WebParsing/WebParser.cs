@@ -171,14 +171,25 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _downloaderProxy.SetProxyFree();
         }
 
-        private void FillUnprocessedSet(IEnumerable<string> list, CommunicationType type)
+        public void FillUnprocessedSet(IEnumerable<string> list, CommunicationType type)
         {
             lock (UnprocessedSetLocker)
             {
-                foreach (var userName in list)
+                foreach (var username in list)
                 {
-                    if (CheckUser(userName, out var followers, out var following))
-                        _usersSet.AddUnprocessedUser(userName, _owner, followers, following, type);
+                    if (_usersSet.ProcessedUsers.ContainsKey(username) ||
+                        _usersSet.UnprocessedUsers.ContainsKey(username))
+                    {
+                        var currentUser = _usersSet.UnprocessedUsers.ContainsKey(username)
+                            ? _usersSet.UnprocessedUsers[username]
+                            : _usersSet.ProcessedUsers[username];
+                        _usersSet.AddUnprocessedUser(username, _owner, currentUser.Followers, currentUser.Following,
+                            currentUser.IsInfluencer, type);
+                        continue;
+                    }
+
+                    var isInfluencer = CheckUser(username, out var followers, out var following);
+                    _usersSet.AddUnprocessedUser(username, _owner, followers, following, isInfluencer, type);
                 }
             }
         }

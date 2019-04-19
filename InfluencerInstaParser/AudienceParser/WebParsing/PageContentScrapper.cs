@@ -175,14 +175,16 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public int GetNumberOfFollowers(string pageContent)
         {
-            return int.Parse(Regex.Match(pageContent, "userInteractionCount\".{2}[^\"]*")
-                .ToString().Split(":")[1].Remove(0, 1));
+            var number = int.Parse(Regex.Match(pageContent, "edge_followed_by\":{\"count\":[^}]*")
+                .ToString().Split(":")[2]);
+            return number;
         }
 
         public int GetNumberOfFollowing(string pageContent)
         {
-            return int.Parse(Regex.Match(pageContent, "edge_follow\":{\"count\":[^}]*")
+            var number = int.Parse(Regex.Match(pageContent, "edge_follow\":{\"count\":[^}]*")
                 .ToString().Split(":")[2]);
+            return number;
         }
 
         public bool HasNextPageForPageContent(string pageContent)

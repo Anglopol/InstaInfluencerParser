@@ -20,7 +20,9 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
         public Dictionary<string, int> Locations { get; }
         public Dictionary<User, RelationInformation> Relations { get; }
 
-        public User(string username, User parent, CommunicationType type,
+        public bool IsInfluencer { get; }
+
+        public User(string username, User parent, CommunicationType type, bool isInfluencer,
             int likes = 0, int comments = 0, int following = 0, int followers = 0)
         {
             _setFollowersLocker = new object();
@@ -29,7 +31,11 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             _setLikesLocker = new object();
             _relationLocker = new object();
             ModelViewUser = new ModelUser
-                {Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following};
+            {
+                Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following,
+                IsInfluencer = isInfluencer
+            };
+            IsInfluencer = isInfluencer;
             Locations = new Dictionary<string, int>();
             Username = username;
             Likes = likes;
@@ -62,7 +68,10 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             _setLikesLocker = new object();
             _relationLocker = new object();
             ModelViewUser = new ModelUser
-                {Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following};
+            {
+                Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following,
+                IsInfluencer = false
+            };
             Relations = new Dictionary<User, RelationInformation>();
             Locations = new Dictionary<string, int>();
             Username = username;

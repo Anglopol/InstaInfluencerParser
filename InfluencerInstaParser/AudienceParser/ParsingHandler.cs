@@ -49,8 +49,7 @@ namespace InfluencerInstaParser.AudienceParser
             followers.Wait();
             _parsingSet.ProcessedUsers[_targetAccount].Followers = followers.Result.Count();
             Task.WaitAll(tasks.ToArray());
-            foreach (var follower in followers.Result)
-                _parsingSet.AddUnprocessedUser(follower, owner);
+            web.FillUnprocessedSet(followers.Result, CommunicationType.Follower);
         }
     }
 }
