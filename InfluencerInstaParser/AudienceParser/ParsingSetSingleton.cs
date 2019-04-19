@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using InfluencerInstaParser.AudienceParser.UserInformation;
+using InfluencerInstaParser.Database.ModelView;
 
 namespace InfluencerInstaParser.AudienceParser
 {
@@ -13,11 +14,14 @@ namespace InfluencerInstaParser.AudienceParser
             ShortCodesQueue = new Queue<string>();
             UnprocessedUsers = new Dictionary<string, User>();
             ProcessedUsers = new Dictionary<string, User>();
+            Locations = new Dictionary<string, Location>();
         }
 
         public Queue<string> ShortCodesQueue { get; }
         public Dictionary<string, User> UnprocessedUsers { get; }
         public Dictionary<string, User> ProcessedUsers { get; }
+
+        public Dictionary<string, Location> Locations { get; }
 
         public static ParsingSetSingleton GetInstance()
         {

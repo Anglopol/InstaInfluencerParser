@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using InfluencerInstaParser.Database.ModelView;
 
 namespace InfluencerInstaParser.AudienceParser.UserInformation
@@ -16,6 +17,10 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
         private int _following;
         private int _followers;
 
+        private static readonly object SetLocationLocker = new object();
+
+        public bool IsLocationProcessed { get; set; }
+
         public ModelUser ModelViewUser { get; }
         public Dictionary<string, int> Locations { get; }
         public Dictionary<User, RelationInformation> Relations { get; }
@@ -30,6 +35,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             _setCommentsLocker = new object();
             _setLikesLocker = new object();
             _relationLocker = new object();
+            IsLocationProcessed = false;
             ModelViewUser = new ModelUser
             {
                 Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following,
@@ -67,6 +73,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             _setCommentsLocker = new object();
             _setLikesLocker = new object();
             _relationLocker = new object();
+            IsLocationProcessed = false;
             ModelViewUser = new ModelUser
             {
                 Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following,
@@ -173,9 +180,17 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             }
         }
 
-        public void AddLocation(string location)
+        public void AddLocation(string locationName)
         {
-            if (!Locations.TryAdd(location, 1)) Locations[location]++;
+            if (Locations.TryAdd(locationName, 0)) ModelViewUser.Locations = Locations.Keys.ToList();
+            Locations[locationName]++;
+            var set = ParsingSetSingleton.GetInstance();
+            lock (SetLocationLocker)
+            {
+                if (!set.Locations.TryAdd(locationName,
+                    new Location {Name = locationName, CountOfUsers = Locations[locationName]}))
+                    set.Locations[locationName].CountOfUsers++;
+            }
         }
     }
 }
