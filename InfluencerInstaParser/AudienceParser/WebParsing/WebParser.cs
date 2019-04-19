@@ -36,7 +36,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _queryRequester = new QueryRequester(userAgent, _downloaderProxy);
         }
 
-        public void GetPostsShortCodesFromUser(string username, int countOfLoading = 0)
+        public bool TryGetPostsShortCodesFromUser(string username, out List<string> shortCodes, int countOfLoading = 0)
         {
             var userUrl = "/" + username + "/";
 
@@ -46,7 +46,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             {
                 Console.WriteLine($"{username} is invalid");
                 _downloaderProxy.SetProxyFree();
-                return;
+                shortCodes = new List<string>();
+                return false;
             }
 
             var userId = long.Parse(_pageContentScrapper.GetUserIdFromPageContent(userPageContent));
@@ -54,9 +55,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var resultList = _pageContentScrapper.GetListOfShortCodesFromPageContent(userPageContent);
             if (!_pageContentScrapper.HasNextPageForPageContent(userPageContent))
             {
-                FillShortCodesQueue(resultList);
                 _downloaderProxy.SetProxyFree();
-                return;
+                shortCodes = resultList;
+                return true;
             }
 
 
@@ -73,8 +74,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 resultList.AddRange(_jObjectHandler.GetListOfShortCodesFromQueryContent(jsonPage));
             }
 
-            FillShortCodesQueue(resultList);
+            shortCodes = resultList;
             _downloaderProxy.SetProxyFree();
+            return true;
         }
 
         public void GetUsernamesFromPostComments(string postShortCode)
@@ -171,6 +173,22 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _downloaderProxy.SetProxyFree();
         }
 
+        public void GetUserLocations(User user)
+        {
+            if (user.Locations.Count != 0) return;
+            if (!TryGetPostsShortCodesFromUser(user.Username, out var shortCodes)) return;
+            foreach (var shortCode in shortCodes)
+            {
+                var postUrl = "/p/" + shortCode + "/";
+                var postPageContent = _downloaderProxy.GetPageContent(postUrl, _userAgent);
+                if (_pageContentScrapper.IsPostHasLocation(postPageContent))
+                {
+                    var locator = new Locator(_downloaderProxy, _pageContentScrapper, _userAgent);
+                    if (locator.TryGetPostLocation(postPageContent, out var city)) user.AddLocation(city);
+                }
+            }
+        }
+
         public void FillUnprocessedSet(IEnumerable<string> list, CommunicationType type)
         {
             lock (UnprocessedSetLocker)
@@ -194,7 +212,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
         }
 
-        private void FillShortCodesQueue(IEnumerable<string> list)
+        public void FillShortCodesQueue(IEnumerable<string> list)
         {
             lock (QueueLocker)
             {
