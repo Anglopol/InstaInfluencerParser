@@ -91,7 +91,7 @@ namespace InfluencerInstaParser.Database
             }
         }
 
-        public async Task CreateLocationsRelationships(IList<User> users)
+        public async Task CreateLocationsRelationships(IList<User> users) //TODO location counter
         {
             var cypher = new StringBuilder()
                 .AppendLine("UNWIND {users} AS user")

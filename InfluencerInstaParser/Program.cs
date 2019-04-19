@@ -33,9 +33,10 @@ namespace InfluencerInstaParser
                 // Create Base Data:
                 await client.CreateUsers(users);
                 await client.CreateLocations(locations);
-                var relationUsers = from user in users where user.Username != target select user;
-                await client.CreateUsersRelationships(relationUsers.ToList());
-                await client.CreateLocationsRelationships(users);
+                var relationUsers = (from user in users where user.Username != target select user).ToList();
+
+                await client.CreateUsersRelationships(relationUsers);
+                await client.CreateLocationsRelationships(relationUsers);
             }
         }
     }
