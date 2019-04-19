@@ -87,12 +87,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             var postPageContent = _downloaderProxy.GetPageContent(postUrl, _userAgent);
 
-            if (_pageContentScrapper.IsPostHasLocation(postPageContent))
-            {
-                var locator = new Locator(_downloaderProxy, _pageContentScrapper, _userAgent);
-                if (locator.TryGetPostLocation(postPageContent, out var city)) _owner.AddLocation(city);
-            }
-
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post successed: {postShortCode}");
             _rhxGis = _rhxGis ?? _pageContentScrapper.GetRhxGisParameter(postPageContent);
             var resultList = new List<string>();
@@ -173,20 +167,31 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _downloaderProxy.SetProxyFree();
         }
 
-        public void GetUserLocations(User user)
+        public void GetUserLocations()
         {
-            if (user.Locations.Count != 0) return;
-            if (!TryGetPostsShortCodesFromUser(user.Username, out var shortCodes)) return;
+            if (_owner.IsLocationProcessed)
+            {
+                _downloaderProxy.SetProxyFree();
+                return;
+            }
+
+            _owner.IsLocationProcessed = true;
+            if (!TryGetPostsShortCodesFromUser(_owner.Username, out var shortCodes))
+            {
+                _downloaderProxy.SetProxyFree();
+                return;
+            }
+
             foreach (var shortCode in shortCodes)
             {
                 var postUrl = "/p/" + shortCode + "/";
                 var postPageContent = _downloaderProxy.GetPageContent(postUrl, _userAgent);
-                if (_pageContentScrapper.IsPostHasLocation(postPageContent))
-                {
-                    var locator = new Locator(_downloaderProxy, _pageContentScrapper, _userAgent);
-                    if (locator.TryGetPostLocation(postPageContent, out var city)) user.AddLocation(city);
-                }
+                if (!_pageContentScrapper.IsPostHasLocation(postPageContent)) continue;
+                var locator = new Locator(_downloaderProxy, _pageContentScrapper, _userAgent);
+                if (locator.TryGetPostLocation(postPageContent, out var city)) _owner.AddLocation(city);
             }
+
+            _downloaderProxy.SetProxyFree();
         }
 
         public void FillUnprocessedSet(IEnumerable<string> list, CommunicationType type)

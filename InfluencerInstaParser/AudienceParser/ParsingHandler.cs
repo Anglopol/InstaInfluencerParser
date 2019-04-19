@@ -26,7 +26,8 @@ namespace InfluencerInstaParser.AudienceParser
             _parsingSet.AddProcessedUser(owner);
             var agents = new UserAgentCreator();
             var web = new WebParser(agents.GetUserAgent(), owner);
-            web.GetPostsShortCodesFromUser(_targetAccount);
+            if (!web.TryGetPostsShortCodesFromUser(_targetAccount, out var shortCodes)) return;
+            web.FillShortCodesQueue(shortCodes);
             Console.WriteLine("Short Codes downloaded");
             var sessionData = new ConfigSessionDataFactory().MakeSessionData();
             var api = Task.Run(() => AuthApiCreator.MakeAuthApi(sessionData)).GetAwaiter().GetResult();
@@ -50,6 +51,13 @@ namespace InfluencerInstaParser.AudienceParser
             _parsingSet.ProcessedUsers[_targetAccount].Followers = followers.Result.Count();
             Task.WaitAll(tasks.ToArray());
             web.FillUnprocessedSet(followers.Result, CommunicationType.Follower);
+            foreach (var user in _parsingSet.UnprocessedUsers.Values.ToList())
+            {
+                var locationTask = new Task(() => new WebParser(agents.GetUserAgent(), user).GetUserLocations());
+                tasks.Add(locationTask);
+            }
+
+            Task.WaitAll(tasks.ToArray());
         }
     }
 }
