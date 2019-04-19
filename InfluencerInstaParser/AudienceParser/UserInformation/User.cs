@@ -39,7 +39,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             ModelViewUser = new ModelUser
             {
                 Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following,
-                IsInfluencer = isInfluencer
+                IsInfluencer = isInfluencer, Locations = new List<string>()
             };
             IsInfluencer = isInfluencer;
             Locations = new Dictionary<string, int>();
@@ -77,7 +77,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             ModelViewUser = new ModelUser
             {
                 Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following,
-                IsInfluencer = false
+                IsInfluencer = false, Locations = new List<string>()
             };
             Relations = new Dictionary<User, RelationInformation>();
             Locations = new Dictionary<string, int>();
