@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser;
 using InfluencerInstaParser.AudienceParser.UserInformation;
 using InfluencerInstaParser.Database;
+using InfluencerInstaParser.Database.ModelView;
 using InfluencerInstaParser.Database.Settings;
 
 namespace InfluencerInstaParser
@@ -16,10 +17,11 @@ namespace InfluencerInstaParser
             var parser = new ParsingHandler(targetUsername);
             parser.Parse();
             var set = ParsingSetSingleton.GetInstance();
-            Task.Run(() => FillDb(set.UnprocessedUsers.Values.ToList(), targetUsername)).GetAwaiter().GetResult();
+            Task.Run(() => FillDb(set.GetAllUsers(), set.Locations.Values.ToList(), targetUsername)).GetAwaiter()
+                .GetResult();
         }
 
-        private static async Task FillDb(IList<User> users, string target)
+        private static async Task FillDb(IList<User> users, IList<Location> locations, string target)
         {
             var settings = ConnectionSettings.CreateBasicAuth("bolt://localhost:7687/db/users", "neo4j", "1111");
 
@@ -30,8 +32,10 @@ namespace InfluencerInstaParser
 
                 // Create Base Data:
                 await client.CreateUsers(users);
+                await client.CreateLocations(locations);
                 var relationUsers = from user in users where user.Username != target select user;
-                await client.CreateRelationships(relationUsers.ToList());
+                await client.CreateUsersRelationships(relationUsers.ToList());
+                await client.CreateLocationsRelationships(users);
             }
         }
     }

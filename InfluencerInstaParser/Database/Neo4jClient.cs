@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.UserInformation;
+using InfluencerInstaParser.Database.ModelView;
 using InfluencerInstaParser.Database.Serializer;
 using InfluencerInstaParser.Database.Settings;
 using Neo4j.Driver.V1;
@@ -54,7 +55,22 @@ namespace InfluencerInstaParser.Database
             }
         }
 
-        public async Task CreateRelationships(IList<User> users) //TODO refactor 
+        public async Task CreateLocations(IList<Location> locations)
+        {
+            var cypher = new StringBuilder()
+                .AppendLine("UNWIND {locations} AS location")
+                .AppendLine("MERGE (l:Location {name: location.name, visitors: location.countOfUsers})")
+                .AppendLine("SET l = location")
+                .ToString();
+
+            using (var session = _driver.Session())
+            {
+                await session.RunAsync(cypher,
+                    new Dictionary<string, object> {{"locations", ParameterSerializer.ToDictionary(locations)}});
+            }
+        }
+
+        public async Task CreateUsersRelationships(IList<User> users)
         {
             var relationsList = (from user in users from relation in user.Relations select relation.Value.Relation)
                 .ToList();
@@ -72,6 +88,26 @@ namespace InfluencerInstaParser.Database
             {
                 await session.RunAsync(cypher,
                     new Dictionary<string, object> {{"relations", ParameterSerializer.ToDictionary(relationsList)}});
+            }
+        }
+
+        public async Task CreateLocationsRelationships(IList<User> users)
+        {
+            var cypher = new StringBuilder()
+                .AppendLine("UNWIND {users} AS user")
+                .AppendLine("UNWIND user.locations AS location")
+                // Find the User:
+                .AppendLine("MATCH (u:User { name: user.name })")
+                .AppendLine("MATCH (l:Location { name: location })")
+                .AppendLine(
+                    "MERGE (u)-[:VISITED]->(l)")
+                .ToString();
+
+
+            using (var session = _driver.Session())
+            {
+                await session.RunAsync(cypher,
+                    new Dictionary<string, object> {{"relations", ParameterSerializer.ToDictionary(users)}});
             }
         }
     }
