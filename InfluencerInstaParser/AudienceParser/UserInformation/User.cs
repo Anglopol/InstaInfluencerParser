@@ -86,7 +86,6 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             Comments = comments;
             Following = following;
             Followers = followers;
-            Parent = this;
         }
 
         public string Username { get; }
