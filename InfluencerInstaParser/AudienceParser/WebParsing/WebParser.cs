@@ -187,9 +187,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             foreach (var shortCode in shortCodes)
             {
+                _logger.Info($"Getting location for {_owner.Username} from {shortCode}");
                 var postUrl = "/p/" + shortCode + "/";
                 var postPageContent = _downloaderProxy.GetPageContent(postUrl, _userAgent);
+                _logger.Info($"Page {shortCode} for {_owner.Username} received");
                 if (!_pageContentScrapper.IsPostHasLocation(postPageContent)) continue;
+                _logger.Info($"Starting locator for {shortCode}");
                 var locator = new Locator(_downloaderProxy, _pageContentScrapper, _userAgent);
                 if (locator.TryGetPostLocation(postPageContent, out var city)) _owner.AddLocation(city);
             }

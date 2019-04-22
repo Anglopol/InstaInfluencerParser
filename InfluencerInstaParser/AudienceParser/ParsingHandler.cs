@@ -50,15 +50,18 @@ namespace InfluencerInstaParser.AudienceParser
             followers.Wait();
             _parsingSet.ProcessedUsers[_targetAccount].Followers = followers.Result.Count();
             Task.WaitAll(tasks.ToArray());
+            var locationTasks = new List<Task>();
             web.FillUnprocessedSet(followers.Result, CommunicationType.Follower);
-            foreach (var user in _parsingSet.UnprocessedUsers.Values.ToList())
+            var users = _parsingSet.UnprocessedUsers.Values.ToList();
+            foreach (var user in users)
             {
                 Console.WriteLine($"Getting location for {user.Username}");
                 var locationTask = new Task(() => new WebParser(agents.GetUserAgent(), user).GetUserLocations());
-                tasks.Add(locationTask);
+                locationTasks.Add(locationTask);
+                locationTask.Start();
             }
 
-            Task.WaitAll(tasks.ToArray());
+            Task.WaitAll(locationTasks.ToArray());
         }
     }
 }
