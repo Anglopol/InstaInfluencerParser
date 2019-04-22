@@ -107,7 +107,7 @@ namespace InfluencerInstaParser.Database
             using (var session = _driver.Session())
             {
                 await session.RunAsync(cypher,
-                    new Dictionary<string, object> {{"relations", ParameterSerializer.ToDictionary(users)}});
+                    new Dictionary<string, object> {{"users", ParameterSerializer.ToDictionary(users)}});
             }
         }
     }
