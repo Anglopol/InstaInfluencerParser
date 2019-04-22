@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using InfluencerInstaParser.AudienceParser.UserInformation;
@@ -11,17 +12,17 @@ namespace InfluencerInstaParser.AudienceParser
 
         private ParsingSetSingleton()
         {
-            ShortCodesQueue = new Queue<string>();
-            UnprocessedUsers = new Dictionary<string, User>();
-            ProcessedUsers = new Dictionary<string, User>();
-            Locations = new Dictionary<string, Location>();
+            ShortCodesQueue = new ConcurrentQueue<string>();
+            UnprocessedUsers = new ConcurrentDictionary<string, User>();
+            ProcessedUsers = new ConcurrentDictionary<string, User>();
+            Locations = new ConcurrentDictionary<string, Location>();
         }
 
-        public Queue<string> ShortCodesQueue { get; }
-        public Dictionary<string, User> UnprocessedUsers { get; }
-        public Dictionary<string, User> ProcessedUsers { get; }
+        public ConcurrentQueue<string> ShortCodesQueue { get; }
+        public ConcurrentDictionary<string, User> UnprocessedUsers { get; }
+        public ConcurrentDictionary<string, User> ProcessedUsers { get; }
 
-        public Dictionary<string, Location> Locations { get; }
+        public ConcurrentDictionary<string, Location> Locations { get; }
 
         public static ParsingSetSingleton GetInstance()
         {

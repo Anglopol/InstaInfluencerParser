@@ -11,8 +11,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
     public class WebParser
     {
-        private static readonly object QueueLocker = new object();
-        private static readonly object UnprocessedSetLocker = new object();
         private readonly PageDownloaderProxy _downloaderProxy;
         private readonly JObjectHandler _jObjectHandler;
 
@@ -203,33 +201,27 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public void FillUnprocessedSet(IEnumerable<string> list, CommunicationType type)
         {
-            lock (UnprocessedSetLocker)
+            foreach (var username in list)
             {
-                foreach (var username in list)
+                if (_usersSet.ProcessedUsers.ContainsKey(username) ||
+                    _usersSet.UnprocessedUsers.ContainsKey(username))
                 {
-                    if (_usersSet.ProcessedUsers.ContainsKey(username) ||
-                        _usersSet.UnprocessedUsers.ContainsKey(username))
-                    {
-                        var currentUser = _usersSet.UnprocessedUsers.ContainsKey(username)
-                            ? _usersSet.UnprocessedUsers[username]
-                            : _usersSet.ProcessedUsers[username];
-                        _usersSet.AddUnprocessedUser(username, _owner, currentUser.Followers, currentUser.Following,
-                            currentUser.IsInfluencer, type);
-                        continue;
-                    }
-
-                    var isInfluencer = CheckUser(username, out var followers, out var following);
-                    _usersSet.AddUnprocessedUser(username, _owner, followers, following, isInfluencer, type);
+                    var currentUser = _usersSet.UnprocessedUsers.ContainsKey(username)
+                        ? _usersSet.UnprocessedUsers[username]
+                        : _usersSet.ProcessedUsers[username];
+                    _usersSet.AddUnprocessedUser(username, _owner, currentUser.Followers, currentUser.Following,
+                        currentUser.IsInfluencer, type);
+                    continue;
                 }
+
+                var isInfluencer = CheckUser(username, out var followers, out var following);
+                _usersSet.AddUnprocessedUser(username, _owner, followers, following, isInfluencer, type);
             }
         }
 
         public void FillShortCodesQueue(IEnumerable<string> list)
         {
-            lock (QueueLocker)
-            {
-                foreach (var shortCode in list) _usersSet.AddInShortCodesQueue(shortCode);
-            }
+            foreach (var shortCode in list) _usersSet.AddInShortCodesQueue(shortCode);
         }
 
         private bool CheckUser(string username, out int followers, out int following)

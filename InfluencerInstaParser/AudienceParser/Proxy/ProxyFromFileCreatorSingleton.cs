@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
 
         private readonly Queue<WebProxy> _proxyQueue;
         private bool _isQueueInit;
-        private readonly Dictionary<WebProxy, DateTime> _usedProxy;
+        private readonly ConcurrentDictionary<WebProxy, DateTime> _usedProxy;
 
         private readonly TimeSpan _defaultDelayTime = TimeSpan.Parse("00:03:00");
 
@@ -25,7 +26,7 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
         {
             _logger = LogManager.GetCurrentClassLogger();
             _proxyQueue = new Queue<WebProxy>();
-            _usedProxy = new Dictionary<WebProxy, DateTime>();
+            _usedProxy = new ConcurrentDictionary<WebProxy, DateTime>();
         }
 
         public static IProxyCreatorSingleton GetInstance()
@@ -78,7 +79,7 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
                 foreach (var (proxy, lastUse) in _usedProxy)
                 {
                     if (!IsProxyCanBeUsed(proxy, lastUse)) continue;
-                    _usedProxy.Remove(proxy);
+                    _usedProxy.TryRemove(proxy, out var value);
                     return proxy;
                 }
 

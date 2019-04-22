@@ -12,8 +12,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
     {
         private const string InstagramUrl = @"https://www.instagram.com";
 
-        private static readonly object GetProxyLocker = new object();
-
         private readonly Logger _logger;
         private readonly IProxyCreatorSingleton _proxyCreator;
         private WebProxy _proxy;
@@ -93,12 +91,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
 
         private void SetProxy(WebProxy proxy)
         {
-            lock (GetProxyLocker)
-            {
-                _proxyClient?.CancelPendingRequests();
-                Proxy = proxy;
-                Console.WriteLine("Proxy changed");
-            }
+            _proxyClient?.CancelPendingRequests();
+            Proxy = proxy;
+            Console.WriteLine("Proxy changed");
         }
     }
 }
