@@ -168,6 +168,20 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return cityName;
         }
 
+        public double GetLocationLat(string pageContent)
+        {
+            return double.Parse(
+                Regex.Match(pageContent, "location:latitude\" content=\"[^\"]*")
+                    .ToString().Split("\"")[2]);
+        }
+
+        public double GetLocationLong(string pageContent)
+        {
+            return double.Parse(
+                Regex.Match(pageContent, "location:longitude\" content=\"[^\"]*")
+                    .ToString().Split("\"")[2]);
+        }
+
         public IEnumerable<string> GetListOfProxies(string pageContent)
         {
             return pageContent.Split("\n").ToList();
