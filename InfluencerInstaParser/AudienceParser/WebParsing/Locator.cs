@@ -54,14 +54,16 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public bool TryGetPostLocationByPoints(string pageContent, double maxDistance, out string city)
         {
+            city = "";
             if (_cities == null) FillCities();
             var locationUrl =
                 $"/explore/locations/{_scrapper.GetLocationId(pageContent)}/{_scrapper.GetLocationSlug(pageContent)}/";
             var locationPage = _proxy.GetPageContent(locationUrl, _userAgent);
+            if (!pageContent.Contains("location:latitude") || !pageContent.Contains("location:longitude")) return false;
             var cityLat = _scrapper.GetLocationLat(locationPage);
             var cityLong = _scrapper.GetLocationLong(locationPage);
             city = GetNearestCityByPoints(cityLat, cityLong, out var distance);
-            return distance > maxDistance;
+            return distance < maxDistance;
         }
 
         private string GetNearestCityByPoints(double cityLat, double cityLong, out double distance)
@@ -102,7 +104,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 var cityName = cityParams[0];
                 var cityLat = double.Parse(cityParams[1]);
                 var cityLong = double.Parse(cityParams[2]);
-                _cities.Add(cityName, new KeyValuePair<double, double>(cityLat, cityLong));
+                _cities.TryAdd(cityName, new KeyValuePair<double, double>(cityLat, cityLong));
             }
         }
     }

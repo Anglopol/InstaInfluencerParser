@@ -192,7 +192,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 if (!_pageContentScrapper.IsPostHasLocation(postPageContent)) continue;
                 _logger.Info($"Starting locator for {shortCode}");
                 var locator = new Locator(_downloaderProxy, _pageContentScrapper, _userAgent);
-                if (locator.TryGetPostLocation(postPageContent, out var city)) _owner.AddLocation(city);
+                if (locator.TryGetPostLocationByPoints(postPageContent, double.MaxValue, out var city))
+                    _owner.AddLocation(city);
             }
 
             _logger.Info($"Getting locations for {_owner.Username} completed");

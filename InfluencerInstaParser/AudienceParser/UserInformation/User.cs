@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using InfluencerInstaParser.Database.ModelView;
@@ -17,13 +18,11 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
         private int _following;
         private int _followers;
 
-        private static readonly object SetLocationLocker = new object();
-
         public bool IsLocationProcessed { get; set; }
 
         public ModelUser ModelViewUser { get; }
-        public Dictionary<string, int> Locations { get; }
-        public Dictionary<User, RelationInformation> Relations { get; }
+        public ConcurrentDictionary<string, int> Locations { get; }
+        public ConcurrentDictionary<User, RelationInformation> Relations { get; }
 
         public bool IsInfluencer { get; }
 
@@ -42,26 +41,24 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                 IsInfluencer = isInfluencer, Locations = new List<string>()
             };
             IsInfluencer = isInfluencer;
-            Locations = new Dictionary<string, int>();
+            Locations = new ConcurrentDictionary<string, int>();
             Username = username;
             Likes = likes;
             Comments = comments;
             Following = following;
             Followers = followers;
             Parent = parent;
+            Relations = new ConcurrentDictionary<User, RelationInformation>();
             switch (type)
             {
                 case CommunicationType.Liker:
-                    Relations = new Dictionary<User, RelationInformation>
-                        {{parent, new RelationInformation(parent.Username, Username, likes: 1)}};
+                    Relations.TryAdd(parent, new RelationInformation(parent.Username, Username, likes: 1));
                     break;
                 case CommunicationType.Commentator:
-                    Relations = new Dictionary<User, RelationInformation>
-                        {{parent, new RelationInformation(parent.Username, Username, comments: 1)}};
+                    Relations.TryAdd(parent, new RelationInformation(parent.Username, Username, comments: 1));
                     break;
                 default:
-                    Relations = new Dictionary<User, RelationInformation>
-                        {{parent, new RelationInformation(parent.Username, Username)}};
+                    Relations.TryAdd(parent, new RelationInformation(parent.Username, Username));
                     break;
             }
         }
@@ -79,8 +76,8 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                 Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following,
                 IsInfluencer = false, Locations = new List<string>()
             };
-            Relations = new Dictionary<User, RelationInformation>();
-            Locations = new Dictionary<string, int>();
+            Relations = new ConcurrentDictionary<User, RelationInformation>();
+            Locations = new ConcurrentDictionary<string, int>();
             Username = username;
             Likes = likes;
             Comments = comments;
@@ -184,12 +181,10 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             if (Locations.TryAdd(locationName, 0)) ModelViewUser.Locations = Locations.Keys.ToList();
             Locations[locationName]++;
             var set = ParsingSetSingleton.GetInstance();
-            lock (SetLocationLocker)
-            {
-                if (!set.Locations.TryAdd(locationName,
-                    new Location {Name = locationName, CountOfUsers = Locations[locationName]}))
-                    set.Locations[locationName].CountOfUsers++;
-            }
+
+            if (!set.Locations.TryAdd(locationName,
+                new Location {Name = locationName, CountOfUsers = Locations[locationName]}))
+                set.Locations[locationName].CountOfUsers++;
         }
     }
 }
