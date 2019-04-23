@@ -76,6 +76,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
 
         public void SetProxyFree()
         {
+            _proxyClient?.CancelPendingRequests();
             _proxyCreator.SetProxyFree(Proxy);
         }
 

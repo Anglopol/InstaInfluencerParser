@@ -21,7 +21,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
         public bool IsLocationProcessed { get; set; }
 
         public ModelUser ModelViewUser { get; }
-        public ConcurrentDictionary<string, int> Locations { get; }
+        private ConcurrentDictionary<string, int> Locations { get; }
         public ConcurrentDictionary<User, RelationInformation> Relations { get; }
 
         public bool IsInfluencer { get; }
@@ -181,7 +181,6 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             if (Locations.TryAdd(locationName, 0)) ModelViewUser.Locations = Locations.Keys.ToList();
             Locations[locationName]++;
             var set = ParsingSetSingleton.GetInstance();
-
             if (!set.Locations.TryAdd(locationName,
                 new Location {Name = locationName, CountOfUsers = Locations[locationName]}))
                 set.Locations[locationName].CountOfUsers++;

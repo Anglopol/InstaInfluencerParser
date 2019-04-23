@@ -9,10 +9,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
     public class Locator
     {
-        private const double RadiusE = 6378135; // Equatorial radius
-        private const double RadiusP = 6356750; // Polar radius
-        private const double RadianConv = 180 / Math.PI;
-
         private readonly PageDownloaderProxy _proxy;
         private readonly PageContentScrapper _scrapper;
         private readonly string _userAgent;
@@ -54,12 +50,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public bool TryGetPostLocationByPoints(string pageContent, double maxDistance, out string city)
         {
-            city = "";
             if (_cities == null) FillCities();
             var locationUrl =
                 $"/explore/locations/{_scrapper.GetLocationId(pageContent)}/{_scrapper.GetLocationSlug(pageContent)}/";
             var locationPage = _proxy.GetPageContent(locationUrl, _userAgent);
-            if (!pageContent.Contains("location:latitude") || !pageContent.Contains("location:longitude")) return false;
+            city = "";
+            if (!locationPage.Contains("location:latitude") || !locationPage.Contains("location:longitude"))
+                return false;
             var cityLat = _scrapper.GetLocationLat(locationPage);
             var cityLong = _scrapper.GetLocationLong(locationPage);
             city = GetNearestCityByPoints(cityLat, cityLong, out var distance);
@@ -74,7 +71,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             {
                 var currentDistance = GetDistanceBetweenPoints(cityLat, cityLong,
                     city.Value.Key, city.Value.Value);
-                if (!(distance < currentDistance)) continue;
+                if (distance <= currentDistance) continue;
                 currentCity = city.Key;
                 distance = currentDistance;
             }
@@ -84,14 +81,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         private static double GetDistanceBetweenPoints(double lat1, double long1, double lat2, double long2)
         {
-            var dLat = (lat2 - lat1) / RadianConv;
-            var dLong = (long2 - long1) / RadianConv;
-            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                    Math.Cos(lat2) * Math.Sin(dLong / 2) * Math.Sin(dLong / 2);
-            return Math.Sqrt(Math.Pow(RadiusE * RadiusP * Math.Cos(lat1 / RadianConv), 2) /
-                             (Math.Pow(RadiusE * Math.Cos(lat1 / RadianConv), 2) +
-                              Math.Pow(RadiusP * Math.Sin(lat1 / RadianConv), 2))) *
-                   (2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a))) / 1000;
+            return Math.Sqrt(Math.Pow(lat2 - lat1, 2) + Math.Pow(long2 - long1, 2));
         }
 
         private void FillCities()

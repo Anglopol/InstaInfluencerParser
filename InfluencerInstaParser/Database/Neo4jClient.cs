@@ -93,6 +93,7 @@ namespace InfluencerInstaParser.Database
 
         public async Task CreateLocationsRelationships(IList<User> users) //TODO location counter
         {
+            var modelUsers = (from user in users select user.ModelViewUser).ToList();
             var cypher = new StringBuilder()
                 .AppendLine("UNWIND {users} AS user")
                 .AppendLine("UNWIND user.locations AS location")
@@ -107,7 +108,7 @@ namespace InfluencerInstaParser.Database
             using (var session = _driver.Session())
             {
                 await session.RunAsync(cypher,
-                    new Dictionary<string, object> {{"users", ParameterSerializer.ToDictionary(users)}});
+                    new Dictionary<string, object> {{"users", ParameterSerializer.ToDictionary(modelUsers)}});
             }
         }
     }

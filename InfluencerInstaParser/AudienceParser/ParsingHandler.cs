@@ -33,9 +33,11 @@ namespace InfluencerInstaParser.AudienceParser
             var api = Task.Run(() => AuthApiCreator.MakeAuthApi(sessionData)).GetAwaiter().GetResult();
             var tasks = new List<Task>();
             var followers = Task.Run(() => new AudienceDownloader().GetFollowers(_targetAccount, api));
-            while (_parsingSet.ShortCodesQueue.Count != 0)
+//            var i = 0;
+            while (_parsingSet.ShortCodesQueue.Count != 0) // && i < 2
             {
-                var shortCode = _parsingSet.ShortCodesQueue.Dequeue();
+//                i++;
+                _parsingSet.ShortCodesQueue.TryDequeue(out var shortCode);
                 var like = new Task(() =>
                     new WebParser(agents.GetUserAgent(), owner).GetUsernamesFromPostLikes(shortCode));
                 var comment = new Task(() =>

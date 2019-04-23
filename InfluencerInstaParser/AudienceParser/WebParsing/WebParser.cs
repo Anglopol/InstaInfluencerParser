@@ -183,8 +183,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 return;
             }
 
+//            var i = 0;
             foreach (var shortCode in shortCodes)
             {
+//                i++;
+//                if (i == 5) break;
+
                 _logger.Info($"Getting location for {_owner.Username} from {shortCode}");
                 var postUrl = "/p/" + shortCode + "/";
                 var postPageContent = _downloaderProxy.GetPageContent(postUrl, _userAgent);
