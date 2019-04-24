@@ -60,16 +60,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
 
             var jsonPage = _queryRequester.GetJsonPageContent(userPageContent, userId, _rhxGis);
-
-            resultList.AddRange(_jObjectHandler.GetListOfShortCodesFromQueryContent(jsonPage));
             var count = 0;
             while (_jObjectHandler.HasNextPageForPosts(jsonPage) && count < countOfLoading - 1)
             {
+                resultList.AddRange(_jObjectHandler.GetListOfShortCodesFromQueryContent(jsonPage));
                 count++;
                 var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForPosts(jsonPage);
                 jsonPage = _queryRequester.GetJson(userId, _rhxGis, nextCursor);
-
-                resultList.AddRange(_jObjectHandler.GetListOfShortCodesFromQueryContent(jsonPage));
             }
 
             resultList.AddRange(_jObjectHandler.GetListOfShortCodesFromQueryContent(jsonPage));
@@ -112,13 +109,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting json users from post: {postShortCode}");
 
             var jsonPage = _queryRequester.GetJsonPageContent(postPageContent, postShortCode, _rhxGis);
-
-            resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForPost(jsonPage));
             while (_jObjectHandler.HasNextPageForComments(jsonPage))
             {
+                resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForPost(jsonPage));
                 var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForComments(jsonPage);
                 jsonPage = _queryRequester.GetJson(postShortCode, _rhxGis, nextCursor);
-                resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForPost(jsonPage));
             }
 
             resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForPost(jsonPage));
@@ -151,17 +146,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             var jsonPage = _queryRequester.GetJsonForLikes(postShortCode, _rhxGis, "");
 
-            resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
             while (_jObjectHandler.HasNextPageForLikes(jsonPage))
             {
+                resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
                 var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForLikes(jsonPage);
-
                 _logger.Info(
                     $"Thread: {Thread.CurrentThread.Name} getting json users from post likes: {postShortCode}");
-
                 jsonPage = _queryRequester.GetJsonForLikes(postShortCode, _rhxGis, nextCursor);
-
-                resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
             }
 
             resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
@@ -189,11 +180,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 return;
             }
 
-//            var i = 0;
+            var i = 0;
             foreach (var shortCode in shortCodes)
             {
-//                i++;
-//                if (i == 5) break;
+                i++;
+                if (i == 5) break;
 
                 _logger.Info($"Getting location for {_owner.Username} from {shortCode}");
                 var postUrl = "/p/" + shortCode + "/";
