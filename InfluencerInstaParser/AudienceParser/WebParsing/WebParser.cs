@@ -34,7 +34,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _queryRequester = new QueryRequester(userAgent, _downloaderProxy);
         }
 
-        public bool TryGetPostsShortCodesFromUser(string username, out List<string> shortCodes, int countOfLoading = 0)
+        public bool TryGetPostsShortCodesFromUser(string username, out List<string> shortCodes, int countOfLoading = 10)
         {
             var userUrl = "/" + username + "/";
 
@@ -63,7 +63,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             resultList.AddRange(_jObjectHandler.GetListOfShortCodesFromQueryContent(jsonPage));
             var count = 0;
-            while (_jObjectHandler.HasNextPageForPosts(jsonPage) && count < countOfLoading)
+            while (_jObjectHandler.HasNextPageForPosts(jsonPage) && count < countOfLoading - 1)
             {
                 count++;
                 var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForPosts(jsonPage);
@@ -71,6 +71,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
                 resultList.AddRange(_jObjectHandler.GetListOfShortCodesFromQueryContent(jsonPage));
             }
+
+            resultList.AddRange(_jObjectHandler.GetListOfShortCodesFromQueryContent(jsonPage));
 
             shortCodes = resultList;
             _downloaderProxy.SetProxyFree();
@@ -119,6 +121,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForPost(jsonPage));
             }
 
+            resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForPost(jsonPage));
+
             FillUnprocessedSet(resultList, CommunicationType.Commentator);
             _owner.Comments += resultList.Count;
             _downloaderProxy.SetProxyFree();
@@ -159,6 +163,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
                 resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
             }
+
+            resultList.AddRange(_jObjectHandler.GetListOfUsernamesFromQueryContentForLikes(jsonPage));
 
             FillUnprocessedSet(resultList, CommunicationType.Liker);
             _owner.Likes += resultList.Count;
