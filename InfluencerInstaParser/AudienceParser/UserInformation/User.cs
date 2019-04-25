@@ -12,15 +12,23 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
         private readonly object _setFollowingLocker;
         private readonly object _setFollowersLocker;
         private readonly object _setLikesLocker;
-        private readonly object _relationLocker;
         private int _comments;
         private int _likes;
         private int _following;
         private int _followers;
+        private readonly ModelUser _modelUser;
 
         public bool IsLocationProcessed { get; set; }
 
-        public ModelUser ModelViewUser { get; }
+        public ModelUser ModelViewUser
+        {
+            get
+            {
+                _modelUser.Locations = Locations.Keys.ToList();
+                return _modelUser;
+            }
+        }
+
         private ConcurrentDictionary<string, int> Locations { get; }
         public ConcurrentDictionary<User, RelationInformation> Relations { get; }
 
@@ -33,9 +41,8 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             _setFollowingLocker = new object();
             _setCommentsLocker = new object();
             _setLikesLocker = new object();
-            _relationLocker = new object();
             IsLocationProcessed = false;
-            ModelViewUser = new ModelUser
+            _modelUser = new ModelUser
             {
                 Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following,
                 IsInfluencer = isInfluencer, Locations = new List<string>()
@@ -69,9 +76,8 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             _setFollowingLocker = new object();
             _setCommentsLocker = new object();
             _setLikesLocker = new object();
-            _relationLocker = new object();
             IsLocationProcessed = false;
-            ModelViewUser = new ModelUser
+            _modelUser = new ModelUser
             {
                 Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following,
                 IsInfluencer = false, Locations = new List<string>()
@@ -96,7 +102,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                 lock (_setLikesLocker)
                 {
                     _likes = value;
-                    ModelViewUser.Likes = _likes;
+                    _modelUser.Likes = _likes;
                 }
             }
         }
@@ -110,7 +116,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                 lock (_setCommentsLocker)
                 {
                     _comments = value;
-                    ModelViewUser.Comments = _comments;
+                    _modelUser.Comments = _comments;
                 }
             }
         }
@@ -118,13 +124,13 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
         public int Following
         {
             get => _following;
-            set
+            private set
             {
                 if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
                 lock (_setFollowingLocker)
                 {
                     _following = value;
-                    ModelViewUser.Following = _following;
+                    _modelUser.Following = _following;
                 }
             }
         }
@@ -138,7 +144,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                 lock (_setFollowersLocker)
                 {
                     _followers = value;
-                    ModelViewUser.Followers = _followers;
+                    _modelUser.Followers = _followers;
                 }
             }
         }
@@ -148,37 +154,30 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
         public void AddNewRelation(User parent)
         {
             if (parent.Username == Username) return;
-            lock (_relationLocker)
-            {
-                Relations.TryAdd(parent, new RelationInformation(parent.Username, Username));
-            }
+
+            Relations.TryAdd(parent, new RelationInformation(parent.Username, Username));
         }
 
         public void AddLikesForRelation(User parent, int count = 1)
         {
             if (parent.Username == Username) return;
-            lock (_relationLocker)
-            {
-                if (!Relations.TryAdd(parent,
-                    new RelationInformation(parent.Username, Username, count)))
-                    Relations[Parent].Likes++;
-            }
+
+            if (!Relations.TryAdd(parent,
+                new RelationInformation(parent.Username, Username, count)))
+                Relations[Parent].Likes++;
         }
 
         public void AddCommentsForRelation(User parent, int count = 1)
         {
             if (parent.Username == Username) return;
-            lock (_relationLocker)
-            {
-                if (!Relations.TryAdd(parent,
-                    new RelationInformation(parent.Username, Username, comments: count)))
-                    Relations[Parent].Comments++;
-            }
+            if (!Relations.TryAdd(parent,
+                new RelationInformation(parent.Username, Username, comments: count)))
+                Relations[Parent].Comments++;
         }
 
         public void AddLocation(string locationName)
         {
-            if (Locations.TryAdd(locationName, 0)) ModelViewUser.Locations = Locations.Keys.ToList();
+            Locations.TryAdd(locationName, 0);
             Locations[locationName]++;
             var set = ParsingSetSingleton.GetInstance();
             if (!set.Locations.TryAdd(locationName,

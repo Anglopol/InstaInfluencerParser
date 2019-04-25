@@ -91,7 +91,7 @@ namespace InfluencerInstaParser.Database
             }
         }
 
-        public async Task CreateLocationsRelationships(IList<User> users) //TODO location counter
+        public async Task CreateLocationsRelationships(IList<User> users)
         {
             var modelUsers = (from user in users select user.ModelViewUser).ToList();
             var cypher = new StringBuilder()
