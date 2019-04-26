@@ -17,8 +17,16 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private readonly PageContentScrapper _scrapper;
         private readonly string _userAgent;
         private readonly Logger _logger;
-        private static ConcurrentDictionary<string, KeyValuePair<double, double>> _cities;
-        private static ConcurrentDictionary<string, HashSet<int>> _cachedCities;
+        private static ConcurrentDictionary<string, CityInformation> _cities;
+        private static ConcurrentDictionary<string, HashSet<ulong>> _cachedCities;
+        private static bool _isCitiesFilled;
+
+        private class CityInformation
+        {
+            public int PublicId { get; set; }
+            public double CityLat { get; set; }
+            public double CityLong { get; set; }
+        }
 
         public Locator(PageDownloaderProxy downloaderProxy, PageContentScrapper scrapper, string userAgent)
         {
@@ -26,6 +34,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _proxy = downloaderProxy;
             _userAgent = userAgent;
             _logger = LogManager.GetCurrentClassLogger();
+            FillCities();
         }
 
         public bool TryGetPostLocation(string pageContent, out string city)
@@ -44,7 +53,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var locationPage = _proxy.GetPageContent(locationUrl, _userAgent);
             if (locationPage.Contains("\"city\":"))
             {
-                _logger.Info($"Getting city from page content");
+                _logger.Info("Getting city from page content");
                 city = _scrapper.GetCity(locationPage);
                 return true;
             }
@@ -53,29 +62,37 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return false;
         }
 
-        public bool TryGetPostLocationByPoints(string pageContent, double maxDistance, out string city)
+        public bool TryGetPostLocationByPointsFromPostPage(string pageContent, double maxDistance, out string city,
+            out int cityPublicId)
         {
-            if (_cities == null) FillCities();
-            var locationId = _scrapper.GetLocationId(pageContent);
-            foreach (var (key, value) in _cachedCities)
+            var locationId = ulong.Parse(_scrapper.GetLocationId(pageContent));
+            foreach (var (cityName, cityId) in _cachedCities)
             {
-                if (!value.Contains(int.Parse(locationId))) continue;
-                city = key;
+                if (!cityId.Contains(locationId)) continue;
+                city = cityName;
+                cityPublicId = _cities[city].PublicId;
                 return true;
             }
 
-            var locationUrl =
-                $"/explore/locations/{locationId}/{_scrapper.GetLocationSlug(pageContent)}/";
-            var locationPage = _proxy.GetPageContent(locationUrl, _userAgent);
+            return TryGetLocationByLocationId(locationId, maxDistance, out city, out cityPublicId);
+        }
+
+        public bool TryGetLocationByLocationId(ulong locationId, double maxDistance, out string city,
+            out int cityPublicId)
+        {
             city = "";
+            cityPublicId = 0;
+            var locationUrl = $"/explore/locations/{locationId}/";
+            var locationPage = _proxy.GetPageContent(locationUrl, _userAgent);
             if (!locationPage.Contains("location:latitude") || !locationPage.Contains("location:longitude"))
                 return false;
             var cityLat = _scrapper.GetLocationLat(locationPage);
             var cityLong = _scrapper.GetLocationLong(locationPage);
             city = GetNearestCityByPoints(cityLat, cityLong, out var distance);
+            cityPublicId = _cities[city].PublicId;
             if (!(distance < maxDistance)) return false;
-            _cachedCities.TryAdd(city, new HashSet<int>());
-            _cachedCities[city].Add(int.Parse(locationId));
+            _cachedCities.TryAdd(city, new HashSet<ulong>());
+            _cachedCities[city].Add(locationId);
             return true;
         }
 
@@ -83,12 +100,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             distance = double.MaxValue;
             var currentCity = "";
-            foreach (var city in _cities)
+            foreach (var (cityName, cityInformation) in _cities)
             {
                 var currentDistance = GetDistanceBetweenPoints(cityLat, cityLong,
-                    city.Value.Key, city.Value.Value);
+                    cityInformation.CityLat, cityInformation.CityLong);
                 if (distance <= currentDistance) continue;
-                currentCity = city.Key;
+                currentCity = cityName;
                 distance = currentDistance;
             }
 
@@ -115,16 +132,20 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         private static void FillCities()
         {
-            _cities = new ConcurrentDictionary<string, KeyValuePair<double, double>>();
-            _cachedCities = new ConcurrentDictionary<string, HashSet<int>>();
+            if (_isCitiesFilled) return;
+            _isCitiesFilled = true;
+            _cities = new ConcurrentDictionary<string, CityInformation>();
+            _cachedCities = new ConcurrentDictionary<string, HashSet<ulong>>();
             var cityLines = File.ReadAllLines("citiesLocations.txt", Encoding.UTF8);
             foreach (var city in cityLines)
             {
                 var cityParams = city.Split(":");
-                var cityName = cityParams[0];
-                var cityLat = double.Parse(cityParams[1]);
-                var cityLong = double.Parse(cityParams[2]);
-                _cities.TryAdd(cityName, new KeyValuePair<double, double>(cityLat, cityLong));
+                var cityId = int.Parse(cityParams[0]);
+                var cityName = cityParams[1];
+                var cityLat = double.Parse(cityParams[2]);
+                var cityLong = double.Parse(cityParams[3]);
+                _cities.TryAdd(cityName,
+                    new CityInformation {CityLat = cityLat, CityLong = cityLong, PublicId = cityId});
             }
         }
     }
