@@ -175,14 +175,18 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                 Relations[Parent].Comments++;
         }
 
-        public void AddLocation(string locationName)
+        public void AddLocation(string locationName, int cityId)
         {
             Locations.TryAdd(locationName, 0);
             Locations[locationName]++;
             var set = ParsingSetSingleton.GetInstance();
-            if (!set.Locations.TryAdd(locationName,
-                new Location {Name = locationName, CountOfUsers = Locations[locationName]}))
-                set.Locations[locationName].CountOfUsers++;
+            if (set.Locations.TryAdd(locationName, new Dictionary<int, Location>()))
+            {
+                set.Locations[locationName].Add(cityId,
+                    new Location {Name = locationName, Owner = Parent?.Username, Id = cityId, CountOfUsers = 0});
+            }
+
+            set.Locations[locationName][cityId].CountOfUsers++;
         }
     }
 }

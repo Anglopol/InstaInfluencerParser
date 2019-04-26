@@ -123,10 +123,16 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 .Split(":")[1].Remove(0, 1)).ToList();
         }
 
-        public IEnumerable<string> GetListOfUsernamesFromPageContent(string pageContent)
+        public IEnumerable<string> GetEnumerableOfUsernamesFromPageContent(string pageContent)
         {
             return Regex.Matches(pageContent, "username\".{2}[^\"]*").Select(match => match.Value.ToString()
                 .Split(":")[1].Remove(0, 1)).ToList();
+        }
+
+        public List<string> GetListOfLocationsFromPageContent(string pageContent)
+        {
+            return Regex.Matches(pageContent, "location\":[^,]*").Where(match => !match.Value.Contains("null")).Select(
+                match => match.Value.ToString().Split("\"")[4]).ToList();
         }
 
         public bool IsPostHasLocation(string pageContent)

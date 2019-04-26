@@ -40,7 +40,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return endOfCursor;
         }
 
-        public List<string> GetListOfUsernamesFromQueryContentForPost(JObject queryContent)
+        public IEnumerable<string> GetEnumerableOfUsernamesFromQueryContentForPost(JObject queryContent)
         {
             var edges = (JArray) queryContent.SelectToken("data.shortcode_media.edge_media_to_comment.edges");
             var users = new List<string>();
@@ -49,7 +49,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return users;
         }
 
-        public List<string> GetListOfUsernamesFromQueryContentForLikes(JObject queryContent)
+        public IEnumerable<string> GetEnumerableOfUsernamesFromQueryContentForLikes(JObject queryContent)
         {
             var edges = (JArray) queryContent.SelectToken("data.shortcode_media.edge_liked_by.edges");
             var users = new List<string>();
@@ -58,13 +58,27 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return users;
         }
 
-        public List<string> GetListOfShortCodesFromQueryContent(JObject queryContent)
+        public IEnumerable<string> GetEnumerableOfShortCodesFromQueryContent(JObject queryContent)
         {
             var edges = (JArray) queryContent.SelectToken("data.user.edge_owner_to_timeline_media.edges");
             var shortCodes = new List<string>();
             foreach (var edge in edges) shortCodes.Add((string) edge.SelectToken("node.shortcode"));
 
             return shortCodes;
+        }
+
+        public IEnumerable<string> GetEnumerableOfLocationsFromQueryContent(JObject queryContent)
+        {
+            var edges = (JArray) queryContent.SelectToken("data.user.edge_owner_to_timeline_media.edges");
+            var locations = new List<string>();
+            foreach (var edge in edges)
+            {
+                var locationJson = (string) edge.SelectToken("node.location");
+                if (locationJson == "" || locationJson == "null") continue;
+                locations.Add((string) edge.SelectToken("node.location.id"));
+            }
+
+            return locations;
         }
 
         public bool HasNextPageForPosts(JObject queryContent)
