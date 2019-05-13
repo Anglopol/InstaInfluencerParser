@@ -44,7 +44,8 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             IsLocationProcessed = false;
             _modelUser = new ModelUser
             {
-                Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following,
+                Likes = likes, Parents = new List<string> {parent.Username}, Comments = comments, Username = username,
+                Followers = followers, Following = following,
                 IsInfluencer = isInfluencer, Locations = new List<string>()
             };
             IsInfluencer = isInfluencer;
@@ -54,7 +55,6 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             Comments = comments;
             Following = following;
             Followers = followers;
-            Parent = parent;
             Relations = new ConcurrentDictionary<User, RelationInformation>();
             switch (type)
             {
@@ -79,9 +79,12 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             IsLocationProcessed = false;
             _modelUser = new ModelUser
             {
-                Likes = likes, Comments = comments, Username = username, Followers = followers, Following = following,
+                Likes = likes, Parents = new List<string> {"@target"}, Comments = comments, Username = username,
+                Followers = followers,
+                Following = following,
                 IsInfluencer = false, Locations = new List<string>()
             };
+
             Relations = new ConcurrentDictionary<User, RelationInformation>();
             Locations = new ConcurrentDictionary<string, int>();
             Username = username;
@@ -149,8 +152,6 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             }
         }
 
-        public User Parent { get; }
-
         public void AddNewRelation(User parent)
         {
             if (parent.Username == Username) return;
@@ -164,7 +165,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
 
             if (!Relations.TryAdd(parent,
                 new RelationInformation(parent.Username, Username, count)))
-                Relations[Parent].Likes++;
+                Relations[parent].Likes++;
         }
 
         public void AddCommentsForRelation(User parent, int count = 1)
@@ -172,21 +173,42 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             if (parent.Username == Username) return;
             if (!Relations.TryAdd(parent,
                 new RelationInformation(parent.Username, Username, comments: count)))
-                Relations[Parent].Comments++;
+                Relations[parent].Comments++;
         }
 
-        public void AddLocation(string locationName, int cityId)
+        public void AddLocation(string locationName, int cityId, string parentName)
         {
             Locations.TryAdd(locationName, 0);
             Locations[locationName]++;
             var set = ParsingSetSingleton.GetInstance();
-            if (set.Locations.TryAdd(locationName, new Dictionary<int, Location>()))
+            if (set.Locations.TryAdd(locationName, new Dictionary<int, List<Location>>()))
             {
                 set.Locations[locationName].Add(cityId,
-                    new Location {Name = locationName, Owner = Parent?.Username, Id = cityId, CountOfUsers = 0});
+                    new List<Location>
+                    {
+                        new Location
+                        {
+                            Name = locationName, Owner = parentName, Id = cityId, CountOfUsers = 0
+                        }
+                    });
             }
+            else
+            {
+                var contains = false;
+                var currentLocation = new Location
+                {
+                    Name = locationName, Owner = parentName, Id = cityId, CountOfUsers = 1
+                };
+                foreach (var location in set.Locations[locationName][cityId])
+                {
+                    if (!location.Equals(currentLocation)) continue;
+                    location.CountOfUsers++;
+                    contains = true;
+                    break;
+                }
 
-            set.Locations[locationName][cityId].CountOfUsers++;
+                if (!contains) set.Locations[locationName][cityId].Add(currentLocation);
+            }
         }
     }
 }
