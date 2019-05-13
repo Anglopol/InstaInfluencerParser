@@ -7,6 +7,7 @@ namespace InfluencerInstaParser.Database.ModelView
     {
         [JsonProperty("locations")] public List<string> Locations { get; set; }
         [JsonProperty("name")] public string Username { get; set; }
+        [JsonProperty("parents")] public List<string> Parents { get; set; }
         [JsonProperty("likes")] public int Likes { get; set; }
         [JsonProperty("comments")] public int Comments { get; set; }
         [JsonProperty("following")] public int Following { get; set; }

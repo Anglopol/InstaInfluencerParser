@@ -26,8 +26,9 @@ namespace InfluencerInstaParser.AudienceParser
             _parsingSet.AddProcessedUser(owner);
             var agents = new UserAgentCreator();
             var web = new WebParser(agents.GetUserAgent(), owner);
-            if (!web.TryGetPostsShortCodesFromUser(_targetAccount, out var shortCodes)) return;
+            if (!web.TryGetPostsShortCodesAndLocationsIdFromUser(_targetAccount, out var shortCodes, out _)) return;
             web.FillShortCodesQueue(shortCodes);
+
             Console.WriteLine("Short Codes downloaded");
             var sessionData = new ConfigSessionDataFactory().MakeSessionData();
             var api = Task.Run(() => AuthApiCreator.MakeAuthApi(sessionData)).GetAwaiter().GetResult();

@@ -15,14 +15,14 @@ namespace InfluencerInstaParser.AudienceParser
             ShortCodesQueue = new ConcurrentQueue<string>();
             UnprocessedUsers = new ConcurrentDictionary<string, User>();
             ProcessedUsers = new ConcurrentDictionary<string, User>();
-            Locations = new ConcurrentDictionary<string, Dictionary<int, Location>>();
+            Locations = new ConcurrentDictionary<string, Dictionary<int, List<Location>>>();
         }
 
         public ConcurrentQueue<string> ShortCodesQueue { get; }
         public ConcurrentDictionary<string, User> UnprocessedUsers { get; }
         public ConcurrentDictionary<string, User> ProcessedUsers { get; }
 
-        public ConcurrentDictionary<string, Dictionary<int, Location>> Locations { get; }
+        public ConcurrentDictionary<string, Dictionary<int, List<Location>>> Locations { get; }
 
         public static ParsingSetSingleton GetInstance()
         {

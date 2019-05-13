@@ -97,9 +97,10 @@ namespace InfluencerInstaParser.Database
             var cypher = new StringBuilder()
                 .AppendLine("UNWIND {users} AS user")
                 .AppendLine("UNWIND user.locations AS location")
+                .AppendLine("UNWIND user.parents AS parent")
                 // Find the User:
                 .AppendLine("MATCH (u:User { name: user.name })")
-                .AppendLine("MATCH (l:Location { name: location })")
+                .AppendLine("MATCH (l:Location { name: location, audienceFrom: parent })")
                 .AppendLine(
                     "MERGE (u)-[:VISITED]->(l)")
                 .ToString();
