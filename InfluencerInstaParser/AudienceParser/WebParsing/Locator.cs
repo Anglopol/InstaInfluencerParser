@@ -66,14 +66,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             out int cityPublicId)
         {
             var locationId = ulong.Parse(_scrapper.GetLocationId(pageContent));
-            foreach (var (cityName, cityId) in _cachedCities)
-            {
-                if (!cityId.Contains(locationId)) continue;
-                city = cityName;
-                cityPublicId = _cities[city].PublicId;
-                return true;
-            }
-
             return TryGetLocationByLocationId(locationId, maxDistance, out city, out cityPublicId);
         }
 
@@ -82,6 +74,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             city = "";
             cityPublicId = 0;
+            foreach (var (cityName, cityId) in _cachedCities)
+            {
+                if (!cityId.Contains(locationId)) continue;
+                city = cityName;
+                cityPublicId = _cities[city].PublicId;
+                return true;
+            }
+
             var locationUrl = $"/explore/locations/{locationId}/";
             var locationPage = _proxy.GetPageContent(locationUrl, _userAgent);
             if (!locationPage.Contains("location:latitude") || !locationPage.Contains("location:longitude"))

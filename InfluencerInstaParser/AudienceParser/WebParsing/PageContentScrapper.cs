@@ -129,10 +129,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 .Split(":")[1].Remove(0, 1)).ToList();
         }
 
-        public List<string> GetListOfLocationsFromPageContent(string pageContent)
+        public List<ulong> GetListOfLocationsFromPageContent(string pageContent)
         {
-            return Regex.Matches(pageContent, "location\":[^,]*").Where(match => !match.Value.Contains("null")).Select(
-                match => match.Value.ToString().Split("\"")[4]).ToList();
+            var listOfStrings = Regex.Matches(pageContent, "location\":[^,]*")
+                .Where(match => !match.Value.Contains("null")).Select(
+                    match => match.Value.ToString().Split("\"")[4]).ToList();
+            return (from shortCode in listOfStrings select ulong.Parse(shortCode)).ToList();
         }
 
         public bool IsPostHasLocation(string pageContent)

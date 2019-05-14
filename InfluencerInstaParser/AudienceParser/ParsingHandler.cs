@@ -56,13 +56,25 @@ namespace InfluencerInstaParser.AudienceParser
             var users = _parsingSet.UnprocessedUsers.Values.ToList();
             foreach (var user in users)
             {
+                _parsingSet.AddProcessedUser(user);
+                if (user.IsInfluencer)
+                {
+                    SecondLevelParsing(user);
+                    continue;
+                }
+
                 Console.WriteLine($"Getting location for {user.Username}");
-                var locationTask = new Task(() => new WebParser(agents.GetUserAgent(), user).GetUserLocations());
+                var locationTask = new Task(() =>
+                    new WebParser(agents.GetUserAgent(), user).DetermineUserLocations(_targetAccount, 100000));
                 locationTasks.Add(locationTask);
                 locationTask.Start();
             }
 
             Task.WaitAll(locationTasks.ToArray());
+        }
+
+        private void SecondLevelParsing(User user)
+        {
         }
     }
 }

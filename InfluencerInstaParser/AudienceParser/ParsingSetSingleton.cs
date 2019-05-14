@@ -44,11 +44,13 @@ namespace InfluencerInstaParser.AudienceParser
                         currentUser.AddLikesForRelation(parent);
                         break;
                     }
+
                     case CommunicationType.Commentator:
                     {
                         currentUser.AddCommentsForRelation(parent);
                         break;
                     }
+
                     case CommunicationType.Follower:
                     {
                         currentUser.AddNewRelation(parent);
@@ -65,6 +67,7 @@ namespace InfluencerInstaParser.AudienceParser
         public void AddProcessedUser(User user)
         {
             ProcessedUsers.TryAdd(user.Username, user);
+            UnprocessedUsers.TryRemove(user.Username, out _);
         }
 
         public void AddInShortCodesQueue(string shortCode)
