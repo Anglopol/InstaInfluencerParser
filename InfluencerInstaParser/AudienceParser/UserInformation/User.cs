@@ -181,6 +181,21 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
         {
             Locations.TryAdd(locationName, 0);
             Locations[locationName]++;
+            AddLocationToParsingSet(locationName, cityId, parentName);
+        }
+
+        public void AddLocation(string locationName, int cityId, IEnumerable<string> parents)
+        {
+            Locations.TryAdd(locationName, 0);
+            Locations[locationName]++;
+            foreach (var parentName in parents)
+            {
+                AddLocationToParsingSet(locationName, cityId, parentName);
+            }
+        }
+
+        private static void AddLocationToParsingSet(string locationName, int cityId, string parentName)
+        {
             var set = ParsingSetSingleton.GetInstance();
             if (set.Locations.TryAdd(locationName, new Dictionary<int, List<Location>>()))
             {
