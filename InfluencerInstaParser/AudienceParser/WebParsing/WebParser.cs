@@ -167,8 +167,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _downloaderProxy.SetProxyFree();
         }
 
-
-        public void DetermineUserLocations(string parentName, double maxDistance)
+        public void DetermineUserLocations(List<string> parents, double maxDistance)
         {
             _logger.Info($"Getting locations for {_owner.Username}");
             if (_owner.IsLocationProcessed)
@@ -190,7 +189,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             foreach (var locationId in locationsId)
             {
                 if (locator.TryGetLocationByLocationId(locationId, maxDistance, out var city, out var publicId))
-                    _owner.AddLocation(city, publicId, parentName);
+                    _owner.AddLocation(city, publicId, parents);
             }
 
             _logger.Info($"Getting locations for {_owner.Username} completed");
@@ -215,11 +214,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 var isInfluencer = CheckUser(username, out var followers, out var following);
                 _usersSet.AddUnprocessedUser(username, _owner, followers, following, isInfluencer, type);
             }
-        }
-
-        public void FillShortCodesQueue(IEnumerable<string> list)
-        {
-            foreach (var shortCode in list) _usersSet.AddInShortCodesQueue(shortCode);
         }
 
         private bool CheckUser(string username, out int followers, out int following)
