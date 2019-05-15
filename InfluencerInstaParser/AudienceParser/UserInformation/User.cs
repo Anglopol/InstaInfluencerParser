@@ -152,11 +152,12 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             }
         }
 
-        public void AddNewRelation(User parent)
+        public void AddNewFollowRelation(User parent)
         {
             if (parent.Username == Username) return;
 
-            Relations.TryAdd(parent, new RelationInformation(parent.Username, Username));
+            if (!Relations.TryAdd(parent, new RelationInformation(parent.Username, Username, true)))
+                Relations[parent].Relation.Follower = true;
         }
 
         public void AddLikesForRelation(User parent, int count = 1)
@@ -164,7 +165,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             if (parent.Username == Username) return;
 
             if (!Relations.TryAdd(parent,
-                new RelationInformation(parent.Username, Username, count)))
+                new RelationInformation(parent.Username, Username, likes: count)))
                 Relations[parent].Likes++;
         }
 

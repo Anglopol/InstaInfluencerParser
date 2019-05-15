@@ -40,10 +40,11 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             }
         }
 
-        public RelationInformation(string parentName, string childName,
+        public RelationInformation(string parentName, string childName, bool isFollower = false,
             int likes = 0, int comments = 0)
         {
-            Relation = new ModelRelation {Child = childName, Parent = parentName, Likes = likes, Comments = comments};
+            Relation = new ModelRelation
+                {Child = childName, Parent = parentName, Likes = likes, Comments = comments, Follower = isFollower};
             _likes = likes;
             _comments = comments;
             _setLikesLocker = new object();
