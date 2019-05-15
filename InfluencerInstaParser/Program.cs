@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser;
@@ -18,12 +17,15 @@ namespace InfluencerInstaParser
             var parser = new ParsingHandler(targetUsername);
             parser.Parse();
             var set = ParsingSetSingleton.GetInstance();
-            var locations = (from dict in set.Locations.Values select dict.Values).ToList();
+            var locations = (from dict in set.Locations.Values
+                from secDict in dict.Values
+                from values in secDict
+                select values).ToList();
             Task.Run(() => FillDb(set.GetAllUsers(), locations, targetUsername)).GetAwaiter()
                 .GetResult();
         }
 
-        private static async Task FillDb(IList<User> users, IEquatable<Location> locations, string target)
+        private static async Task FillDb(IList<User> users, List<Location> locations, string target)
         {
             var settings = ConnectionSettings.CreateBasicAuth("bolt://localhost:7687/db/users", "neo4j", "1111");
 
