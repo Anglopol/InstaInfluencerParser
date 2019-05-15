@@ -12,16 +12,14 @@ namespace InfluencerInstaParser.AudienceParser
 
         private ParsingSetSingleton()
         {
-            ShortCodesQueue = new ConcurrentQueue<string>();
             UnprocessedUsers = new ConcurrentDictionary<string, User>();
             ProcessedUsers = new ConcurrentDictionary<string, User>();
             Locations = new ConcurrentDictionary<string, Dictionary<int, List<Location>>>();
         }
 
-        public ConcurrentQueue<string> ShortCodesQueue { get; }
+
         public ConcurrentDictionary<string, User> UnprocessedUsers { get; }
         public ConcurrentDictionary<string, User> ProcessedUsers { get; }
-
         public ConcurrentDictionary<string, Dictionary<int, List<Location>>> Locations { get; }
 
         public static ParsingSetSingleton GetInstance()
@@ -53,26 +51,22 @@ namespace InfluencerInstaParser.AudienceParser
 
                     case CommunicationType.Follower:
                     {
-                        currentUser.AddNewRelation(parent);
+                        currentUser.AddNewFollowRelation(parent);
                         break;
                     }
                 }
+
+                return;
             }
 
-            if (!ProcessedUsers.ContainsKey(username))
-                UnprocessedUsers.TryAdd(username,
-                    new User(username, parent, type, isInfluencer, followers: followers, following: following));
+            UnprocessedUsers.TryAdd(username,
+                new User(username, parent, type, isInfluencer, followers: followers, following: following));
         }
 
         public void AddProcessedUser(User user)
         {
             ProcessedUsers.TryAdd(user.Username, user);
             UnprocessedUsers.TryRemove(user.Username, out _);
-        }
-
-        public void AddInShortCodesQueue(string shortCode)
-        {
-            ShortCodesQueue.Enqueue(shortCode);
         }
 
         public List<User> GetAllUsers()

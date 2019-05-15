@@ -44,12 +44,8 @@ namespace InfluencerInstaParser.Database
             var modelUsers = (from user in users select user.ModelViewUser).ToList();
             var cypher = new StringBuilder()
                 .AppendLine("UNWIND {users} AS user")
-                .AppendLine("UNWIND user.parents AS parent")
-                .AppendLine(
-                    "MERGE (u:User {name: user.name, following: user.following, followers: user.followers, locations: user.locations, influencer: user.influencer, parents: user.parents})")
-                .AppendLine("CASE user")
-                .AppendLine(
-                    "FOREACH (ignoreMe in CASE WHEN parent.name='@target' OR user.influencer=true THEN [1] ELSE [] END | SET u.likes=user.likes, u.comments=user.comments)")
+                .AppendLine("MERGE (u:User)")
+                .AppendLine("SET u = user")
                 .ToString();
 
             using (var session = _driver.Session())
@@ -74,7 +70,7 @@ namespace InfluencerInstaParser.Database
             }
         }
 
-        public async Task CreateUsersRelationships(IList<User> users, string targetName)
+        public async Task CreateUsersRelationships(IList<User> users)
         {
             var relationsList = (from user in users from relation in user.Relations select relation.Value.Relation)
                 .ToList();
@@ -82,10 +78,8 @@ namespace InfluencerInstaParser.Database
                 .AppendLine("UNWIND {relations} AS relation")
                 .AppendLine("MATCH (p:User { name: relation.parent })")
                 .AppendLine("MATCH (c:User { name: relation.child })")
-                .AppendLine("CASE p.name")
                 .AppendLine(
-                    $"FOREACH (ignoreMe in CASE WHEN p.name={targetName} THEN [1] ELSE [] END | SET c.likesToTarget=relation.likes, c.commentsToTarget=relation.comments)")
-                .AppendLine("MERGE (c)-[:CHILD]->(p)")
+                    "MERGE (c)-[:CONNECTED {likes: relation.likes, comments: relation.comments, follower: relation.follower}]->(p)")
                 .ToString();
 
 
