@@ -29,7 +29,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             }
         }
 
-        private ConcurrentDictionary<string, int> Locations { get; }
+        public ConcurrentDictionary<string, Dictionary<string, LocationRelationInformation>> Locations { get; }
         public ConcurrentDictionary<User, RelationInformation> Relations { get; }
 
         public bool IsInfluencer { get; }
@@ -49,7 +49,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                 IsInfluencer = isInfluencer, Locations = new List<string>()
             };
             IsInfluencer = isInfluencer;
-            Locations = new ConcurrentDictionary<string, int>();
+            Locations = new ConcurrentDictionary<string, Dictionary<string, LocationRelationInformation>>();
             Username = username;
             Likes = likes;
             Comments = comments;
@@ -86,7 +86,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             };
 
             Relations = new ConcurrentDictionary<User, RelationInformation>();
-            Locations = new ConcurrentDictionary<string, int>();
+            Locations = new ConcurrentDictionary<string, Dictionary<string, LocationRelationInformation>>();
             Username = username;
             Likes = likes;
             Comments = comments;
@@ -179,19 +179,28 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
 
         public void AddLocation(string locationName, int cityId, string parentName)
         {
-            Locations.TryAdd(locationName, 0);
-            Locations[locationName]++;
+            AddLocationToDict(locationName, parentName);
             AddLocationToParsingSet(locationName, cityId, parentName);
         }
 
         public void AddLocation(string locationName, int cityId, IEnumerable<string> parents)
         {
-            Locations.TryAdd(locationName, 0);
-            Locations[locationName]++;
             foreach (var parentName in parents)
             {
+                AddLocationToDict(locationName, parentName);
                 AddLocationToParsingSet(locationName, cityId, parentName);
             }
+        }
+
+        private void AddLocationToDict(string locationName, string parentName)
+        {
+            Locations.TryAdd(locationName, new Dictionary<string, LocationRelationInformation>
+            {
+                {parentName, new LocationRelationInformation {Count = 0, Name = locationName, Parent = parentName}}
+            });
+            Locations[locationName].TryAdd(parentName,
+                new LocationRelationInformation {Count = 0, Name = locationName, Parent = parentName});
+            Locations[locationName][parentName].Count++;
         }
 
         private static void AddLocationToParsingSet(string locationName, int cityId, string parentName)

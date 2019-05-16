@@ -77,7 +77,7 @@ namespace InfluencerInstaParser.AudienceParser
             var web = new WebParser(_agentCreator.GetUserAgent(), user);
             var followers = Task.Run(() => new AudienceDownloader().GetFollowers(user.Username, authApi));
             if (!web.TryGetPostsShortCodesAndLocationsIdFromUser(_targetAccount, out var shortCodes,
-                out var locationsId)) return;
+                out var locationsId, 1)) return;
             var shortCodesTask = new Task(() => ShortCodesProcessing(user, shortCodes, 5));
             shortCodesTask.Start();
             foreach (var locationId in locationsId)

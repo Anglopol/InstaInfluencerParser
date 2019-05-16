@@ -93,21 +93,27 @@ namespace InfluencerInstaParser.Database
         public async Task CreateLocationsRelationships(IList<User> users)
         {
             var modelUsers = (from user in users select user.ModelViewUser).ToList();
+            var modelRelations = (from user in users from locations in user.Locations.Values select locations.Values)
+                .ToList();
             var cypher = new StringBuilder()
                 .AppendLine("UNWIND {users} AS user")
-                .AppendLine("UNWIND user.locations AS location")
+                .AppendLine("UNWIND {locationsRelations} AS relation")
                 .AppendLine("UNWIND user.parents AS parent")
                 .AppendLine("MATCH (u:User { name: user.name })")
-                .AppendLine("MATCH (l:Location { name: location, audienceFrom: parent })")
+                .AppendLine("MATCH (l:Location { name: relation.name, audienceFrom: relation.parent })")
                 .AppendLine(
-                    "MERGE (u)-[:VISITED]->(l)")
+                    "MERGE (u)-[:VISITED { count: relation.count}]->(l)")
                 .ToString();
 
 
             using (var session = _driver.Session())
             {
                 await session.RunAsync(cypher,
-                    new Dictionary<string, object> {{"users", ParameterSerializer.ToDictionary(modelUsers)}});
+                    new Dictionary<string, object>
+                    {
+                        {"users", ParameterSerializer.ToDictionary(modelUsers)},
+                        {"locationsRelations", ParameterSerializer.ToDictionary(modelRelations)}
+                    });
             }
         }
     }
