@@ -54,6 +54,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
                 responseTask.Wait();
                 var response = responseTask.Result;
                 _requestCounter++;
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    _proxyCreator.SetProxyFree(Proxy);
+                    return "";
+                }
+
                 response.EnsureSuccessStatusCode();
                 var responseBodyTask = Task.Run(async () => await GetResponseBodyAsync(response));
                 responseBodyTask.Wait();

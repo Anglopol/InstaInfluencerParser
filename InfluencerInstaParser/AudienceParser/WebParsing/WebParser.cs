@@ -40,7 +40,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var userUrl = "/" + username + "/";
             var userPageContent = _downloaderProxy.GetPageContent(userUrl, _userAgent);
-            if (_pageContentScrapper.IsPrivate(userPageContent) || _pageContentScrapper.IsEmpty(userPageContent))
+            if (_pageContentScrapper.IsPrivate(userPageContent) || _pageContentScrapper.IsEmpty(userPageContent) ||
+                userPageContent == "")
             {
                 Console.WriteLine($"{username} is invalid");
                 _downloaderProxy.SetProxyFree();
@@ -50,7 +51,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
 
             var userId = long.Parse(_pageContentScrapper.GetUserIdFromPageContent(userPageContent));
-            _rhxGis = _rhxGis ?? _pageContentScrapper.GetRhxGisParameter(userPageContent);
+
+            _rhxGis = "";
+//            _rhxGis = _rhxGis ?? _pageContentScrapper.GetRhxGisParameter(userPageContent);
             shortCodes = _pageContentScrapper.GetListOfShortCodesFromPageContent(userPageContent);
             locationsId = _pageContentScrapper.GetListOfLocationsFromPageContent(userPageContent);
             if (!_pageContentScrapper.HasNextPageForPageContent(userPageContent))
@@ -90,7 +93,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var postPageContent = _downloaderProxy.GetPageContent(postUrl, _userAgent);
 
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post successed: {postShortCode}");
-            _rhxGis = _rhxGis ?? _pageContentScrapper.GetRhxGisParameter(postPageContent);
+
+            _rhxGis = "";
+//            _rhxGis = _rhxGis ?? _pageContentScrapper.GetRhxGisParameter(postPageContent);
             var resultList = new List<string>();
             try
             {
@@ -145,7 +150,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 return;
             }
 
-            _rhxGis = _rhxGis ?? _pageContentScrapper.GetRhxGisParameter(postPageContent);
+            _rhxGis = "";
+//            _rhxGis = _rhxGis ?? _pageContentScrapper.GetRhxGisParameter(postPageContent);
             var resultList = new List<string>();
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting json users from post likes: {postShortCode}");
 
@@ -167,7 +173,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _downloaderProxy.SetProxyFree();
         }
 
-        public void DetermineUserLocations(List<string> parents, double maxDistance)
+        public void
+            DetermineUserLocations(List<string> parents,
+                double maxDistance) //TODO make restriction for number of query downloads
         {
             _logger.Info($"Getting locations for {_owner.Username}");
             if (_owner.IsLocationProcessed)

@@ -73,8 +73,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var locations = new List<string>();
             foreach (var edge in edges)
             {
-                var locationJson = (string) edge.SelectToken("node.location");
-                if (locationJson == "" || locationJson == "null") continue;
+                var locationJson = edge.SelectToken("node.location");
+                if (!locationJson.HasValues) continue;
                 locations.Add((string) edge.SelectToken("node.location.id"));
             }
 

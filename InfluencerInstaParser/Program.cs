@@ -13,7 +13,7 @@ namespace InfluencerInstaParser
     {
         private static void Main()
         {
-            var targetUsername = "gofshtatter";
+            var targetUsername = "neprostohronika";
             var parser = new ParsingHandler(targetUsername);
             parser.Parse();
             var set = ParsingSetSingleton.GetInstance();

@@ -8,6 +8,7 @@ using InfluencerInstaParser.AudienceParser.UserInformation;
 using InfluencerInstaParser.AudienceParser.WebParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
 using InstagramApiSharp.API;
+using NLog;
 
 namespace InfluencerInstaParser.AudienceParser
 {
@@ -16,9 +17,11 @@ namespace InfluencerInstaParser.AudienceParser
         private readonly ParsingSetSingleton _parsingSet;
         private readonly UserAgentCreator _agentCreator;
         private readonly string _targetAccount;
+        private readonly Logger _logger;
 
         public ParsingHandler(string username)
         {
+            _logger = LogManager.GetCurrentClassLogger();
             _parsingSet = ParsingSetSingleton.GetInstance();
             _targetAccount = username;
             _agentCreator = new UserAgentCreator();
@@ -26,45 +29,59 @@ namespace InfluencerInstaParser.AudienceParser
 
         public void Parse()
         {
+            _logger.Warn("!!!!!!!");
             var owner = new User(_targetAccount);
             _parsingSet.AddProcessedUser(owner);
+            _logger.Info("target User added in processed set");
             var web = new WebParser(_agentCreator.GetUserAgent(), owner);
             if (!web.TryGetPostsShortCodesAndLocationsIdFromUser(_targetAccount, out var shortCodes, out _)) return;
+            _logger.Info("Short codes of target user downloaded");
             Console.WriteLine("Short Codes downloaded");
             var sessionData = new ConfigSessionDataFactory().MakeSessionData();
             var api = Task.Run(() => AuthApiCreator.MakeAuthApi(sessionData)).GetAwaiter().GetResult();
-            var tasks = new List<Task>();
             var followers = Task.Run(() => new AudienceDownloader().GetFollowers(_targetAccount, api));
-            var shortCodesTask = new Task(() => ShortCodesProcessing(owner, shortCodes));
-            tasks.Add(shortCodesTask);
-            shortCodesTask.Start();
+            var shortCodesTask = Task.Run(() => ShortCodesProcessing(owner, shortCodes));
             Console.WriteLine("All threads started");
             followers.Wait();
+            _logger.Info("Followers of target user added");
             _parsingSet.ProcessedUsers[_targetAccount].Followers = followers.Result.Count();
-            Task.WaitAll(tasks.ToArray());
-            var locationTasks = new List<Task>();
+            shortCodesTask.Wait();
             web.FillUnprocessedSet(followers.Result, CommunicationType.Follower);
             var users = _parsingSet.UnprocessedUsers.Values.ToList();
+            var secondLevelTasks = new List<Task>();
+            var locationTasks = new List<Task>();
             foreach (var user in users)
             {
-                if (!user.IsInfluencer) continue;
+                _logger.Info($"Checking {user.Username} is influencer");
+                if (!user.IsInfluencer || user.Username == _targetAccount) continue;
                 _parsingSet.AddProcessedUser(user);
-                var secondLevelTask = new Task(() => SecondLevelParsing(user, api));
-                tasks.Add(secondLevelTask);
-                secondLevelTask.Start();
+                _logger.Info($"Starting second level parsing for {user.Username}");
+                var secondLevelTask = Task.Run(() => SecondLevelParsing(user, api));
+                secondLevelTasks.Add(secondLevelTask);
             }
 
-            Task.WaitAll(tasks.ToArray());
-
+            Task.WaitAll(secondLevelTasks.ToArray());
+            var locationDict = new Dictionary<string, int>();
             foreach (var user in users)
             {
+                var needToGetLocation = true;
+                if (!user.ModelViewUser.Parents.Contains(_targetAccount))
+                {
+                    foreach (var parent in user.ModelViewUser.Parents)
+                    {
+                        locationDict.TryAdd(parent, 0);
+                        locationDict[parent]++;
+                        if (locationDict[parent] >= 50) needToGetLocation = false;
+                    }
+                }
+
                 _parsingSet.AddProcessedUser(user);
+                if (!needToGetLocation) continue;
                 Console.WriteLine($"Getting location for {user.Username}");
-                var locationTask = new Task(() =>
+                var locationTask = Task.Run(() =>
                     new WebParser(_agentCreator.GetUserAgent(), user).DetermineUserLocations(user.ModelViewUser.Parents,
                         100000));
                 locationTasks.Add(locationTask);
-                locationTask.Start();
             }
 
             Task.WaitAll(locationTasks.ToArray());
@@ -75,35 +92,32 @@ namespace InfluencerInstaParser.AudienceParser
             var locator = new Locator(new PageDownloaderProxy(), new PageContentScrapper(),
                 _agentCreator.GetUserAgent());
             var web = new WebParser(_agentCreator.GetUserAgent(), user);
-            var followers = Task.Run(() => new AudienceDownloader().GetFollowers(user.Username, authApi));
-            if (!web.TryGetPostsShortCodesAndLocationsIdFromUser(_targetAccount, out var shortCodes,
+//            var followers = Task.Run(() => new AudienceDownloader().GetFollowers(user.Username, authApi));
+            if (!web.TryGetPostsShortCodesAndLocationsIdFromUser(user.Username, out var shortCodes,
                 out var locationsId, 1)) return;
-            var shortCodesTask = new Task(() => ShortCodesProcessing(user, shortCodes, 5));
-            shortCodesTask.Start();
+            var shortCodesTask = Task.Run(() => ShortCodesProcessing(user, shortCodes, 1));
             foreach (var locationId in locationsId)
             {
                 if (locator.TryGetLocationByLocationId(locationId, 100000, out var city, out var publicId))
                     user.AddLocation(city, publicId, _targetAccount);
             }
 
-            followers.Wait();
+//            followers.Wait();
             shortCodesTask.Wait();
-            web.FillUnprocessedSet(followers.Result, CommunicationType.Follower);
+//            web.FillUnprocessedSet(followers.Result, CommunicationType.Follower);
         }
 
-        private void ShortCodesProcessing(User user, List<string> shortCodes, int handlingCount = int.MaxValue)
+        private void ShortCodesProcessing(User user, IEnumerable<string> shortCodes, int handlingCount = int.MaxValue)
         {
             var tasks = new List<Task>();
             foreach (var shortCode in shortCodes)
             {
                 if (handlingCount == 0) break;
                 handlingCount--;
-                var like = new Task(() =>
+                var like = Task.Run(() =>
                     new WebParser(_agentCreator.GetUserAgent(), user).GetUsernamesFromPostLikes(shortCode));
-                var comment = new Task(() =>
+                var comment = Task.Run(() =>
                     new WebParser(_agentCreator.GetUserAgent(), user).GetUsernamesFromPostComments(shortCode));
-                like.Start();
-                comment.Start();
                 tasks.Add(like);
                 tasks.Add(comment);
             }
