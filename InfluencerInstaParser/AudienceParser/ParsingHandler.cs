@@ -34,7 +34,7 @@ namespace InfluencerInstaParser.AudienceParser
             _parsingSet.AddProcessedUser(owner);
             _logger.Info("target User added in processed set");
             var web = new WebParser(_agentCreator.GetUserAgent(), owner);
-            if (!web.TryGetPostsShortCodesAndLocationsIdFromUser(_targetAccount, out var shortCodes, out _)) return;
+            web.TryGetPostsShortCodesAndLocationsIdFromUser(_targetAccount, out var shortCodes, out _);
             _logger.Info("Short codes of target user downloaded");
             Console.WriteLine("Short Codes downloaded");
             var sessionData = new ConfigSessionDataFactory().MakeSessionData();
@@ -96,8 +96,11 @@ namespace InfluencerInstaParser.AudienceParser
             if (!web.TryGetPostsShortCodesAndLocationsIdFromUser(user.Username, out var shortCodes,
                 out var locationsId, 1)) return;
             var shortCodesTask = Task.Run(() => ShortCodesProcessing(user, shortCodes, 1));
+            var count = 0; // TODO: Delete this 
             foreach (var locationId in locationsId)
             {
+                if (count > 5) break; // TODO: Delete this 
+                count++; // TODO: Delete this 
                 if (locator.TryGetLocationByLocationId(locationId, 100000, out var city, out var publicId))
                     user.AddLocation(city, publicId, _targetAccount);
             }
@@ -107,21 +110,34 @@ namespace InfluencerInstaParser.AudienceParser
 //            web.FillUnprocessedSet(followers.Result, CommunicationType.Follower);
         }
 
+        private void LocationsProcessing(User user, ulong locationId, int maxDistance, Locator locator)
+        {
+            if (locator.TryGetLocationByLocationId(locationId, 100000, out var city, out var publicId))
+                user.AddLocation(city, publicId, _targetAccount);
+        }
+
         private void ShortCodesProcessing(User user, IEnumerable<string> shortCodes, int handlingCount = int.MaxValue)
         {
             var tasks = new List<Task>();
+            var downloaderProxy = new PageDownloaderProxy();
             foreach (var shortCode in shortCodes)
             {
                 if (handlingCount == 0) break;
                 handlingCount--;
+                var postUrl = "/p/" + shortCode + "/";
+
+                var postContent = downloaderProxy.GetPageContent(postUrl, _agentCreator.GetUserAgent());
                 var like = Task.Run(() =>
-                    new WebParser(_agentCreator.GetUserAgent(), user).GetUsernamesFromPostLikes(shortCode));
+                    new WebParser(_agentCreator.GetUserAgent(), user)
+                        .GetUsernamesFromPostLikes(shortCode, postContent, 1));
                 var comment = Task.Run(() =>
-                    new WebParser(_agentCreator.GetUserAgent(), user).GetUsernamesFromPostComments(shortCode));
+                    new WebParser(_agentCreator.GetUserAgent(), user).GetUsernamesFromPostComments(shortCode,
+                        postContent, 1));
                 tasks.Add(like);
                 tasks.Add(comment);
             }
 
+            downloaderProxy.SetProxyFree();
             Task.WaitAll(tasks.ToArray());
         }
     }

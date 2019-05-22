@@ -40,8 +40,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var userUrl = "/" + username + "/";
             var userPageContent = _downloaderProxy.GetPageContent(userUrl, _userAgent);
-            if (_pageContentScrapper.IsPrivate(userPageContent) || _pageContentScrapper.IsEmpty(userPageContent) ||
-                userPageContent == "")
+            if (_pageContentScrapper.IsPrivate(userPageContent) || _pageContentScrapper.IsEmpty(userPageContent))
             {
                 Console.WriteLine($"{username} is invalid");
                 _downloaderProxy.SetProxyFree();
@@ -84,13 +83,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return true;
         }
 
-        public void GetUsernamesFromPostComments(string postShortCode)
+        public void GetUsernamesFromPostComments(string postShortCode, string postPageContent = null,
+            int countOfLoading = 10)
         {
             var postUrl = "/p/" + postShortCode + "/";
             Console.WriteLine(postShortCode + "Comments");
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post: {postShortCode}");
 
-            var postPageContent = _downloaderProxy.GetPageContent(postUrl, _userAgent);
+            postPageContent = postPageContent ?? _downloaderProxy.GetPageContent(postUrl, _userAgent);
 
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post successed: {postShortCode}");
 
@@ -119,11 +119,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting json users from post: {postShortCode}");
 
             var jsonPage = _queryRequester.GetJsonPageContent(postPageContent, postShortCode, _rhxGis);
-            while (_jObjectHandler.HasNextPageForComments(jsonPage))
+            countOfLoading--;
+            while (_jObjectHandler.HasNextPageForComments(jsonPage) && countOfLoading > 0)
             {
                 resultList.AddRange(_jObjectHandler.GetEnumerableOfUsernamesFromQueryContentForPost(jsonPage));
                 var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForComments(jsonPage);
                 jsonPage = _queryRequester.GetJson(postShortCode, _rhxGis, nextCursor);
+                countOfLoading--;
             }
 
             resultList.AddRange(_jObjectHandler.GetEnumerableOfUsernamesFromQueryContentForPost(jsonPage));
@@ -133,13 +135,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _downloaderProxy.SetProxyFree();
         }
 
-        public void GetUsernamesFromPostLikes(string postShortCode)
+        public void GetUsernamesFromPostLikes(string postShortCode, string postPageContent = null,
+            int countOfLoading = 10)
         {
             var postUrl = "/p/" + postShortCode + "/";
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post likes: {postShortCode}");
             Console.WriteLine(postShortCode + " Likes");
 
-            var postPageContent = _downloaderProxy.GetPageContent(postUrl, _userAgent);
+            postPageContent = postPageContent ?? _downloaderProxy.GetPageContent(postUrl, _userAgent);
 
             _logger.Info(
                 $"Thread: {Thread.CurrentThread.Name} getting users from post likes seccessed: {postShortCode}");
@@ -157,13 +160,15 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             var jsonPage = _queryRequester.GetJsonForLikes(postShortCode, _rhxGis, "");
 
-            while (_jObjectHandler.HasNextPageForLikes(jsonPage))
+            countOfLoading--;
+            while (_jObjectHandler.HasNextPageForLikes(jsonPage) && countOfLoading > 0)
             {
                 resultList.AddRange(_jObjectHandler.GetEnumerableOfUsernamesFromQueryContentForLikes(jsonPage));
                 var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForLikes(jsonPage);
                 _logger.Info(
                     $"Thread: {Thread.CurrentThread.Name} getting json users from post likes: {postShortCode}");
                 jsonPage = _queryRequester.GetJsonForLikes(postShortCode, _rhxGis, nextCursor);
+                countOfLoading--;
             }
 
             resultList.AddRange(_jObjectHandler.GetEnumerableOfUsernamesFromQueryContentForLikes(jsonPage));
@@ -194,8 +199,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
 
             var locator = new Locator(_downloaderProxy, _pageContentScrapper, _userAgent);
+            var count = 0; // TODO: Delete this 
             foreach (var locationId in locationsId)
             {
+                if (count > 5) break; // TODO: Delete this 
+                count++; // TODO: Delete this 
                 if (locator.TryGetLocationByLocationId(locationId, maxDistance, out var city, out var publicId))
                     _owner.AddLocation(city, publicId, parents);
             }
@@ -208,6 +216,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             foreach (var username in list)
             {
+                _logger.Info($"filling {username} in Set parent {_owner.Username}");
                 if (_usersSet.ProcessedUsers.ContainsKey(username) ||
                     _usersSet.UnprocessedUsers.ContainsKey(username))
                 {
@@ -219,6 +228,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                     continue;
                 }
 
+                _logger.Info($"Checking {username} parent {_owner.Username}");
                 var isInfluencer = CheckUser(username, out var followers, out var following);
                 _usersSet.AddUnprocessedUser(username, _owner, followers, following, isInfluencer, type);
             }

@@ -8,16 +8,19 @@ using InfluencerInstaParser.Database.ModelView;
 using InfluencerInstaParser.Database.Serializer;
 using InfluencerInstaParser.Database.Settings;
 using Neo4j.Driver.V1;
+using NLog;
 
 namespace InfluencerInstaParser.Database
 {
     public class Neo4JClient : IDisposable
     {
         private readonly IDriver _driver;
+        private readonly Logger _logger;
 
         public Neo4JClient(IConnectionSettings settings)
         {
             _driver = GraphDatabase.Driver(settings.Uri, settings.AuthToken);
+            _logger = LogManager.GetCurrentClassLogger();
         }
 
         public void Dispose()
@@ -42,6 +45,12 @@ namespace InfluencerInstaParser.Database
         public async Task CreateUsers(IList<User> users)
         {
             var modelUsers = (from user in users select user.ModelViewUser).ToList();
+            _logger.Info(_logger);
+            foreach (var modelUser in modelUsers)
+            {
+                _logger.Info($"{modelUser.Username}");
+            }
+
             var cypher = new StringBuilder()
                 .AppendLine("UNWIND {users} AS user")
                 .AppendLine("MERGE (u:User)")
@@ -57,6 +66,12 @@ namespace InfluencerInstaParser.Database
 
         public async Task CreateLocations(IList<Location> locations)
         {
+            _logger.Info(_logger);
+            foreach (var loc in locations)
+            {
+                _logger.Info($"{loc.Name}");
+            }
+
             var cypher = new StringBuilder()
                 .AppendLine("UNWIND {locations} AS location")
                 .AppendLine("MERGE (l:Location)")
@@ -93,7 +108,10 @@ namespace InfluencerInstaParser.Database
         public async Task CreateLocationsRelationships(IList<User> users)
         {
             var modelUsers = (from user in users select user.ModelViewUser).ToList();
-            var modelRelations = (from user in users from locations in user.Locations.Values select locations.Values)
+            var modelRelations = (from user in users
+                    from locations in user.Locations.Values
+                    from values in locations.Values
+                    select values)
                 .ToList();
             var cypher = new StringBuilder()
                 .AppendLine("UNWIND {users} AS user")

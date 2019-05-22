@@ -13,7 +13,7 @@ namespace InfluencerInstaParser
     {
         private static void Main()
         {
-            var targetUsername = "neprostohronika";
+            var targetUsername = "ivanselsky";
             var parser = new ParsingHandler(targetUsername);
             parser.Parse();
             var set = ParsingSetSingleton.GetInstance();
@@ -21,7 +21,7 @@ namespace InfluencerInstaParser
                 from secDict in dict.Values
                 from values in secDict
                 select values).ToList();
-            Task.Run(() => FillDb(set.GetAllUsers(), locations, targetUsername)).GetAwaiter()
+            Task.Run(() => FillDb(set.GetProcessedUsers(), locations, targetUsername)).GetAwaiter()
                 .GetResult();
         }
 

@@ -69,9 +69,9 @@ namespace InfluencerInstaParser.AudienceParser
             UnprocessedUsers.TryRemove(user.Username, out _);
         }
 
-        public List<User> GetAllUsers()
+        public List<User> GetProcessedUsers()
         {
-            return ProcessedUsers.Values.ToList().Union(UnprocessedUsers.Values.ToList()).ToList();
+            return (from user in ProcessedUsers select user.Value).ToList();
         }
     }
 }

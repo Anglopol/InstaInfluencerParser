@@ -56,7 +56,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
                 _requestCounter++;
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
-                    _proxyCreator.SetProxyFree(Proxy);
                     return "";
                 }
 
@@ -83,7 +82,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
         public void SetProxyFree()
         {
             _proxyClient?.CancelPendingRequests();
-            _proxyCreator.SetProxyFree(Proxy);
+            if (Proxy != null) _proxyCreator.SetProxyFree(Proxy);
         }
 
         private async Task<HttpResponseMessage> GetResponseMessageAsync(string link)

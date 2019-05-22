@@ -226,7 +226,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public bool IsEmpty(string pageContent)
         {
-            return pageContent.Contains("edge_owner_to_timeline_media\":{\"count\":0");
+            return pageContent.Contains("edge_owner_to_timeline_media\":{\"count\":0") || pageContent == "";
         }
 
         public bool IsProxyListAvailable(string pageContent)
