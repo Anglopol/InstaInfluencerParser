@@ -62,6 +62,7 @@ namespace InfluencerInstaParser.AudienceParser
 
             Task.WaitAll(secondLevelTasks.ToArray());
             var locationDict = new Dictionary<string, int>();
+            users = _parsingSet.UnprocessedUsers.Values.ToList();
             foreach (var user in users)
             {
                 var needToGetLocation = true;
