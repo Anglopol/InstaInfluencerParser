@@ -52,15 +52,15 @@ namespace InfluencerInstaParser.Database
             }
 
             var cypher = new StringBuilder()
-                .AppendLine("UNWIND {users} AS user")
-                .AppendLine("MERGE (u:User)")
+                .AppendLine("UNWIND {modelUsers} AS user")
+                .AppendLine("MERGE (u:User {name: user.name})")
                 .AppendLine("SET u = user")
                 .ToString();
 
             using (var session = _driver.Session())
             {
                 await session.RunAsync(cypher,
-                    new Dictionary<string, object> {{"users", ParameterSerializer.ToDictionary(modelUsers)}});
+                    new Dictionary<string, object> {{"modelUsers", ParameterSerializer.ToDictionary(modelUsers)}});
             }
         }
 
@@ -74,7 +74,7 @@ namespace InfluencerInstaParser.Database
 
             var cypher = new StringBuilder()
                 .AppendLine("UNWIND {locations} AS location")
-                .AppendLine("MERGE (l:Location)")
+                .AppendLine("MERGE (l:Location {name: location.name, audienceFrom: location.audienceFrom})")
                 .AppendLine("SET l = location")
                 .ToString();
 
@@ -90,7 +90,7 @@ namespace InfluencerInstaParser.Database
             var relationsList = (from user in users from relation in user.Relations select relation.Value.Relation)
                 .ToList();
             var cypher = new StringBuilder()
-                .AppendLine("UNWIND {relations} AS relation")
+                .AppendLine("UNWIND {relationsList} AS relation")
                 .AppendLine("MATCH (p:User { name: relation.parent })")
                 .AppendLine("MATCH (c:User { name: relation.child })")
                 .AppendLine(
@@ -101,23 +101,21 @@ namespace InfluencerInstaParser.Database
             using (var session = _driver.Session())
             {
                 await session.RunAsync(cypher,
-                    new Dictionary<string, object> {{"relations", ParameterSerializer.ToDictionary(relationsList)}});
+                    new Dictionary<string, object>
+                        {{"relationsList", ParameterSerializer.ToDictionary(relationsList)}});
             }
         }
 
         public async Task CreateLocationsRelationships(IList<User> users)
         {
-            var modelUsers = (from user in users select user.ModelViewUser).ToList();
             var modelRelations = (from user in users
                     from locations in user.Locations.Values
                     from values in locations.Values
                     select values)
                 .ToList();
             var cypher = new StringBuilder()
-                .AppendLine("UNWIND {users} AS user")
                 .AppendLine("UNWIND {locationsRelations} AS relation")
-                .AppendLine("UNWIND user.parents AS parent")
-                .AppendLine("MATCH (u:User { name: user.name })")
+                .AppendLine("MATCH (u:User { name: relation.child })")
                 .AppendLine("MATCH (l:Location { name: relation.name, audienceFrom: relation.parent })")
                 .AppendLine(
                     "MERGE (u)-[:VISITED { count: relation.count}]->(l)")
@@ -128,10 +126,7 @@ namespace InfluencerInstaParser.Database
             {
                 await session.RunAsync(cypher,
                     new Dictionary<string, object>
-                    {
-                        {"users", ParameterSerializer.ToDictionary(modelUsers)},
-                        {"locationsRelations", ParameterSerializer.ToDictionary(modelRelations)}
-                    });
+                        {{"locationsRelations", ParameterSerializer.ToDictionary(modelRelations)}});
             }
         }
     }
