@@ -65,7 +65,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                     Relations.TryAdd(parent, new RelationInformation(parent.Username, Username, comments: 1));
                     break;
                 default:
-                    Relations.TryAdd(parent, new RelationInformation(parent.Username, Username));
+                    Relations.TryAdd(parent, new RelationInformation(parent.Username, Username, true));
                     break;
             }
         }
@@ -196,10 +196,15 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
         {
             Locations.TryAdd(locationName, new Dictionary<string, LocationRelationInformation>
             {
-                {parentName, new LocationRelationInformation {Count = 0, Name = locationName, Parent = parentName}}
+                {
+                    parentName,
+                    new LocationRelationInformation
+                        {Count = 0, Name = locationName, Parent = parentName, Child = Username}
+                }
             });
             Locations[locationName].TryAdd(parentName,
-                new LocationRelationInformation {Count = 0, Name = locationName, Parent = parentName});
+                new LocationRelationInformation
+                    {Count = 0, Name = locationName, Parent = parentName, Child = Username});
             Locations[locationName][parentName].Count++;
         }
 
