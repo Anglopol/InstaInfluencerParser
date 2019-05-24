@@ -17,6 +17,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
         private WebProxy _proxy;
         private HttpClient _proxyClient;
         private int _requestCounter;
+        private int _errorCounter;
 
         public PageDownloaderProxy()
         {
@@ -28,6 +29,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
         {
             set
             {
+                _errorCounter = 0;
                 _proxy = value;
                 _proxyClient = new HttpClient(new HttpClientHandler {Proxy = value}, true);
                 _requestCounter = 0;
@@ -54,6 +56,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
                 responseTask.Wait();
                 var response = responseTask.Result;
                 _requestCounter++;
+
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
                     return "";
@@ -68,10 +71,16 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
             }
             catch (Exception e)
             {
+                _errorCounter++;
                 _logger.Error(e, e.Message + $"\nOn url: {url}\nWith proxy: {_proxy.Address}");
-                SetProxy(_requestCounter > 2
-                    ? _proxyCreator.GetProxy(Proxy)
-                    : _proxyCreator.GetProxy());
+
+                if (_errorCounter > 3)
+                {
+                    SetProxy(_requestCounter > 2
+                        ? _proxyCreator.GetProxy(Proxy)
+                        : _proxyCreator.GetProxy());
+                }
+
                 Console.WriteLine("\nException Caught!   " + _requestCounter);
                 Console.WriteLine($"on {url}");
                 Thread.Sleep(1000);
