@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp2.2</TargetFramework>
+        <Configurations>Debug;Release;Test</Configurations>
+        <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,6 +24,21 @@
       <None Update="parsingarguments.config">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="proxies.txt"/>
+        <Content Include="proxies.txt">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="useragents.txt"/>
+        <Content Include="useragents.txt">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <None Remove="citiesLocations.txt"/>
+        <Content Include="citiesLocations.txt">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>
