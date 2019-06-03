@@ -218,7 +218,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                     {
                         new Location
                         {
-                            Name = locationName, Owner = parentName, Id = cityId, CountOfUsers = 0
+                            Name = locationName, Owner = parentName, Id = cityId, CountOfUsers = 1
                         }
                     });
             }
