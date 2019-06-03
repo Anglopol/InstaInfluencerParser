@@ -10,17 +10,16 @@ namespace InfluencerInstaParser.AudienceParser
     {
         private static ParsingSetSingleton _instance;
 
+        public ConcurrentDictionary<string, User> UnprocessedUsers { get; }
+        public ConcurrentDictionary<string, User> ProcessedUsers { get; }
+        public ConcurrentDictionary<string, Dictionary<int, List<Location>>> Locations { get; }
+
         private ParsingSetSingleton()
         {
             UnprocessedUsers = new ConcurrentDictionary<string, User>();
             ProcessedUsers = new ConcurrentDictionary<string, User>();
             Locations = new ConcurrentDictionary<string, Dictionary<int, List<Location>>>();
         }
-
-
-        public ConcurrentDictionary<string, User> UnprocessedUsers { get; }
-        public ConcurrentDictionary<string, User> ProcessedUsers { get; }
-        public ConcurrentDictionary<string, Dictionary<int, List<Location>>> Locations { get; }
 
         public static ParsingSetSingleton GetInstance()
         {
@@ -72,6 +71,12 @@ namespace InfluencerInstaParser.AudienceParser
         public List<User> GetProcessedUsers()
         {
             return (from user in ProcessedUsers select user.Value).ToList();
+        }
+
+        public List<Location> GetListOfLocations()
+        {
+            return (from dict in Locations.Values from secDict in dict.Values from values in secDict select values)
+                .ToList();
         }
     }
 }

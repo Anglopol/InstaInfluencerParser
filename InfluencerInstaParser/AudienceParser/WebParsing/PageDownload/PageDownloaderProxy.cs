@@ -18,6 +18,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
         private HttpClient _proxyClient;
         private int _requestCounter;
         private int _errorCounter;
+        private TimeSpan _timeSpan = new TimeSpan(0, 0, 300);
 
         public PageDownloaderProxy()
         {
@@ -32,6 +33,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
                 _errorCounter = 0;
                 _proxy = value;
                 _proxyClient = new HttpClient(new HttpClientHandler {Proxy = value}, true);
+                _proxyClient.Timeout.Add(_timeSpan);
                 _requestCounter = 0;
                 _logger.Info($"Proxy changed on {value.Address}");
             }
