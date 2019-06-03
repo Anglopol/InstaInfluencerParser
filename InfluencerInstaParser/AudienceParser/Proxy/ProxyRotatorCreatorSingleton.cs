@@ -70,7 +70,6 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
 
         public void SetPathToProxyFile(string path)
         {
-            throw new NotImplementedException();
         }
 
         private bool FillQueue()
