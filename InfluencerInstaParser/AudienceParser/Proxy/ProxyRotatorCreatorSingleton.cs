@@ -68,6 +68,11 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
             if (!_usedProxy.TryAdd(usedProxy, DateTime.Now)) _usedProxy[usedProxy] = DateTime.Now;
         }
 
+        public void SetPathToProxyFile(string path)
+        {
+            throw new NotImplementedException();
+        }
+
         private bool FillQueue()
         {
             if (_proxyQueue.Count != 0) return true;

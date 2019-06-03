@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser;
+using InfluencerInstaParser.AudienceParser.Proxy;
 using InfluencerInstaParser.AudienceParser.UserInformation;
 using InfluencerInstaParser.Database;
 using InfluencerInstaParser.Database.ModelView;
@@ -15,18 +16,22 @@ namespace InfluencerInstaParser
         private readonly string _databaseConnectionUri;
         private readonly string _databaseUsername;
         private readonly string _databasePassword;
+        private readonly string _pathToProxyFile;
 
-        public InfluenceManager(string databaseConnectionUri, string databaseUsername, string databasePassword)
+        public InfluenceManager(string databaseConnectionUri, string databaseUsername, string databasePassword,
+            string pathToProxyFile)
         {
             _databaseConnectionUri =
                 databaseConnectionUri ?? throw new ArgumentNullException(nameof(databaseConnectionUri));
             _databaseUsername = databaseUsername ?? throw new ArgumentNullException(nameof(databaseUsername));
             _databasePassword = databasePassword ?? throw new ArgumentNullException(nameof(databasePassword));
+            _pathToProxyFile = pathToProxyFile ?? throw new ArgumentNullException(nameof(pathToProxyFile));
         }
 
         public async Task ProcessUserAsync(string targetUsername)
         {
             var client = CreateDatabaseClient();
+            ProxyFromFileCreatorSingleton.GetInstance().SetPathToProxyFile(_pathToProxyFile);
             var parser = new ParsingHandler(targetUsername);
             parser.Parse();
             var locations = ParsingSetSingleton.GetInstance().GetListOfLocations();

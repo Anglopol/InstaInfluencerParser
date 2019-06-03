@@ -19,6 +19,7 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
         private readonly Queue<WebProxy> _proxyQueue;
         private bool _isQueueInit;
         private readonly ConcurrentDictionary<WebProxy, DateTime> _usedProxy;
+        private string _pathToProxyFile;
 
         private readonly TimeSpan _defaultDelayTime = TimeSpan.Parse("00:03:00");
 
@@ -32,6 +33,11 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
         public static IProxyCreatorSingleton GetInstance()
         {
             return _instance ?? (_instance = new ProxyFromFileCreatorSingleton());
+        }
+
+        public void SetPathToProxyFile(string path)
+        {
+            _pathToProxyFile = path;
         }
 
         public WebProxy GetProxy()
@@ -55,7 +61,7 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
         private void FillQueue()
         {
             _isQueueInit = true;
-            var proxyLines = File.ReadAllLines("proxies.txt", Encoding.UTF8);
+            var proxyLines = File.ReadAllLines(_pathToProxyFile, Encoding.UTF8);
             foreach (var line in proxyLines)
             {
                 var proxyParams = line.Split(":");
@@ -79,7 +85,7 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
                 foreach (var (proxy, lastUse) in _usedProxy)
                 {
                     if (!IsProxyCanBeUsed(proxy, lastUse)) continue;
-                    _usedProxy.TryRemove(proxy, out var value);
+                    _usedProxy.TryRemove(proxy, out _);
                     return proxy;
                 }
 
