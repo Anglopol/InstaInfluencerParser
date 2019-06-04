@@ -73,10 +73,9 @@ namespace InfluencerInstaParser.AudienceParser
             return (from user in ProcessedUsers select user.Value).ToList();
         }
 
-        public List<Location> GetListOfLocations()
+        public IEnumerable<Location> GetListOfLocations()
         {
-            return (from dict in Locations.Values from secDict in dict.Values from values in secDict select values)
-                .ToList();
+            return from dict in Locations.Values from secDict in dict.Values from values in secDict select values;
         }
     }
 }
