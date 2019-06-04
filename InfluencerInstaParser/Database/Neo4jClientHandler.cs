@@ -66,10 +66,23 @@ namespace InfluencerInstaParser.Database
                 .Where((ModelUser user) => user.IsInfluencer == true && user.Parents.Contains(targetUsername))
                 .Return(user => new
                 {
-                    User = user.As<ModelUser>(),
+                    User = user.As<ModelUser>()
                 })
                 .Results;
             return (from user in users where user.User.Parents.Contains(targetUsername) select user.User).ToList();
+        }
+
+        public static List<Location> GetListOfLocationsFromTarget(GraphClient graphClient, string targetUsername)
+        {
+            var locations = graphClient.Cypher
+                .Match("(location:Location)")
+                .Where((Location location) => location.Owner == targetUsername)
+                .Return(location => new
+                {
+                    Loc = location.As<Location>()
+                })
+                .Results;
+            return (from location in locations select location.Loc).ToList();
         }
     }
 }
