@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using InfluencerInstaParser.Database.ModelView;
 using Neo4jClient;
 
@@ -56,6 +57,19 @@ namespace InfluencerInstaParser.Database
                         $"user-[:VISITED {{count: {relation.Count}}}]->location")
                     .ExecuteWithoutResults();
             }
+        }
+
+        public static List<ModelUser> GetListOfInfluencers(GraphClient graphClient, string targetUsername)
+        {
+            var users = graphClient.Cypher
+                .Match("(user:User)")
+                .Where((ModelUser user) => user.IsInfluencer == true && user.Parents.Contains(targetUsername))
+                .Return(user => new
+                {
+                    User = user.As<ModelUser>(),
+                })
+                .Results;
+            return (from user in users where user.User.Parents.Contains(targetUsername) select user.User).ToList();
         }
     }
 }
