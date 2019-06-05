@@ -9,5 +9,6 @@ namespace InfluencerInstaParser.Database.ModelView
         [JsonProperty("parent")] public string Parent { get; set; }
         [JsonProperty("child")] public string Child { get; set; }
         [JsonProperty("follower")] public bool Follower { get; set; }
+        [JsonProperty("date")] public string DateOfParsing { get; set; }
     }
 }

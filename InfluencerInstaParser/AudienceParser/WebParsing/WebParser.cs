@@ -22,10 +22,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private readonly ParsingSetSingleton _usersSet;
         private readonly PageContentScrapper _pageContentScrapper;
         private string _rhxGis;
+        private DateTime _timeOfParsing;
 
-        public WebParser(string userAgent, User owner)
+        public WebParser(string userAgent, User owner, DateTime timeOfParsing)
         {
             _owner = owner;
+            _timeOfParsing = timeOfParsing;
             _logger = LogManager.GetCurrentClassLogger();
             _pageContentScrapper = new PageContentScrapper();
             _userAgent = userAgent;
@@ -223,14 +225,16 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                     var currentUser = _usersSet.UnprocessedUsers.ContainsKey(username)
                         ? _usersSet.UnprocessedUsers[username]
                         : _usersSet.ProcessedUsers[username];
-                    _usersSet.AddUnprocessedUser(username, _owner, currentUser.Followers, currentUser.Following,
+                    _usersSet.AddUnprocessedUser(username, _timeOfParsing, _owner, currentUser.Followers,
+                        currentUser.Following,
                         currentUser.IsInfluencer, type);
                     continue;
                 }
 
                 _logger.Info($"Checking {username} parent {_owner.Username}");
                 var isInfluencer = CheckUser(username, out var followers, out var following);
-                _usersSet.AddUnprocessedUser(username, _owner, followers, following, isInfluencer, type);
+                _usersSet.AddUnprocessedUser(username, _timeOfParsing, _owner, followers, following, isInfluencer,
+                    type);
             }
         }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using InfluencerInstaParser.Database.ModelView;
 
 namespace InfluencerInstaParser.AudienceParser.UserInformation
@@ -40,11 +41,14 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             }
         }
 
-        public RelationInformation(string parentName, string childName, bool isFollower = false,
+        public RelationInformation(string parentName, DateTime timeOfParsing, string childName, bool isFollower = false,
             int likes = 0, int comments = 0)
         {
             Relation = new ModelRelation
-                {Child = childName, Parent = parentName, Likes = likes, Comments = comments, Follower = isFollower};
+            {
+                Child = childName, Parent = parentName, Likes = likes, Comments = comments, Follower = isFollower,
+                DateOfParsing = timeOfParsing.ToString(CultureInfo.InvariantCulture)
+            };
             _likes = likes;
             _comments = comments;
             _setLikesLocker = new object();

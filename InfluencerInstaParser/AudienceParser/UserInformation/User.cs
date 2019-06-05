@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using InfluencerInstaParser.Database.ModelView;
 
@@ -17,6 +18,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
         private int _following;
         private int _followers;
         private readonly ModelUser _modelUser;
+        private DateTime _timeOfParsing;
 
         public bool IsLocationProcessed { get; set; }
 
@@ -34,19 +36,21 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
 
         public bool IsInfluencer { get; }
 
-        public User(string username, User parent, CommunicationType type, bool isInfluencer,
+        public User(string username, DateTime timeOfParsing, User parent, CommunicationType type, bool isInfluencer,
             int likes = 0, int comments = 0, int following = 0, int followers = 0)
         {
             _setFollowersLocker = new object();
             _setFollowingLocker = new object();
             _setCommentsLocker = new object();
             _setLikesLocker = new object();
+            _timeOfParsing = timeOfParsing;
             IsLocationProcessed = false;
             _modelUser = new ModelUser
             {
                 Likes = likes, Parents = new List<string> {parent.Username}, Comments = comments, Username = username,
                 Followers = followers, Following = following,
-                IsInfluencer = isInfluencer, Locations = new List<string>()
+                IsInfluencer = isInfluencer, Locations = new List<string>(),
+                DateOfParsing = timeOfParsing.ToString(CultureInfo.InvariantCulture)
             };
             IsInfluencer = isInfluencer;
             Locations = new ConcurrentDictionary<string, Dictionary<string, LocationRelationInformation>>();
@@ -59,18 +63,22 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             switch (type)
             {
                 case CommunicationType.Liker:
-                    Relations.TryAdd(parent, new RelationInformation(parent.Username, Username, likes: 1));
+                    Relations.TryAdd(parent,
+                        new RelationInformation(parent.Username, _timeOfParsing, Username, likes: 1));
                     break;
                 case CommunicationType.Commentator:
-                    Relations.TryAdd(parent, new RelationInformation(parent.Username, Username, comments: 1));
+                    Relations.TryAdd(parent,
+                        new RelationInformation(parent.Username, _timeOfParsing, Username, comments: 1));
                     break;
                 default:
-                    Relations.TryAdd(parent, new RelationInformation(parent.Username, Username, true));
+                    Relations.TryAdd(parent,
+                        new RelationInformation(parent.Username, _timeOfParsing, Username, true));
                     break;
             }
         }
 
-        public User(string username, int likes = 0, int comments = 0, int following = 0, int followers = 0)
+        public User(string username, DateTime timeOfParsing, int likes = 0, int comments = 0, int following = 0,
+            int followers = 0)
         {
             _setFollowersLocker = new object();
             _setFollowingLocker = new object();
@@ -82,7 +90,8 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                 Likes = likes, Parents = new List<string> {"@target"}, Comments = comments, Username = username,
                 Followers = followers,
                 Following = following,
-                IsInfluencer = false, Locations = new List<string>()
+                IsInfluencer = false, Locations = new List<string>(),
+                DateOfParsing = timeOfParsing.ToString(CultureInfo.InvariantCulture)
             };
 
             Relations = new ConcurrentDictionary<User, RelationInformation>();
@@ -156,7 +165,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
         {
             if (parent.Username == Username) return;
 
-            if (!Relations.TryAdd(parent, new RelationInformation(parent.Username, Username, true)))
+            if (!Relations.TryAdd(parent, new RelationInformation(parent.Username, _timeOfParsing, Username, true)))
                 Relations[parent].Relation.Follower = true;
         }
 
@@ -165,7 +174,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
             if (parent.Username == Username) return;
 
             if (!Relations.TryAdd(parent,
-                new RelationInformation(parent.Username, Username, likes: count)))
+                new RelationInformation(parent.Username, _timeOfParsing, Username, likes: count)))
                 Relations[parent].Likes++;
         }
 
@@ -173,7 +182,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
         {
             if (parent.Username == Username) return;
             if (!Relations.TryAdd(parent,
-                new RelationInformation(parent.Username, Username, comments: count)))
+                new RelationInformation(parent.Username, _timeOfParsing, Username, comments: count)))
                 Relations[parent].Comments++;
         }
 
@@ -199,16 +208,22 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                 {
                     parentName,
                     new LocationRelationInformation
-                        {Count = 0, Name = locationName, Parent = parentName, Child = Username}
+                    {
+                        Count = 0, Name = locationName, Parent = parentName, Child = Username,
+                        DateOfParsing = _timeOfParsing.ToString(CultureInfo.InvariantCulture)
+                    }
                 }
             });
             Locations[locationName].TryAdd(parentName,
                 new LocationRelationInformation
-                    {Count = 0, Name = locationName, Parent = parentName, Child = Username});
+                {
+                    Count = 0, Name = locationName, Parent = parentName, Child = Username,
+                    DateOfParsing = _timeOfParsing.ToString(CultureInfo.InvariantCulture)
+                });
             Locations[locationName][parentName].Count++;
         }
 
-        private static void AddLocationToParsingSet(string locationName, int cityId, string parentName)
+        private void AddLocationToParsingSet(string locationName, int cityId, string parentName)
         {
             var set = ParsingSetSingleton.GetInstance();
             if (set.Locations.TryAdd(locationName, new Dictionary<int, List<Location>>()))
@@ -218,7 +233,8 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                     {
                         new Location
                         {
-                            Name = locationName, Owner = parentName, Id = cityId, CountOfUsers = 1
+                            Name = locationName, Owner = parentName, Id = cityId, CountOfUsers = 1,
+                            DateOfParsing = _timeOfParsing.ToString(CultureInfo.InvariantCulture)
                         }
                     });
             }
@@ -227,7 +243,8 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                 var contains = false;
                 var currentLocation = new Location
                 {
-                    Name = locationName, Owner = parentName, Id = cityId, CountOfUsers = 1
+                    Name = locationName, Owner = parentName, Id = cityId, CountOfUsers = 1,
+                    DateOfParsing = _timeOfParsing.ToString(CultureInfo.InvariantCulture)
                 };
                 foreach (var location in set.Locations[locationName][cityId])
                 {
