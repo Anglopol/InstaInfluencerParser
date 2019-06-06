@@ -123,10 +123,22 @@ namespace InfluencerInstaParser.Database
             return (from location in locations select location.Loc).ToList();
         }
 
-//        public static List<KeyValuePair<ModelUser, int>> GetRankedListOfInfluencers(GraphClient graphClient,
-//            DateTime dateOfParsing, string targetUsername)
-//        {
-//            var rankedInfluencers = graphClient
-//        }
+        public static List<KeyValuePair<ModelUser, int>> GetRankedListOfInfluencers(GraphClient graphClient,
+            DateTime dateOfParsing, string targetUsername)
+        {
+            var date = dateOfParsing.ToString(CultureInfo.InvariantCulture);
+            var rankedInfluencers = graphClient.Cypher
+                .Match("p=(influencer:User)-[relation:CONNECTED]->()")
+                .Where((ModelUser influencer) => influencer.IsInfluencer == true && influencer.DateOfParsing == date)
+                .AndWhere((ModelRelation relation) => relation.Parent == targetUsername)
+                .Return((influencer, relation) => new
+                {
+                    User = influencer.As<ModelUser>(),
+                    Rank = relation.As<ModelRelation>().Comments * 2 + relation.As<ModelRelation>().Likes
+                })
+                .Results;
+            return rankedInfluencers.Select(rankedInfluencer =>
+                new KeyValuePair<ModelUser, int>(rankedInfluencer.User, rankedInfluencer.Rank)).ToList();
+        }
     }
 }
