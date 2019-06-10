@@ -42,4 +42,10 @@
         </Content>
     </ItemGroup>
 
+    <ItemGroup>
+        <Compile Update="Manager\InfluenceManager.cs">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Compile>
+    </ItemGroup>
+
 </Project>

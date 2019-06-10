@@ -7,7 +7,7 @@ using Neo4jClient;
 
 namespace InfluencerInstaParser.Database
 {
-    public class Neo4jClientHandler
+    public static class Neo4JClientHandler
     {
         public static void CreateUsers(GraphClient graphClient, IEnumerable<ModelUser> users)
         {
