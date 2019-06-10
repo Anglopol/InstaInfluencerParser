@@ -233,7 +233,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                     {
                         new Location
                         {
-                            Name = locationName, Owner = parentName, Id = cityId, CountOfUsers = 1,
+                            Name = locationName, Owner = parentName, CityId = cityId, CountOfUsers = 1,
                             DateOfParsing = _timeOfParsing.ToString(CultureInfo.InvariantCulture)
                         }
                     });
@@ -243,7 +243,7 @@ namespace InfluencerInstaParser.AudienceParser.UserInformation
                 var contains = false;
                 var currentLocation = new Location
                 {
-                    Name = locationName, Owner = parentName, Id = cityId, CountOfUsers = 1,
+                    Name = locationName, Owner = parentName, CityId = cityId, CountOfUsers = 1,
                     DateOfParsing = _timeOfParsing.ToString(CultureInfo.InvariantCulture)
                 };
                 foreach (var location in set.Locations[locationName][cityId])

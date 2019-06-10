@@ -3,12 +3,37 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using InfluencerInstaParser.Database.ModelView;
+using InfluencerInstaParser.Exceptions;
 using Neo4jClient;
 
 namespace InfluencerInstaParser.Database
 {
     public static class Neo4JClientHandler
     {
+        public static void CreateAnalysis(GraphClient graphClient, DateTime dateOfParsing,
+            string targetUsername)
+        {
+            graphClient.Cypher
+                .Create($"(analysis:Analysis {{target: {targetUsername}, date: {dateOfParsing}}})")
+                .Set("analysis.id = ID(analysis)")
+                .ExecuteWithoutResults();
+        }
+
+        public static int GetUserId(GraphClient graphClient, DateTime dateOfParsing, string username)
+        {
+            var date = dateOfParsing.ToString(CultureInfo.InvariantCulture);
+            var idResult = graphClient.Cypher
+                .Match("(user:User)")
+                .Where((ModelUser user) => user.Username == username && user.DateOfParsing == date)
+                .Return(user => new
+                {
+                    Id = user.As<ModelUser>().Id
+                }).Results;
+            var idResultList = idResult.ToList();
+            if (idResultList.Count != 0) return (from id in idResultList select id.Id).ToList()[0];
+            throw new NoSuchUserInDatabaseException($"user {username} not exist in parsing on {dateOfParsing}");
+        }
+
         public static void CreateUsers(GraphClient graphClient, IEnumerable<ModelUser> users)
         {
             foreach (var user in users)
@@ -16,6 +41,7 @@ namespace InfluencerInstaParser.Database
                 graphClient.Cypher
                     .Create("(user:User {newUser})")
                     .WithParam("newUser", user)
+                    .Set("user.id = ID(user)")
                     .ExecuteWithoutResults();
             }
         }
@@ -27,6 +53,7 @@ namespace InfluencerInstaParser.Database
                 graphClient.Cypher
                     .Create("(location:Location {newLocation})")
                     .WithParam("newLocation", location)
+                    .Set("location.id = ID(location)")
                     .ExecuteWithoutResults();
             }
         }
@@ -129,6 +156,7 @@ namespace InfluencerInstaParser.Database
             var date = dateOfParsing.ToString(CultureInfo.InvariantCulture);
             var rankedInfluencers = graphClient.Cypher
                 .Match("p=(influencer:User)-[relation:CONNECTED]->()")
+                // ReSharper disable once RedundantBoolCompare
                 .Where((ModelUser influencer) => influencer.IsInfluencer == true && influencer.DateOfParsing == date)
                 .AndWhere((ModelRelation relation) => relation.Parent == targetUsername)
                 .Return((influencer, relation) => new
