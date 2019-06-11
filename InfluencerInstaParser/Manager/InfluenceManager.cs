@@ -45,14 +45,14 @@ namespace InfluencerInstaParser.Manager
             return Neo4JClientHandler.GetListOfLocationsFromTarget(_graphClient, dateOfParsing, _targetUsername);
         }
 
-        public List<DateTime> GetListOfParsingTimes()
+        public List<Analysis> GetListOfAnalyzes()
         {
-            return Neo4JClientHandler.GetListOfDatesOfProcessing(_graphClient, _targetUsername);
+            return Neo4JClientHandler.GetListOfAnalyzes(_graphClient, _targetUsername);
         }
 
-        public DateTime GetLastParsingTime()
+        public Analysis GetLastParsingTime()
         {
-            return Neo4JClientHandler.GetLastDateOfProcessing(_graphClient, _targetUsername);
+            return Neo4JClientHandler.GetLastAnalysis(_graphClient, _targetUsername);
         }
 
         private void FillDatabase(IEnumerable<User> users, IEnumerable<Location> locations)

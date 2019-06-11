@@ -104,31 +104,35 @@ namespace InfluencerInstaParser.Database
             }
         }
 
-        public static List<DateTime> GetListOfDatesOfProcessing(GraphClient graphClient, string targetUsername)
+        public static List<Analysis> GetListOfAnalyzes(GraphClient graphClient, string targetUsername)
         {
-            var dates = graphClient.Cypher
-                .Match("(user:User)")
-                .Where((ModelUser user) => user.Username == targetUsername)
-                .Return(user => new
+            var analyses = graphClient.Cypher
+                .Match($"(analysis:Analysis {{target: {targetUsername}}})")
+                .Return(analysis => new
                 {
-                    Date = DateTime.Parse(user.As<ModelUser>().DateOfParsing)
+                    Analysis = analysis.As<Analysis>()
                 })
                 .Results;
-            var listOfDates = dates.ToList();
-            return listOfDates.Count == 0 ? new List<DateTime>() : (from date in listOfDates select date.Date).ToList();
+            var listOfAnalyzes = analyses.ToList();
+            return listOfAnalyzes.Count == 0
+                ? new List<Analysis>()
+                : (from analysis in listOfAnalyzes select analysis.Analysis).ToList();
         }
 
-        public static DateTime GetLastDateOfProcessing(GraphClient graphClient, string targetUsername)
+        public static Analysis GetLastAnalysis(GraphClient graphClient, string targetUsername)
         {
-            var dates = GetListOfDatesOfProcessing(graphClient, targetUsername);
+            var analyzes = GetListOfAnalyzes(graphClient, targetUsername);
             var currentDateValue = DateTime.MinValue;
-            if (dates.Count == 0) return currentDateValue;
-            foreach (var date in dates)
+            var currentAnalysis = new Analysis();
+            if (analyzes.Count == 0) return currentAnalysis;
+            foreach (var analysis in analyzes)
             {
-                if (DateTime.Compare(date, currentDateValue) > 0) currentDateValue = date;
+                var time = DateTime.Parse(analysis.Date);
+                if (DateTime.Compare(time, currentDateValue) > 0) currentDateValue = time;
+                currentAnalysis = analysis;
             }
 
-            return currentDateValue;
+            return currentAnalysis;
         }
 
         public static List<ModelUser> GetListOfInfluencers(GraphClient graphClient, DateTime dateOfParsing,
