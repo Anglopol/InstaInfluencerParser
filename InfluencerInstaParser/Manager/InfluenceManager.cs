@@ -52,6 +52,11 @@ namespace InfluencerInstaParser.Manager
             return Neo4JClientHandler.GetLastAnalysis(_graphClient, targetUsername);
         }
 
+        public Analysis GetAnalysisById(string id)
+        {
+            return Neo4JClientHandler.GetAnalysisById(_graphClient, id);
+        }
+
         private void FillDatabase(string targetUsername, IEnumerable<User> users, IEnumerable<Location> locations)
         {
             _graphClient.Connect();

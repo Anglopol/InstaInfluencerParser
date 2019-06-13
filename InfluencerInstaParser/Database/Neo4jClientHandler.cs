@@ -31,7 +31,22 @@ namespace InfluencerInstaParser.Database
                 }).Results;
             var idResultList = idResult.ToList();
             if (idResultList.Count != 0) return (from id in idResultList select id.Id).ToList()[0];
-            throw new NoSuchUserInDatabaseException($"user {username} not exist in parsing on {dateOfParsing}");
+            throw new NoSuchUserInDatabaseException($"user {username} not exist in database on {dateOfParsing}");
+        }
+
+        public static Analysis GetAnalysisById(GraphClient graphClient, string analysisId)
+        {
+            var analyses = graphClient.Cypher
+                .Match($"analysis:Analysis")
+                .Where((Analysis analysis) => analysis.Id == analysisId)
+                .Return(analysis => new
+                {
+                    Result = analysis.As<Analysis>()
+                })
+                .Results
+                .ToList();
+            if (analyses.Count != 0) return analyses[0].Result;
+            throw new NoSuchAnalysisInDatabaseException($"Analysis with {analysisId} ID not exist in database");
         }
 
         public static void CreateUsers(GraphClient graphClient, IEnumerable<ModelUser> users, string targetUsername,
@@ -107,7 +122,7 @@ namespace InfluencerInstaParser.Database
         public static List<Analysis> GetListOfAnalyzes(GraphClient graphClient, string targetUsername)
         {
             var analyses = graphClient.Cypher
-                .Match($"(analysis:Analysis {{target: {targetUsername}}})")
+                .Match($"(analysis:Analysis {{target: '{targetUsername}'}})")
                 .Return(analysis => new
                 {
                     Analysis = analysis.As<Analysis>()
@@ -169,6 +184,7 @@ namespace InfluencerInstaParser.Database
         public static List<KeyValuePair<ModelUser, int>> GetRankedListOfInfluencers(GraphClient graphClient,
             DateTime dateOfParsing, string targetUsername)
         {
+            const int commentCoefficient = 2;
             var date = dateOfParsing.ToString(CultureInfo.InvariantCulture);
             var rankedInfluencers = graphClient.Cypher
                 .Match("p=(influencer:User)-[relation:CONNECTED]->()")
@@ -178,7 +194,8 @@ namespace InfluencerInstaParser.Database
                 .Return((influencer, relation) => new
                 {
                     User = influencer.As<ModelUser>(),
-                    Rank = relation.As<ModelRelation>().Comments * 2 + relation.As<ModelRelation>().Likes
+                    Rank = relation.As<ModelRelation>().Comments * commentCoefficient +
+                           relation.As<ModelRelation>().Likes
                 })
                 .Results;
             return rankedInfluencers.Select(rankedInfluencer =>
