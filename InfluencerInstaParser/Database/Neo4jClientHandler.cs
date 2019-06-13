@@ -38,7 +38,7 @@ namespace InfluencerInstaParser.Database
         public static Analysis GetAnalysisById(GraphClient graphClient, string analysisId)
         {
             var analyses = graphClient.Cypher
-                .Match($"analysis:Analysis")
+                .Match("analysis:Analysis")
                 .Where((Analysis analysis) => analysis.Id == analysisId)
                 .Return(analysis => new
                 {
@@ -120,7 +120,7 @@ namespace InfluencerInstaParser.Database
             }
         }
 
-        public static List<Analysis> GetListOfAnalyzes(GraphClient graphClient, string targetUsername)
+        public static List<Analysis> GetListOfAnalyses(GraphClient graphClient, string targetUsername)
         {
             var analyses = graphClient.Cypher
                 .Match($"(analysis:Analysis {{target: '{targetUsername}'}})")
@@ -129,19 +129,34 @@ namespace InfluencerInstaParser.Database
                     Analysis = analysis.As<Analysis>()
                 })
                 .Results;
-            var listOfAnalyzes = analyses.ToList();
-            return listOfAnalyzes.Count == 0
+            var listOfAnalyses = analyses.ToList();
+            return listOfAnalyses.Count == 0
                 ? new List<Analysis>()
-                : (from analysis in listOfAnalyzes select analysis.Analysis).ToList();
+                : (from analysis in listOfAnalyses select analysis.Analysis).ToList();
+        }
+
+        public static ModelUser GetUserById(GraphClient graphClient, string userId)
+        {
+            var userResult = graphClient.Cypher
+                .Match("(user:User)")
+                .Where((ModelUser user) => user.Id == userId)
+                .Return(user => new
+                {
+                    User = user.As<ModelUser>()
+                })
+                .Results
+                .ToList();
+            if (userResult.Count != 0) return userResult[0].User;
+            throw new NoSuchUserInDatabaseException($"user with {userId} ID in database");
         }
 
         public static Analysis GetLastAnalysis(GraphClient graphClient, string targetUsername)
         {
-            var analyzes = GetListOfAnalyzes(graphClient, targetUsername);
+            var analyses = GetListOfAnalyses(graphClient, targetUsername);
             var currentDateValue = DateTime.MinValue;
             var currentAnalysis = new Analysis();
-            if (analyzes.Count == 0) return currentAnalysis;
-            foreach (var analysis in analyzes)
+            if (analyses.Count == 0) return currentAnalysis;
+            foreach (var analysis in analyses)
             {
                 var time = DateTime.Parse(analysis.Date);
                 if (DateTime.Compare(time, currentDateValue) > 0) currentDateValue = time;
