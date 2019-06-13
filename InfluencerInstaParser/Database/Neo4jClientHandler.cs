@@ -10,6 +10,7 @@ namespace InfluencerInstaParser.Database
 {
     public static class Neo4JClientHandler
     {
+        //TODO: добавить связь анализа и таргета
         public static void CreateAnalysis(GraphClient graphClient, DateTime dateOfParsing,
             string targetUsername, out Guid id)
         {
@@ -200,6 +201,22 @@ namespace InfluencerInstaParser.Database
                 .Results;
             return rankedInfluencers.Select(rankedInfluencer =>
                 new KeyValuePair<ModelUser, int>(rankedInfluencer.User, rankedInfluencer.Rank)).ToList();
+        }
+
+        public static List<ModelUser> GetListOfInfluencers(GraphClient graphClient, string analysisId)
+        {
+            var influencers = graphClient.Cypher
+                .Match("p=(analysis:Analysis)--(target:User)--(influencer:User)")
+                .Where((Analysis analysis) => analysis.Id == analysisId)
+                // ReSharper disable once RedundantBoolCompare
+                .AndWhere((ModelUser influencer) => influencer.IsInfluencer == true)
+                .Return(influencer => new
+                {
+                    Influencer = influencer.As<ModelUser>()
+                })
+                .Results
+                .ToList();
+            return (from influencer in influencers select influencer.Influencer).ToList();
         }
 
         private static Guid GenerateId()

@@ -37,6 +37,13 @@ namespace InfluencerInstaParser.Manager
             return Neo4JClientHandler.GetListOfInfluencers(_graphClient, dateOfParsing, targetUsername);
         }
 
+        public List<ModelUser> GetListOfInfluencers(string targetUsername, string analysisId)
+        {
+            var currentAnalysis = GetAnalysisById(analysisId);
+            var dateOfParsing = DateTime.Parse(currentAnalysis.Date);
+            return Neo4JClientHandler.GetListOfInfluencers(_graphClient, dateOfParsing, targetUsername);
+        }
+
         public List<Location> GetListOfLocationsFromTarget(string targetUsername, DateTime dateOfParsing)
         {
             return Neo4JClientHandler.GetListOfLocationsFromTarget(_graphClient, dateOfParsing, targetUsername);
@@ -52,9 +59,14 @@ namespace InfluencerInstaParser.Manager
             return Neo4JClientHandler.GetLastAnalysis(_graphClient, targetUsername);
         }
 
-        public Analysis GetAnalysisById(string id)
+        public Analysis GetAnalysisById(string analysisId)
         {
-            return Neo4JClientHandler.GetAnalysisById(_graphClient, id);
+            return Neo4JClientHandler.GetAnalysisById(_graphClient, analysisId);
+        }
+
+        public List<ModelUser> GetInfluencersByAnalysisId(string analysisId)
+        {
+            return Neo4JClientHandler.GetListOfInfluencers(_graphClient, analysisId);
         }
 
         private void FillDatabase(string targetUsername, IEnumerable<User> users, IEnumerable<Location> locations)
