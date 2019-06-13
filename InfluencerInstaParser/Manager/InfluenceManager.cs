@@ -13,55 +13,52 @@ namespace InfluencerInstaParser.Manager
     public class InfluenceManager
     {
         private readonly GraphClient _graphClient;
-        private readonly string _targetUsername;
         private readonly DateTime _currentDate;
 
-        public InfluenceManager(Uri databaseConnectionUri, string databaseUsername, string databasePassword,
-            string targetUsername)
+        public InfluenceManager(Uri databaseConnectionUri, string databaseUsername, string databasePassword)
         {
-            _targetUsername = targetUsername;
             _graphClient = new GraphClient(databaseConnectionUri, databaseUsername, databasePassword);
             _currentDate = DateTime.UtcNow;
         }
 
-        public void ProcessUser(string pathToProxyFile)
+        public void ProcessUser(string targetUsername, string pathToProxyFile)
         {
             _graphClient.Connect();
             ProxyFromFileCreatorSingleton.GetInstance().SetPathToProxyFile(pathToProxyFile);
-            var parser = new ParsingHandler(_targetUsername, _currentDate);
+            var parser = new ParsingHandler(targetUsername, _currentDate);
             parser.Parse();
             var locations = ParsingSetSingleton.GetInstance().GetListOfLocations();
             var users = ParsingSetSingleton.GetInstance().GetProcessedUsers();
-            FillDatabase(users, locations);
+            FillDatabase(targetUsername, users, locations);
         }
 
-        public List<ModelUser> GetListOfInfluencers(DateTime dateOfParsing)
+        public List<ModelUser> GetListOfInfluencers(string targetUsername, DateTime dateOfParsing)
         {
-            return Neo4JClientHandler.GetListOfInfluencers(_graphClient, dateOfParsing, _targetUsername);
+            return Neo4JClientHandler.GetListOfInfluencers(_graphClient, dateOfParsing, targetUsername);
         }
 
-        public List<Location> GetListOfLocationsFromTarget(DateTime dateOfParsing)
+        public List<Location> GetListOfLocationsFromTarget(string targetUsername, DateTime dateOfParsing)
         {
-            return Neo4JClientHandler.GetListOfLocationsFromTarget(_graphClient, dateOfParsing, _targetUsername);
+            return Neo4JClientHandler.GetListOfLocationsFromTarget(_graphClient, dateOfParsing, targetUsername);
         }
 
-        public List<Analysis> GetListOfAnalyzes()
+        public List<Analysis> GetListOfAnalyzes(string targetUsername)
         {
-            return Neo4JClientHandler.GetListOfAnalyzes(_graphClient, _targetUsername);
+            return Neo4JClientHandler.GetListOfAnalyzes(_graphClient, targetUsername);
         }
 
-        public Analysis GetLastParsingTime()
+        public Analysis GetLastParsingTime(string targetUsername)
         {
-            return Neo4JClientHandler.GetLastAnalysis(_graphClient, _targetUsername);
+            return Neo4JClientHandler.GetLastAnalysis(_graphClient, targetUsername);
         }
 
-        private void FillDatabase(IEnumerable<User> users, IEnumerable<Location> locations)
+        private void FillDatabase(string targetUsername, IEnumerable<User> users, IEnumerable<Location> locations)
         {
             _graphClient.Connect();
             var usersList = users.ToList();
             var modelUsers = (from user in usersList select user.ModelViewUser).ToList();
-            Neo4JClientHandler.CreateAnalysis(_graphClient, _currentDate, _targetUsername, out var analysisId);
-            Neo4JClientHandler.CreateUsers(_graphClient, modelUsers, _targetUsername, analysisId);
+            Neo4JClientHandler.CreateAnalysis(_graphClient, _currentDate, targetUsername, out var analysisId);
+            Neo4JClientHandler.CreateUsers(_graphClient, modelUsers, targetUsername, analysisId);
             Neo4JClientHandler.CreateLocations(_graphClient, locations);
             var usersRelations =
                 (from user in usersList from userDict in user.Relations select userDict.Value).ToList();
