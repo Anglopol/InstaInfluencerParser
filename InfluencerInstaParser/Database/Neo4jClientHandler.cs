@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using InfluencerInstaParser.Database.ModelView;
+using InfluencerInstaParser.Database.Model;
 using InfluencerInstaParser.Exceptions;
 using Neo4jClient;
 

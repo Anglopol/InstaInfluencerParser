@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using InfluencerInstaParser.Database.ModelView;
+using InfluencerInstaParser.Database.Model;
 
 namespace InfluencerInstaParser.AudienceParser.UserInformation
 {

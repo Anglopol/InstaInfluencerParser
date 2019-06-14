@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace InfluencerInstaParser.Database.ModelView
+namespace InfluencerInstaParser.Database.Model
 {
     public class Location
     {

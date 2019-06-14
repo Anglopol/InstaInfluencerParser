@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using InfluencerInstaParser.AudienceParser.UserInformation;
-using InfluencerInstaParser.Database.ModelView;
+using InfluencerInstaParser.Database.Model;
 
 namespace InfluencerInstaParser.AudienceParser
 {

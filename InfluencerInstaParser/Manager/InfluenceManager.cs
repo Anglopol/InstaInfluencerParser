@@ -5,7 +5,7 @@ using InfluencerInstaParser.AudienceParser;
 using InfluencerInstaParser.AudienceParser.Proxy;
 using InfluencerInstaParser.AudienceParser.UserInformation;
 using InfluencerInstaParser.Database;
-using InfluencerInstaParser.Database.ModelView;
+using InfluencerInstaParser.Database.Model;
 using Neo4jClient;
 
 namespace InfluencerInstaParser.Manager
