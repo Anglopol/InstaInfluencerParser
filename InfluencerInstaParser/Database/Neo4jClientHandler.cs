@@ -55,20 +55,28 @@ namespace InfluencerInstaParser.Database
             foreach (var user in users)
             {
                 user.AnalysisId = analysisId.ToString();
-                var id = GenerateId();
+                var userId = GenerateId().ToString();
                 graphClient.Cypher
                     .Create("(user:User {newUser})")
                     .WithParam("newUser", user)
-                    .Set($"user.id = {id}")
+                    .Set($"user.id = {userId}")
                     .ExecuteWithoutResults();
                 if (user.Username == targetUsername)
                 {
-                    graphClient.Cypher
-                        .Match($"(analysis:Analysis {{id: {analysisId}}})", $"(target:User {{id: {id}}})")
-                        .Create($"analysis-[:ANALYSIS {{id: {analysisId}}}]->target")
-                        .ExecuteWithoutResults();
+                    CreateRelationUserAnalysis(graphClient, analysisId.ToString(), userId);
                 }
             }
+        }
+
+        private static void CreateRelationUserAnalysis(GraphClient graphClient, string analysisId, string userId)
+        {
+            graphClient.Cypher
+                .Match("(analysis:Analysis)", $"(target:User {{id: {userId}}})")
+                .Where((Analysis analysis) => analysis.Id == analysisId)
+                .AndWhere((ModelUser target) => target.Id == userId)
+                .Set($"analysis.targetId = {userId}")
+                .Create($"analysis-[:ANALYSIS {{id: {analysisId}}}]->target")
+                .ExecuteWithoutResults();
         }
 
         public static void CreateLocations(GraphClient graphClient, IEnumerable<Location> locations)
