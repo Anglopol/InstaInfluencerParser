@@ -87,6 +87,19 @@ namespace InfluencerInstaParser.Manager
             return Neo4JClientHandler.GetUserById(_graphClient, userId);
         }
 
+        public Analysis GetAnalysisByUserId(string userId)
+        {
+            var user = GetUserById(userId);
+            return GetAnalysisById(user.AnalysisId);
+        }
+
+        public Dictionary<ModelUser, int> GetRankedDictOfInfluencers(string analysisId)
+        {
+            var analysis = GetAnalysisById(analysisId);
+            return Neo4JClientHandler.GetRankedDictOfInfluencers(_graphClient, DateTime.Parse(analysis.Date),
+                analysis.TargetName);
+        }
+
         private void FillDatabase(string targetUsername, IEnumerable<User> users, IEnumerable<Location> locations)
         {
             _graphClient.Connect();
