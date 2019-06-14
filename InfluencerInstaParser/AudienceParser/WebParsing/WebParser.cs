@@ -22,7 +22,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private readonly ParsingSetSingleton _usersSet;
         private readonly PageContentScrapper _pageContentScrapper;
         private string _rhxGis;
-        private DateTime _timeOfParsing;
+        private readonly DateTime _timeOfParsing;
 
         public WebParser(string userAgent, User owner, DateTime timeOfParsing)
         {

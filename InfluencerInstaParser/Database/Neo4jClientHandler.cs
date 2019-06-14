@@ -10,7 +10,6 @@ namespace InfluencerInstaParser.Database
 {
     public static class Neo4JClientHandler
     {
-        //TODO: добавить связь анализа и таргета
         public static void CreateAnalysis(GraphClient graphClient, DateTime dateOfParsing,
             string targetUsername, out Guid id)
         {
