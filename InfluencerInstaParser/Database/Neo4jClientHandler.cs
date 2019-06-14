@@ -55,6 +55,7 @@ namespace InfluencerInstaParser.Database
         {
             foreach (var user in users)
             {
+                user.AnalysisId = analysisId.ToString();
                 var id = GenerateId();
                 graphClient.Cypher
                     .Create("(user:User {newUser})")
@@ -197,7 +198,7 @@ namespace InfluencerInstaParser.Database
             return (from location in locations select location.Loc).ToList();
         }
 
-        public static List<KeyValuePair<ModelUser, int>> GetRankedListOfInfluencers(GraphClient graphClient,
+        public static Dictionary<ModelUser, int> GetRankedDictOfInfluencers(GraphClient graphClient,
             DateTime dateOfParsing, string targetUsername)
         {
             const int commentCoefficient = 2;
@@ -214,8 +215,8 @@ namespace InfluencerInstaParser.Database
                            relation.As<ModelRelation>().Likes
                 })
                 .Results;
-            return rankedInfluencers.Select(rankedInfluencer =>
-                new KeyValuePair<ModelUser, int>(rankedInfluencer.User, rankedInfluencer.Rank)).ToList();
+            return new Dictionary<ModelUser, int>(rankedInfluencers.Select(rankedInfluencer =>
+                new KeyValuePair<ModelUser, int>(rankedInfluencer.User, rankedInfluencer.Rank)));
         }
 
         public static List<ModelUser> GetListOfInfluencers(GraphClient graphClient, string analysisId)

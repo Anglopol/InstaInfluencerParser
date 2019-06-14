@@ -15,5 +15,6 @@ namespace InfluencerInstaParser.Database.Model
         [JsonProperty("influencer")] public bool IsInfluencer { get; set; }
         [JsonProperty("date")] public string DateOfParsing { get; set; }
         [JsonProperty("id")] public string Id { get; set; }
+        [JsonProperty("analysis")] public string AnalysisId { get; set; }
     }
 }
