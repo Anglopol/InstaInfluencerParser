@@ -44,12 +44,12 @@ namespace InfluencerInstaParser.Manager
             return Neo4JClientHandler.GetListOfInfluencers(_graphClient, dateOfParsing, targetUsername);
         }
 
-        public List<Location> GetListOfLocationsFromTarget(string targetUsername, DateTime dateOfParsing)
+        public List<Location> GetListOfLocationsFromUser(string targetUsername, DateTime dateOfParsing)
         {
             return Neo4JClientHandler.GetListOfLocationsFromTarget(_graphClient, dateOfParsing, targetUsername);
         }
 
-        public List<Location> GetListOfLocationsFromTargetById(string userId)
+        public List<Location> GetListOfLocationsFromUserById(string userId)
         {
             var user = GetUserById(userId);
             var dateOfParsing = DateTime.Parse(user.DateOfParsing);
