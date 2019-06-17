@@ -11,7 +11,7 @@ namespace InfluencerInstaParser.Database
     public static class Neo4JClientHandler
     {
         public static void CreateAnalysis(GraphClient graphClient, DateTime dateOfParsing,
-            string targetUsername, out Guid id)
+            string targetUsername, out string id)
         {
             id = GenerateId();
             graphClient.Cypher
@@ -50,12 +50,12 @@ namespace InfluencerInstaParser.Database
         }
 
         public static void CreateUsers(GraphClient graphClient, IEnumerable<ModelUser> users, string targetUsername,
-            Guid analysisId)
+            string analysisId)
         {
             foreach (var user in users)
             {
-                user.AnalysisId = analysisId.ToString();
-                var userId = GenerateId().ToString();
+                user.AnalysisId = analysisId;
+                var userId = GenerateId();
                 graphClient.Cypher
                     .Create("(user:User {newUser})")
                     .WithParam("newUser", user)
@@ -63,7 +63,7 @@ namespace InfluencerInstaParser.Database
                     .ExecuteWithoutResults();
                 if (user.Username == targetUsername)
                 {
-                    CreateRelationUserAnalysis(graphClient, analysisId.ToString(), userId);
+                    CreateRelationUserAnalysis(graphClient, analysisId, userId);
                 }
             }
         }
@@ -242,9 +242,9 @@ namespace InfluencerInstaParser.Database
             return (from influencer in influencers select influencer.Influencer).ToList();
         }
 
-        private static Guid GenerateId()
+        private static string GenerateId()
         {
-            return Guid.NewGuid();
+            return Guid.NewGuid().ToString();
         }
     }
 }
