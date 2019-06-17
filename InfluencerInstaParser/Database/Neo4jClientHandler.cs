@@ -10,12 +10,22 @@ namespace InfluencerInstaParser.Database
 {
     public static class Neo4JClientHandler
     {
+        public static void CreateTarget(GraphClient graphClient, string username)
+        {
+            graphClient.Cypher
+                .Create($"(target:Target {{name: {username}}})")
+                .ExecuteWithoutResults();
+        }
+
         public static void CreateAnalysis(GraphClient graphClient, DateTime dateOfParsing,
             string targetUsername, out string id)
         {
             id = GenerateId();
             graphClient.Cypher
                 .Create($"(analysis:Analysis {{target: {targetUsername}, date: {dateOfParsing}, id: {id}}})")
+                .Match("(target:Target)")
+                .Where($"target.name = {targetUsername}")
+                .Create("analysis-[:TARGET]->target")
                 .ExecuteWithoutResults();
         }
 
