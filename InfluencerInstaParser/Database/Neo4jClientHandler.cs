@@ -12,8 +12,9 @@ namespace InfluencerInstaParser.Database
     {
         public static void CreateTarget(GraphClient graphClient, string username)
         {
+            var id = GenerateId();
             graphClient.Cypher
-                .Create($"(target:Target {{name: {username}}})")
+                .Create($"(target:Target {{name: {username}, id: {id}}})")
                 .ExecuteWithoutResults();
         }
 
