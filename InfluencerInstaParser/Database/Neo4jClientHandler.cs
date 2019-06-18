@@ -82,7 +82,7 @@ namespace InfluencerInstaParser.Database
         private static void CreateRelationUserAnalysis(GraphClient graphClient, string analysisId, string userId)
         {
             graphClient.Cypher
-                .Match("(analysis:Analysis)", $"(target:User {{id: {userId}}})")
+                .Match("(analysis:Analysis)", "(target:User)")
                 .Where((Analysis analysis) => analysis.Id == analysisId)
                 .AndWhere((ModelUser target) => target.Id == userId)
                 .Set($"analysis.targetId = {userId}")
