@@ -10,26 +10,34 @@ namespace InfluencerInstaParser.Database
 {
     public static class Neo4JClientHandler
     {
-        public static void CreateTarget(GraphClient graphClient, string username)
+        public static void CreateTarget(GraphClient graphClient, string username, out string targetId)
         {
-            var id = GenerateId();
+            targetId = GenerateId();
             graphClient.Cypher
-                .Create($"(target:Target {{name: {username}, id: {id}}})")
+                .Create($"(target:Target {{name: \"{username}\", id: \"{targetId}\"}})")
                 .ExecuteWithoutResults();
         }
 
         public static void CreateAnalysis(GraphClient graphClient, DateTime dateOfParsing,
-            string targetUsername, out string id)
+            string targetId, out string analysisId)
         {
-            id = GenerateId();
+            analysisId = GenerateId();
             graphClient.Cypher
-                .Create($"(analysis:Analysis {{target: {targetUsername}, date: {dateOfParsing}, id: {id}}})")
-                .Match("(target:Target)")
-                .Where($"target.name = {targetUsername}")
-                .Create("analysis-[:TARGET]->target")
+                .Create($"(analysis:Analysis {{targetId: \"{targetId}\", date: \"{dateOfParsing}\", id: \"{analysisId}\"}})")
                 .ExecuteWithoutResults();
+            RelateAnalysisAndTarget(graphClient, analysisId, targetId);
         }
 
+        private static void RelateAnalysisAndTarget(GraphClient graphClient, string analysisId, string targetId)
+        {
+            graphClient.Cypher
+                .Match("(target:Target)", "(analysis:Analysis)")
+                .Where($"target.id = \"{targetId}\"")
+                .AndWhere($"analysis.id = \"{analysisId}\"")
+                .Create("(analysis)-[:TARGET]->(target)")
+                .ExecuteWithoutResults();
+        }
+ 
         public static string GetUserId(GraphClient graphClient, DateTime dateOfParsing, string username)
         {
             var date = dateOfParsing.ToString(CultureInfo.InvariantCulture);
@@ -70,7 +78,7 @@ namespace InfluencerInstaParser.Database
                 graphClient.Cypher
                     .Create("(user:User {newUser})")
                     .WithParam("newUser", user)
-                    .Set($"user.id = {userId}")
+                    .Set($"user.id = \"{userId}\"")
                     .ExecuteWithoutResults();
                 if (user.Username == targetUsername)
                 {
@@ -85,8 +93,8 @@ namespace InfluencerInstaParser.Database
                 .Match("(analysis:Analysis)", "(target:User)")
                 .Where((Analysis analysis) => analysis.Id == analysisId)
                 .AndWhere((ModelUser target) => target.Id == userId)
-                .Set($"analysis.targetId = {userId}")
-                .Create($"analysis-[:ANALYSIS {{id: {analysisId}}}]->target")
+                .Set($"analysis.targetId = \"{userId}\"")
+                .Create($"(analysis)-[:ANALYSIS {{id: \"{analysisId}\"}}]->(target)")
                 .ExecuteWithoutResults();
         }
 
@@ -98,7 +106,7 @@ namespace InfluencerInstaParser.Database
                 graphClient.Cypher
                     .Create("(location:Location {newLocation})")
                     .WithParam("newLocation", location)
-                    .Set($"location.id = {id}")
+                    .Set($"location.id = \"{id}\"")
                     .ExecuteWithoutResults();
             }
         }
@@ -115,7 +123,7 @@ namespace InfluencerInstaParser.Database
                     .AndWhere((ModelUser parent) =>
                         parent.Username == relation.Parent && parent.DateOfParsing == relation.DateOfParsing)
                     .Create(
-                        $"child-[:CONNECTED {{likes: {relation.Likes}, comments: {relation.Comments}, follower: {relation.Follower}, date: {relation.DateOfParsing}, id: {id}}}]->parent")
+                        $"(child)-[:CONNECTED {{likes: {relation.Likes}, comments: {relation.Comments}, follower: {relation.Follower}, date: \"{relation.DateOfParsing}\", id: \"{id}\"}}]->(parent)")
                     .ExecuteWithoutResults();
             }
         }
@@ -134,7 +142,7 @@ namespace InfluencerInstaParser.Database
                         (Location location) => location.Name == relation.Name && location.Owner == relation.Parent &&
                                                location.DateOfParsing == relation.DateOfParsing)
                     .Create(
-                        $"user-[:VISITED {{count: {relation.Count}, date: {relation.DateOfParsing}, id: {id}}}]->location")
+                        $"(user)-[:VISITED {{count: {relation.Count}, date: \"{relation.DateOfParsing}\", id: \"{id}\"}}]->(location)")
                     .ExecuteWithoutResults();
             }
         }
@@ -142,7 +150,8 @@ namespace InfluencerInstaParser.Database
         public static List<Analysis> GetListOfAnalyses(GraphClient graphClient, string targetUsername)
         {
             var analyses = graphClient.Cypher
-                .Match($"(analysis:Analysis {{target: '{targetUsername}'}})")
+                .Match("(analysis:Analysis)")
+                .Where($"analysis.target = \"{targetUsername}\"")
                 .Return(analysis => new
                 {
                     Analysis = analysis.As<Analysis>()

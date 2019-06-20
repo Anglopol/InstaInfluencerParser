@@ -2,12 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using InfluencerInstaParser.AudienceParser.AuthorizedParsing;
-using InfluencerInstaParser.AudienceParser.AuthorizedParsing.SessionData;
 using InfluencerInstaParser.AudienceParser.UserInformation;
 using InfluencerInstaParser.AudienceParser.WebParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
-using InstagramApiSharp.API;
 using NLog;
 
 namespace InfluencerInstaParser.AudienceParser
@@ -39,16 +36,16 @@ namespace InfluencerInstaParser.AudienceParser
             web.TryGetPostsShortCodesAndLocationsIdFromUser(_targetAccount, out var shortCodes, out _);
             _logger.Info("Short codes of target user downloaded");
             Console.WriteLine("Short Codes downloaded");
-            var sessionData = new ConfigSessionDataFactory().MakeSessionData();
-            var api = Task.Run(() => AuthApiCreator.MakeAuthApi(sessionData)).GetAwaiter().GetResult();
-            var followers = Task.Run(() => new AudienceDownloader().GetFollowers(_targetAccount, api));
+//            var sessionData = new ConfigSessionDataFactory().MakeSessionData();
+//            var api = Task.Run(() => AuthApiCreator.MakeAuthApi(sessionData)).GetAwaiter().GetResult();
+//            var followers = Task.Run(() => new AudienceDownloader().GetFollowers(_targetAccount, api));
             var shortCodesTask = Task.Run(() => ShortCodesProcessing(owner, shortCodes));
             Console.WriteLine("All threads started");
-            followers.Wait();
+//            followers.Wait();
             _logger.Info("Followers of target user added");
-            _parsingSet.ProcessedUsers[_targetAccount].Followers = followers.Result.Count();
+//            _parsingSet.ProcessedUsers[_targetAccount].Followers = followers.Result.Count();
             shortCodesTask.Wait();
-            web.FillUnprocessedSet(followers.Result, CommunicationType.Follower);
+//            web.FillUnprocessedSet(followers.Result, CommunicationType.Follower);
             var users = _parsingSet.UnprocessedUsers.Values.ToList();
             var secondLevelTasks = new List<Task>();
             var locationTasks = new List<Task>();
@@ -58,7 +55,7 @@ namespace InfluencerInstaParser.AudienceParser
                 if (!user.IsInfluencer || user.Username == _targetAccount) continue;
                 _parsingSet.AddProcessedUser(user);
                 _logger.Info($"Starting second level parsing for {user.Username}");
-                var secondLevelTask = Task.Run(() => SecondLevelParsing(user, api));
+                var secondLevelTask = Task.Run(() => SecondLevelParsing(user));
                 secondLevelTasks.Add(secondLevelTask);
             }
 
@@ -91,7 +88,8 @@ namespace InfluencerInstaParser.AudienceParser
             Task.WaitAll(locationTasks.ToArray());
         }
 
-        private void SecondLevelParsing(User user, IInstaApi authApi)
+//        private void SecondLevelParsing(User user, IInstaApi authApi)
+        private void SecondLevelParsing(User user)
         {
             var locator = new Locator(new PageDownloaderProxy(), new PageContentScrapper(),
                 _agentCreator.GetUserAgent());

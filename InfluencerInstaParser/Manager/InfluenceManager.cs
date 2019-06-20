@@ -105,7 +105,8 @@ namespace InfluencerInstaParser.Manager
             _graphClient.Connect();
             var usersList = users.ToList();
             var modelUsers = (from user in usersList select user.ModelViewUser).ToList();
-            Neo4JClientHandler.CreateAnalysis(_graphClient, _currentDate, targetUsername, out var analysisId);
+            Neo4JClientHandler.CreateTarget(_graphClient, targetUsername, out var targetId);
+            Neo4JClientHandler.CreateAnalysis(_graphClient, _currentDate, targetId, out var analysisId);
             Neo4JClientHandler.CreateUsers(_graphClient, modelUsers, targetUsername, analysisId);
             Neo4JClientHandler.CreateLocations(_graphClient, locations);
             var usersRelations =

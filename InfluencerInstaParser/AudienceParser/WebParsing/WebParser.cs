@@ -242,9 +242,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var userUrl = "/" + username + "/";
             var userPageContent = _downloaderProxy.GetPageContent(userUrl, _userAgent);
-            var parsingArguments = (NameValueCollection) ConfigurationManager.GetSection("parsingarguments");
-            var minNumberOfFollowers = int.Parse(parsingArguments.Get("MinFollowersValue"));
-            var subscriptionProportion = float.Parse(parsingArguments.Get("SubscriptionProportion"));
+//            var parsingArguments = (NameValueCollection) ConfigurationManager.GetSection("parsingarguments");
+//            var minNumberOfFollowers = int.Parse(parsingArguments.Get("MinFollowersValue"));
+//            var subscriptionProportion = float.Parse(parsingArguments.Get("SubscriptionProportion"));
+            var minNumberOfFollowers = 1000;
+            var subscriptionProportion = (float) 0.2;
             followers = _pageContentScrapper.GetNumberOfFollowers(userPageContent);
             following = _pageContentScrapper.GetNumberOfFollowing(userPageContent);
             return followers > minNumberOfFollowers &&
