@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -37,7 +36,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public string MakeInstagramGis(string rhxGis, long userId, int count, string endOfCursor)
         {
             var signatureParams = $"{rhxGis}:{MakeSignatureString(userId, count, endOfCursor)}";
-            Console.WriteLine(signatureParams);
             _logger.Info(signatureParams);
             return CalculateMD5Hash(signatureParams);
         }
@@ -45,7 +43,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public string MakeInstagramGis(string rhxGis, string shortCode, int count, string endOfCursor)
         {
             var signatureParams = $"{rhxGis}:{MakeSignatureString(shortCode, count, endOfCursor)}";
-            Console.WriteLine(signatureParams);
             _logger.Info(signatureParams);
             return CalculateMD5Hash(signatureParams);
         }
@@ -53,7 +50,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public string MakeInstagramGisForLikes(string rhxGis, string shortCode, int count, string endOfCursor)
         {
             var signatureParams = $"{rhxGis}:{MakeSignatureStringForLikes(shortCode, count, endOfCursor)}";
-            Console.WriteLine(signatureParams);
             _logger.Info(signatureParams);
             return CalculateMD5Hash(signatureParams);
         }

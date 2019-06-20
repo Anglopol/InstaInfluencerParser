@@ -102,7 +102,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var instagramGis = _proc.MakeInstagramGisForLikes(rhxGis, shortCode, 50, endOfCursor);
             var queryUrl = _proc.GetQueryUrlForLikes(shortCode, 50, endOfCursor);
-            Console.WriteLine(queryUrl);
             try
             {
                 return _jObjectHandler.GetObjectFromJsonString(
@@ -111,7 +110,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             catch (Exception e)
             {
                 _logger.Error(e, $"GetJsonForLikes on short code: {shortCode}");
-                Console.WriteLine(e.StackTrace);
                 Thread.Sleep(10000);
                 return GetJsonForLikes(shortCode, rhxGis, endOfCursor);
             }

@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Configuration;
 using System.Linq;
 using System.Threading;
 using InfluencerInstaParser.AudienceParser.UserInformation;
@@ -44,7 +42,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var userPageContent = _downloaderProxy.GetPageContent(userUrl, _userAgent);
             if (_pageContentScrapper.IsPrivate(userPageContent) || _pageContentScrapper.IsEmpty(userPageContent))
             {
-                Console.WriteLine($"{username} is invalid");
                 _downloaderProxy.SetProxyFree();
                 shortCodes = new List<string>();
                 locationsId = new List<ulong>();

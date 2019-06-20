@@ -35,12 +35,10 @@ namespace InfluencerInstaParser.AudienceParser
             var web = new WebParser(_agentCreator.GetUserAgent(), owner, _timeOfParsing);
             web.TryGetPostsShortCodesAndLocationsIdFromUser(_targetAccount, out var shortCodes, out _);
             _logger.Info("Short codes of target user downloaded");
-            Console.WriteLine("Short Codes downloaded");
 //            var sessionData = new ConfigSessionDataFactory().MakeSessionData();
 //            var api = Task.Run(() => AuthApiCreator.MakeAuthApi(sessionData)).GetAwaiter().GetResult();
 //            var followers = Task.Run(() => new AudienceDownloader().GetFollowers(_targetAccount, api));
             var shortCodesTask = Task.Run(() => ShortCodesProcessing(owner, shortCodes));
-            Console.WriteLine("All threads started");
 //            followers.Wait();
             _logger.Info("Followers of target user added");
 //            _parsingSet.ProcessedUsers[_targetAccount].Followers = followers.Result.Count();

@@ -83,8 +83,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
                         : _proxyCreator.GetProxy());
                 }
 
-                Console.WriteLine("\nException Caught!   " + _requestCounter);
-                Console.WriteLine($"on {url}");
                 Thread.Sleep(1000);
                 return GetPageContent(url, userAgent, instGis);
             }
@@ -110,7 +108,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
         {
             _proxyClient?.CancelPendingRequests();
             Proxy = proxy;
-            Console.WriteLine("Proxy changed");
         }
     }
 }
