@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using InfluencerInstaParser.AudienceParser.UserInformation;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
+using Newtonsoft.Json.Linq;
 using NLog;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
@@ -22,6 +23,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private string _rhxGis;
         private readonly DateTime _timeOfParsing;
 
+        public List<string> ShortCodes { get; private set; }
+        public List<ulong> LocationsId { get; private set; }
+
         public WebParser(string userAgent, User owner, DateTime timeOfParsing)
         {
             _owner = owner;
@@ -33,53 +37,71 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _downloaderProxy = new PageDownloaderProxy();
             _jObjectHandler = new JObjectHandler();
             _queryRequester = new QueryRequester(userAgent, _downloaderProxy);
+            ShortCodes = new List<string>();
+            LocationsId = new List<ulong>();
         }
 
-        public bool TryGetPostsShortCodesAndLocationsIdFromUser(string username, out List<string> shortCodes,
-            out List<ulong> locationsId, int countOfLoading = 10)
+        public bool TryGetPostsShortCodesAndLocationsIdFromUser(string username, int countOfLoading = 10)
         {
             var userUrl = "/" + username + "/";
+            ShortCodes = new List<string>();
+            LocationsId = new List<ulong>();
             var userPageContent = _downloaderProxy.GetPageContent(userUrl, _userAgent);
-            if (_pageContentScrapper.IsPrivate(userPageContent) || _pageContentScrapper.IsEmpty(userPageContent))
-            {
-                _downloaderProxy.SetProxyFree();
-                shortCodes = new List<string>();
-                locationsId = new List<ulong>();
-                return false;
-            }
+            if (CheckPageOnPrivate(userPageContent)) return false;
 
             var userId = long.Parse(_pageContentScrapper.GetUserIdFromPageContent(userPageContent));
 
             _rhxGis = "";
 //            _rhxGis = _rhxGis ?? _pageContentScrapper.GetRhxGisParameter(userPageContent);
-            shortCodes = _pageContentScrapper.GetListOfShortCodesFromPageContent(userPageContent);
-            locationsId = _pageContentScrapper.GetListOfLocationsFromPageContent(userPageContent);
+            GetFirstQueries(userPageContent);
             if (!_pageContentScrapper.HasNextPageForPageContent(userPageContent))
             {
                 _downloaderProxy.SetProxyFree();
                 return true;
             }
 
-
             var jsonPage = _queryRequester.GetJsonPageContent(userPageContent, userId, _rhxGis);
             countOfLoading--;
-            while (_jObjectHandler.HasNextPageForPosts(jsonPage) && countOfLoading > 0)
-            {
-                shortCodes.AddRange(_jObjectHandler.GetEnumerableOfShortCodesFromQueryContent(jsonPage));
-                locationsId.AddRange(
-                    (from queryShortCode in _jObjectHandler.GetEnumerableOfLocationsFromQueryContent(jsonPage)
-                        select ulong.Parse(queryShortCode)).ToList());
-                var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForPosts(jsonPage);
-                jsonPage = _queryRequester.GetJson(userId, _rhxGis, nextCursor);
-                countOfLoading--;
-            }
-
-            shortCodes.AddRange(_jObjectHandler.GetEnumerableOfShortCodesFromQueryContent(jsonPage));
-            locationsId.AddRange(
-                (from queryShortCode in _jObjectHandler.GetEnumerableOfLocationsFromQueryContent(jsonPage)
-                    select ulong.Parse(queryShortCode)).ToList());
+            GetMiddleQueries(jsonPage, userId, countOfLoading);
+            GetLastQueries(jsonPage);
             _downloaderProxy.SetProxyFree();
             return true;
+        }
+
+        private bool CheckPageOnPrivate(string userPageContent)
+        {
+            if (!_pageContentScrapper.IsPrivate(userPageContent) &&
+                !_pageContentScrapper.IsEmpty(userPageContent)) return true;
+            _downloaderProxy.SetProxyFree();
+            return false;
+        }
+
+        private void GetFirstQueries(string userPageContent)
+        {
+            ShortCodes = _pageContentScrapper.GetListOfShortCodesFromPageContent(userPageContent);
+            LocationsId = _pageContentScrapper.GetListOfLocationsFromPageContent(userPageContent);
+        }
+
+        private void GetMiddleQueries(JObject pageJson, long userId, int countOfLoading)
+        {
+            while (_jObjectHandler.HasNextPageForPosts(pageJson) && countOfLoading > 0)
+            {
+                ShortCodes.AddRange(_jObjectHandler.GetEnumerableOfShortCodesFromQueryContent(pageJson));
+                LocationsId.AddRange(
+                    (from queryShortCode in _jObjectHandler.GetEnumerableOfLocationsFromQueryContent(pageJson)
+                        select ulong.Parse(queryShortCode)).ToList());
+                var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForPosts(pageJson);
+                pageJson = _queryRequester.GetJson(userId, _rhxGis, nextCursor);
+                countOfLoading--;
+            }
+        }
+
+        private void GetLastQueries(JObject jsonPage)
+        {
+            ShortCodes.AddRange(_jObjectHandler.GetEnumerableOfShortCodesFromQueryContent(jsonPage));
+            LocationsId.AddRange(
+                (from queryShortCode in _jObjectHandler.GetEnumerableOfLocationsFromQueryContent(jsonPage)
+                    select ulong.Parse(queryShortCode)).ToList());
         }
 
         public void GetUsernamesFromPostComments(string postShortCode, string postPageContent = null,
