@@ -1,4 +1,5 @@
 using InfluencerInstaParser.AudienceParser.InstagramClient;
+using InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy;
 using InfluencerInstaParser.AudienceParser.InstagramClient.InstagramClientCreating;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,7 +9,7 @@ namespace InfluencerInstaParser
     {
         public static IServiceCollection AddInfluncerInstaParserLibrary(this IServiceCollection serviceCollection)
         {
-            serviceCollection.AddScoped<IProxyClient, ProxyClient>();
+            serviceCollection.AddScoped<IProxyClient>(client => new ProxyClient());
             serviceCollection.AddSingleton<IProxyClientCreator, ProxyClientCreator>();
             
             return serviceCollection;

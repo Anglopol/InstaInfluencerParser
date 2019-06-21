@@ -1,10 +1,9 @@
 using System;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace InfluencerInstaParser.AudienceParser.InstagramClient
+namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
 {
     public class ProxyClient : IProxyClient
     {
@@ -13,11 +12,11 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient
         private readonly HttpClient _httpClient;
         private readonly TimeSpan _defaultTimeSpanBetweenRequests;
 
-        public ProxyClient(HttpMessageHandler httpClientHandler)
+        public ProxyClient(HttpClientHandler httpClientHandler)
         {
             _timeOfLastUsage = DateTime.MinValue;
             _requestCounter = 0;
-            _httpClient = new HttpClient(httpClientHandler);
+            _httpClient = new HttpClient(httpClientHandler, true);
             _defaultTimeSpanBetweenRequests = TimeSpan.FromMilliseconds(600);
         }
 

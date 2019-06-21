@@ -1,6 +1,10 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
+using InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace InfluencerInstaParser.AudienceParser.InstagramClient.InstagramClientCreating
 {
@@ -8,10 +12,12 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.InstagramClientCr
     {
         private ConcurrentBag<IProxyClient> _proxyClients;
         private IList<WebProxy> _proxies;
+        private IServiceProvider _serviceProvider;
 
-        public ProxyClientCreator(IList<WebProxy> proxies)
+        public ProxyClientCreator(IServiceProvider provider, IList<WebProxy> proxies)
         {
             _proxies = proxies;
+            _serviceProvider = provider;
             Initialize();
         }
 
@@ -20,7 +26,9 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.InstagramClientCr
             _proxyClients = new ConcurrentBag<IProxyClient>();
             foreach (var webProxy in _proxies)
             {
-                
+                var handler = new HttpClientHandler {Proxy = webProxy};
+                var client = _serviceProvider.GetService<IProxyClient>();
+                _proxyClients.Add();
             }
         }
         

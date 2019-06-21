@@ -1,6 +1,6 @@
 using System;
 
-namespace InfluencerInstaParser.AudienceParser.InstagramClient
+namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
 {
     public interface IProxyClient
     {

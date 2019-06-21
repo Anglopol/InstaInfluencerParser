@@ -1,3 +1,5 @@
+using InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy;
+
 namespace InfluencerInstaParser.AudienceParser.InstagramClient.InstagramClientCreating
 {
     public interface IProxyClientCreator
