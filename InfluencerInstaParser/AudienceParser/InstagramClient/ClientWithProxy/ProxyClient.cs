@@ -25,17 +25,11 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
             WaitIfRequired();
             try
             {
-                var responseTask = Task.Run(async () => await GetResponseMessageAsync(pageUrl));
-                _timeOfLastUsage = DateTime.Now;
-                responseTask.Wait();
-                var response = responseTask.Result;
+                var response = GetResponse(pageUrl);
                 _requestCounter++;
                 response.EnsureSuccessStatusCode();
-                var responseBodyTask = Task.Run(async () => await GetResponseBodyAsync(response));
-                responseBodyTask.Wait();
-                var responseBody = responseBodyTask.Result;
+                var responseBody = GetResponseBody(response);
                 _httpClient.CancelPendingRequests();
-                Thread.Sleep(600);
                 return responseBody;
             }
             catch (TaskCanceledException)
@@ -50,19 +44,19 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
             }
         }
 
-        public int GetRequestCounter()
+        private HttpResponseMessage GetResponse(string pageUrl)
         {
-            return _requestCounter;
+            var responseTask = Task.Run(async () => await GetResponseMessageAsync(pageUrl));
+            _timeOfLastUsage = DateTime.Now;
+            responseTask.Wait();
+            return responseTask.Result;
         }
 
-        public void ResetRequestCounter()
+        private string GetResponseBody(HttpResponseMessage response)
         {
-            _requestCounter = 0;
-        }
-
-        public DateTime GetLastUsageTime()
-        {
-            return _timeOfLastUsage;
+            var responseBodyTask = Task.Run(async () => await GetResponseBodyAsync(response));
+            responseBodyTask.Wait();
+            return responseBodyTask.Result;
         }
 
         private async Task<HttpResponseMessage> GetResponseMessageAsync(string link)
@@ -81,6 +75,21 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
             var delay = DateTime.Now.Subtract(_timeOfLastUsage);
             if (TimeSpan.Compare(delay, _defaultTimeSpanBetweenRequests) >= 0)
                 Thread.Sleep(delay.Subtract(_defaultTimeSpanBetweenRequests));
+        }
+
+        public int GetRequestCounter()
+        {
+            return _requestCounter;
+        }
+
+        public void ResetRequestCounter()
+        {
+            _requestCounter = 0;
+        }
+
+        public DateTime GetLastUsageTime()
+        {
+            return _timeOfLastUsage;
         }
     }
 }
