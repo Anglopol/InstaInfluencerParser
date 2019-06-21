@@ -15,7 +15,7 @@ namespace InfluencerInstaParser.AudienceParser
         private readonly UserAgentCreator _agentCreator;
         private readonly string _targetAccount;
         private readonly Logger _logger;
-        private DateTime _timeOfParsing;
+        private readonly DateTime _timeOfParsing;
 
         public ParsingHandler(string username, DateTime timeOfParsing)
         {

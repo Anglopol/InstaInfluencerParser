@@ -39,7 +39,7 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
         {
             _pathToProxyFile = path;
         }
-
+        
         public WebProxy GetProxy()
         {
             if (!_proxyQueue.Any() && !_isQueueInit) FillQueue();
