@@ -6,13 +6,13 @@ using System.Text.RegularExpressions;
 using System.Web;
 using NLog;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing
+namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
 {
-    public class PageContentScrapper
+    public class PageContentScraper
     {
         private readonly Logger _logger;
 
-        public PageContentScrapper()
+        public PageContentScraper()
         {
             _logger = LogManager.GetCurrentClassLogger();
         }

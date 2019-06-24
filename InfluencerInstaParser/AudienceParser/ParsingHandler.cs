@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.UserInformation;
 using InfluencerInstaParser.AudienceParser.WebParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
+using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
 using NLog;
 
 namespace InfluencerInstaParser.AudienceParser
@@ -85,7 +86,7 @@ namespace InfluencerInstaParser.AudienceParser
         private void SecondLevelParsing(User user)
         {
             var countOfLoading = 1;
-            var locator = new Locator(new PageDownloaderProxy(), new PageContentScrapper(),
+            var locator = new Locator(new PageDownloaderProxy(), new PageContentScraper(),
                 _agentCreator.GetUserAgent());
             var web = new WebParser(_agentCreator.GetUserAgent(), user, _timeOfParsing);
 //            var followers = Task.Run(() => new AudienceDownloader().GetFollowers(user.Username, authApi));

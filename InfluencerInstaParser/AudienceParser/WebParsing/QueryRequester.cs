@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
+using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
 using Newtonsoft.Json.Linq;
 using NLog;
 
@@ -9,19 +10,19 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
     public class QueryRequester
     {
         private readonly PageDownloaderProxy _downloaderProxy;
-        private readonly JObjectHandler _jObjectHandler;
+        private readonly JObjectScraper _jObjectScraper;
 
         private readonly Logger _logger;
-        private readonly PageContentScrapper _proc;
+        private readonly PageContentScraper _proc;
         private readonly string _userAgent;
 
         public QueryRequester(string userAgent, PageDownloaderProxy downloaderProxy)
         {
             _logger = LogManager.GetCurrentClassLogger();
             _userAgent = userAgent;
-            _proc = new PageContentScrapper();
+            _proc = new PageContentScraper();
             _downloaderProxy = downloaderProxy;
-            _jObjectHandler = new JObjectHandler();
+            _jObjectScraper = new JObjectScraper();
         }
 
         public JObject GetJsonPageContent(string userPageContent, long userId, string rhxGis)
@@ -31,7 +32,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var queryUrl = _proc.GetQueryUrlForPosts(userId, 50, endOfCursor);
             try
             {
-                return _jObjectHandler.GetObjectFromJsonString(
+                return _jObjectScraper.GetObjectFromJsonString(
                     _downloaderProxy.GetPageContent(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
@@ -50,7 +51,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var queryUrl = _proc.GetQueryUrlForComments(shortCode, 50, endOfCursor);
             try
             {
-                return _jObjectHandler.GetObjectFromJsonString(
+                return _jObjectScraper.GetObjectFromJsonString(
                     _downloaderProxy.GetPageContent(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
@@ -68,7 +69,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var queryUrl = _proc.GetQueryUrlForPosts(userId, 50, endOfCursor);
             try
             {
-                return _jObjectHandler.GetObjectFromJsonString(
+                return _jObjectScraper.GetObjectFromJsonString(
                     _downloaderProxy.GetPageContent(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
@@ -86,7 +87,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var queryUrl = _proc.GetQueryUrlForComments(shortCode, 50, endOfCursor);
             try
             {
-                return _jObjectHandler.GetObjectFromJsonString(
+                return _jObjectScraper.GetObjectFromJsonString(
                     _downloaderProxy.GetPageContent(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)
@@ -104,7 +105,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var queryUrl = _proc.GetQueryUrlForLikes(shortCode, 50, endOfCursor);
             try
             {
-                return _jObjectHandler.GetObjectFromJsonString(
+                return _jObjectScraper.GetObjectFromJsonString(
                     _downloaderProxy.GetPageContent(queryUrl, _userAgent, instagramGis));
             }
             catch (Exception e)

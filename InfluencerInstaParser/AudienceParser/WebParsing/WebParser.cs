@@ -4,38 +4,42 @@ using System.Linq;
 using System.Threading;
 using InfluencerInstaParser.AudienceParser.UserInformation;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
+using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
 using Newtonsoft.Json.Linq;
 using NLog;
+using NUnit.Framework;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
 {
     public class WebParser
     {
-        private readonly PageDownloaderProxy _downloaderProxy;
-        private readonly JObjectHandler _jObjectHandler;
+        private readonly IPageDownloader _pageDownloader;
+        private readonly JObjectScraper _jObjectScraper;
 
         private readonly Logger _logger;
         private readonly User _owner;
         private readonly QueryRequester _queryRequester;
         private readonly string _userAgent;
         private readonly ParsingSetSingleton _usersSet;
-        private readonly PageContentScrapper _pageContentScrapper;
+        private readonly PageContentScraper _pageContentScraper;
         private string _rhxGis;
         private readonly DateTime _timeOfParsing;
+        private readonly IServiceProvider _serviceProvider;
 
         public List<string> ShortCodes { get; private set; }
         public List<ulong> LocationsId { get; private set; }
 
-        public WebParser(string userAgent, User owner, DateTime timeOfParsing)
+        public WebParser(IServiceProvider serviceProvider, string userAgent, User owner, DateTime timeOfParsing)
         {
+            _serviceProvider = serviceProvider;
             _owner = owner;
             _timeOfParsing = timeOfParsing;
             _logger = LogManager.GetCurrentClassLogger();
-            _pageContentScrapper = new PageContentScrapper();
+            _pageContentScraper = new PageContentScraper();
             _userAgent = userAgent;
             _usersSet = ParsingSetSingleton.GetInstance();
             _downloaderProxy = new PageDownloaderProxy();
-            _jObjectHandler = new JObjectHandler();
+            _jObjectScraper = new JObjectScraper();
             _queryRequester = new QueryRequester(userAgent, _downloaderProxy);
             ShortCodes = new List<string>();
             LocationsId = new List<ulong>();
@@ -51,7 +55,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var userId = GetUserId(userPageContent);
             _rhxGis = GetRhxGis(userPageContent);
             GetFirstQueries(userPageContent);
-            if (!_pageContentScrapper.HasNextPageForPageContent(userPageContent))
+            if (!_pageContentScraper.HasNextPageForPageContent(userPageContent))
             {
                 _downloaderProxy.SetProxyFree();
                 return true;
@@ -67,32 +71,32 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         private bool CheckPageOnPrivate(string userPageContent)
         {
-            if (!_pageContentScrapper.IsPrivate(userPageContent) &&
-                !_pageContentScrapper.IsEmpty(userPageContent)) return true;
+            if (!_pageContentScraper.IsPrivate(userPageContent) &&
+                !_pageContentScraper.IsEmpty(userPageContent)) return true;
             _downloaderProxy.SetProxyFree();
             return false;
         }
 
         private long GetUserId(string userPageContent)
         {
-            return long.Parse(_pageContentScrapper.GetUserIdFromPageContent(userPageContent));
+            return long.Parse(_pageContentScraper.GetUserIdFromPageContent(userPageContent));
         }
 
         private void GetFirstQueries(string userPageContent)
         {
-            ShortCodes = _pageContentScrapper.GetListOfShortCodesFromPageContent(userPageContent);
-            LocationsId = _pageContentScrapper.GetListOfLocationsFromPageContent(userPageContent);
+            ShortCodes = _pageContentScraper.GetListOfShortCodesFromPageContent(userPageContent);
+            LocationsId = _pageContentScraper.GetListOfLocationsFromPageContent(userPageContent);
         }
 
         private void GetMiddleQueries(JObject pageJson, long userId, int countOfLoading)
         {
-            while (_jObjectHandler.HasNextPageForPosts(pageJson) && countOfLoading > 0)
+            while (_jObjectScraper.HasNextPageForPosts(pageJson) && countOfLoading > 0)
             {
-                ShortCodes.AddRange(_jObjectHandler.GetEnumerableOfShortCodesFromQueryContent(pageJson));
+                ShortCodes.AddRange(_jObjectScraper.GetEnumerableOfShortCodesFromQueryContent(pageJson));
                 LocationsId.AddRange(
-                    (from queryShortCode in _jObjectHandler.GetEnumerableOfLocationsFromQueryContent(pageJson)
+                    (from queryShortCode in _jObjectScraper.GetEnumerableOfLocationsFromQueryContent(pageJson)
                         select ulong.Parse(queryShortCode)).ToList());
-                var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForPosts(pageJson);
+                var nextCursor = _jObjectScraper.GetEndOfCursorFromJsonForPosts(pageJson);
                 pageJson = _queryRequester.GetJson(userId, _rhxGis, nextCursor);
                 countOfLoading--;
             }
@@ -100,9 +104,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         private void GetLastQueries(JObject jsonPage)
         {
-            ShortCodes.AddRange(_jObjectHandler.GetEnumerableOfShortCodesFromQueryContent(jsonPage));
+            ShortCodes.AddRange(_jObjectScraper.GetEnumerableOfShortCodesFromQueryContent(jsonPage));
             LocationsId.AddRange(
-                (from queryShortCode in _jObjectHandler.GetEnumerableOfLocationsFromQueryContent(jsonPage)
+                (from queryShortCode in _jObjectScraper.GetEnumerableOfLocationsFromQueryContent(jsonPage)
                     select ulong.Parse(queryShortCode)).ToList());
         }
 
@@ -121,7 +125,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var resultList = new List<string>();
             try
             {
-                resultList.AddRange(_pageContentScrapper.GetEnumerableOfUsernamesFromPageContent(postPageContent));
+                resultList.AddRange(_pageContentScraper.GetEnumerableOfUsernamesFromPageContent(postPageContent));
             }
             catch (Exception e)
             {
@@ -130,7 +134,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 throw;
             }
 
-            if (!_pageContentScrapper.HasNextPageForPageContent(postPageContent))
+            if (!_pageContentScraper.HasNextPageForPageContent(postPageContent))
             {
                 FillUnprocessedSet(resultList, CommunicationType.Commentator);
                 _owner.Comments += resultList.Count;
@@ -142,15 +146,15 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             var jsonPage = _queryRequester.GetJsonPageContent(postPageContent, postShortCode, _rhxGis);
             countOfLoading--;
-            while (_jObjectHandler.HasNextPageForComments(jsonPage) && countOfLoading > 0)
+            while (_jObjectScraper.HasNextPageForComments(jsonPage) && countOfLoading > 0)
             {
-                resultList.AddRange(_jObjectHandler.GetEnumerableOfUsernamesFromQueryContentForPost(jsonPage));
-                var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForComments(jsonPage);
+                resultList.AddRange(_jObjectScraper.GetEnumerableOfUsernamesFromQueryContentForPost(jsonPage));
+                var nextCursor = _jObjectScraper.GetEndOfCursorFromJsonForComments(jsonPage);
                 jsonPage = _queryRequester.GetJson(postShortCode, _rhxGis, nextCursor);
                 countOfLoading--;
             }
 
-            resultList.AddRange(_jObjectHandler.GetEnumerableOfUsernamesFromQueryContentForPost(jsonPage));
+            resultList.AddRange(_jObjectScraper.GetEnumerableOfUsernamesFromQueryContentForPost(jsonPage));
 
             FillUnprocessedSet(resultList, CommunicationType.Commentator);
             _owner.Comments += resultList.Count;
@@ -168,7 +172,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             _logger.Info(
                 $"Thread: {Thread.CurrentThread.Name} getting users from post likes seccessed: {postShortCode}");
-            if (_pageContentScrapper.IsVideo(postPageContent))
+            if (_pageContentScraper.IsVideo(postPageContent))
             {
                 Console.WriteLine($"Post {postShortCode} is video");
                 _downloaderProxy.SetProxyFree();
@@ -182,17 +186,17 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var jsonPage = _queryRequester.GetJsonForLikes(postShortCode, _rhxGis, "");
 
             countOfLoading--;
-            while (_jObjectHandler.HasNextPageForLikes(jsonPage) && countOfLoading > 0)
+            while (_jObjectScraper.HasNextPageForLikes(jsonPage) && countOfLoading > 0)
             {
-                resultList.AddRange(_jObjectHandler.GetEnumerableOfUsernamesFromQueryContentForLikes(jsonPage));
-                var nextCursor = _jObjectHandler.GetEndOfCursorFromJsonForLikes(jsonPage);
+                resultList.AddRange(_jObjectScraper.GetEnumerableOfUsernamesFromQueryContentForLikes(jsonPage));
+                var nextCursor = _jObjectScraper.GetEndOfCursorFromJsonForLikes(jsonPage);
                 _logger.Info(
                     $"Thread: {Thread.CurrentThread.Name} getting json users from post likes: {postShortCode}");
                 jsonPage = _queryRequester.GetJsonForLikes(postShortCode, _rhxGis, nextCursor);
                 countOfLoading--;
             }
 
-            resultList.AddRange(_jObjectHandler.GetEnumerableOfUsernamesFromQueryContentForLikes(jsonPage));
+            resultList.AddRange(_jObjectScraper.GetEnumerableOfUsernamesFromQueryContentForLikes(jsonPage));
 
             FillUnprocessedSet(resultList, CommunicationType.Liker);
             _owner.Likes += resultList.Count;
@@ -217,7 +221,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 return;
             }
 
-            var locator = new Locator(_downloaderProxy, _pageContentScrapper, _userAgent);
+            var locator = new Locator(_downloaderProxy, _pageContentScraper, _userAgent);
             var count = 0; // TODO: Delete this 
             foreach (var locationId in LocationsId)
             {
@@ -264,8 +268,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 //            var subscriptionProportion = float.Parse(parsingArguments.Get("SubscriptionProportion"));
             var minNumberOfFollowers = 1000; //TODO Refactor
             var subscriptionProportion = (float) 0.2;
-            followers = _pageContentScrapper.GetNumberOfFollowers(userPageContent);
-            following = _pageContentScrapper.GetNumberOfFollowing(userPageContent);
+            followers = _pageContentScraper.GetNumberOfFollowers(userPageContent);
+            following = _pageContentScraper.GetNumberOfFollowing(userPageContent);
             return followers > minNumberOfFollowers &&
                    following / (double) followers < subscriptionProportion;
         }

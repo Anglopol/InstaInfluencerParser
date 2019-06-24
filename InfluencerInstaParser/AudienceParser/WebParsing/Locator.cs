@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
+using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
 using NLog;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing
@@ -14,7 +15,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         private const double RadiusP = 6356750; // Polar Radius
 
         private readonly PageDownloaderProxy _proxy;
-        private readonly PageContentScrapper _scrapper;
+        private readonly PageContentScraper _scraper;
         private readonly string _userAgent;
         private readonly Logger _logger;
         private static ConcurrentDictionary<string, CityInformation> _cities;
@@ -28,9 +29,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             public double CityLong { get; set; }
         }
 
-        public Locator(PageDownloaderProxy downloaderProxy, PageContentScrapper scrapper, string userAgent)
+        public Locator(PageDownloaderProxy downloaderProxy, PageContentScraper scraper, string userAgent)
         {
-            _scrapper = scrapper;
+            _scraper = scraper;
             _proxy = downloaderProxy;
             _userAgent = userAgent;
             _logger = LogManager.GetCurrentClassLogger();
@@ -39,22 +40,22 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public bool TryGetPostLocation(string pageContent, out string city)
         {
-            if (_scrapper.IsLocationHasAddress(pageContent))
+            if (_scraper.IsLocationHasAddress(pageContent))
             {
-                city = _scrapper.GetPostAddressLocation(pageContent);
+                city = _scraper.GetPostAddressLocation(pageContent);
                 return true;
             }
 
 
             var locationUrl =
-                $"/explore/locations/{_scrapper.GetLocationId(pageContent)}/{_scrapper.GetLocationSlug(pageContent)}/";
+                $"/explore/locations/{_scraper.GetLocationId(pageContent)}/{_scraper.GetLocationSlug(pageContent)}/";
             _logger.Info($"Getting location from {locationUrl}");
 
             var locationPage = _proxy.GetPageContent(locationUrl, _userAgent);
             if (locationPage.Contains("\"city\":"))
             {
                 _logger.Info("Getting city from page content");
-                city = _scrapper.GetCity(locationPage);
+                city = _scraper.GetCity(locationPage);
                 return true;
             }
 
@@ -65,7 +66,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public bool TryGetPostLocationByPointsFromPostPage(string pageContent, double maxDistance, out string city,
             out int cityPublicId)
         {
-            var locationId = ulong.Parse(_scrapper.GetLocationId(pageContent));
+            var locationId = ulong.Parse(_scraper.GetLocationId(pageContent));
             return TryGetLocationByLocationId(locationId, maxDistance, out city, out cityPublicId);
         }
 
@@ -86,8 +87,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             var locationPage = _proxy.GetPageContent(locationUrl, _userAgent);
             if (!locationPage.Contains("location:latitude") || !locationPage.Contains("location:longitude"))
                 return false;
-            var cityLat = _scrapper.GetLocationLat(locationPage);
-            var cityLong = _scrapper.GetLocationLong(locationPage);
+            var cityLat = _scraper.GetLocationLat(locationPage);
+            var cityLong = _scraper.GetLocationLong(locationPage);
             city = GetNearestCityByPoints(cityLat, cityLong, out var distance);
             cityPublicId = _cities[city].PublicId;
             if (!(distance < maxDistance)) return false;
