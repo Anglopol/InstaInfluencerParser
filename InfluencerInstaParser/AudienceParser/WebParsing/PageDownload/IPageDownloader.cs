@@ -4,7 +4,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
 {
     public interface IPageDownloader
     {
-        string GetPage(string pageUrl);
+        string GetPageContent(string pageUrl);
         void SetClientFree(IProxyClient proxyClient);
     }
 }

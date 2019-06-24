@@ -51,6 +51,12 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
             }
         }
 
+        public string GetPageContent(string pageUrl, string userAgent)
+        {
+            _httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(userAgent);
+            return GetPageContent(pageUrl);
+        }
+
         private HttpResponseMessage GetResponse(string pageUrl)
         {
             var responseTask = Task.Run(async () => await GetResponseMessageAsync(pageUrl));

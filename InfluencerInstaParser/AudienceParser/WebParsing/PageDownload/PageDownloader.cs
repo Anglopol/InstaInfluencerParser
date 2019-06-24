@@ -11,12 +11,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
         private readonly IServiceProvider _serviceProvider;
         private IProxyClient _client;
         private IProxyClientCreator _proxyClientCreator;
+        private const int MaxValueOfRequests = 180;
         public PageDownloader(IServiceProvider provider)
         {
             _serviceProvider = provider;
         }
         
-        public string GetPage(string pageUrl)
+        public string GetPageContent(string pageUrl)
         {
             CheckClient();
             return _client.GetPageContent(pageUrl);
@@ -30,7 +31,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
         private void CheckClient()
         {
             if(_client == null) InitializeClient();
-            if(_client.GetRequestCounter() >= 170) RefreshClient();
+            if(_client.GetRequestCounter() >= MaxValueOfRequests) RefreshClient();
         }
 
         private void InitializeClient()
