@@ -33,17 +33,12 @@ namespace InfluencerInstaParser.AudienceParser
             _parsingSet.AddProcessedUser(owner);
             _logger.Info("target User added in processed set");
             var web = new WebParser(_agentCreator.GetUserAgent(), owner, _timeOfParsing);
-            web.TryGetPostsShortCodesAndLocationsIdFromUser(_targetAccount, out var shortCodes, out _);
+            web.TryGetPostsShortCodesAndLocationsIdFromUser(_targetAccount);
+            var shortCodes = web.ShortCodes;
             _logger.Info("Short codes of target user downloaded");
-//            var sessionData = new ConfigSessionDataFactory().MakeSessionData();
-//            var api = Task.Run(() => AuthApiCreator.MakeAuthApi(sessionData)).GetAwaiter().GetResult();
-//            var followers = Task.Run(() => new AudienceDownloader().GetFollowers(_targetAccount, api));
             var shortCodesTask = Task.Run(() => ShortCodesProcessing(owner, shortCodes));
-//            followers.Wait();
             _logger.Info("Followers of target user added");
-//            _parsingSet.ProcessedUsers[_targetAccount].Followers = followers.Result.Count();
             shortCodesTask.Wait();
-//            web.FillUnprocessedSet(followers.Result, CommunicationType.Follower);
             var users = _parsingSet.UnprocessedUsers.Values.ToList();
             var secondLevelTasks = new List<Task>();
             var locationTasks = new List<Task>();
@@ -89,12 +84,14 @@ namespace InfluencerInstaParser.AudienceParser
 //        private void SecondLevelParsing(User user, IInstaApi authApi)
         private void SecondLevelParsing(User user)
         {
+            var countOfLoading = 1;
             var locator = new Locator(new PageDownloaderProxy(), new PageContentScrapper(),
                 _agentCreator.GetUserAgent());
             var web = new WebParser(_agentCreator.GetUserAgent(), user, _timeOfParsing);
 //            var followers = Task.Run(() => new AudienceDownloader().GetFollowers(user.Username, authApi));
-            if (!web.TryGetPostsShortCodesAndLocationsIdFromUser(user.Username, out var shortCodes,
-                out var locationsId, 1)) return;
+            if (!web.TryGetPostsShortCodesAndLocationsIdFromUser(user.Username, countOfLoading)) return;
+            var shortCodes = web.ShortCodes;
+            var locationsId = web.LocationsId;
             var shortCodesTask = Task.Run(() => ShortCodesProcessing(user, shortCodes, 1));
             var count = 0; // TODO: Delete this 
             foreach (var locationId in locationsId)

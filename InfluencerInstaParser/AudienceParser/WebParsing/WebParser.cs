@@ -43,16 +43,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         public bool TryGetPostsShortCodesAndLocationsIdFromUser(string username, int countOfLoading = 10)
         {
-            var userUrl = "/" + username + "/";
+            var userUrl = MakeUserUrl(username);
             ShortCodes = new List<string>();
             LocationsId = new List<ulong>();
             var userPageContent = _downloaderProxy.GetPageContent(userUrl, _userAgent);
             if (CheckPageOnPrivate(userPageContent)) return false;
-
-            var userId = long.Parse(_pageContentScrapper.GetUserIdFromPageContent(userPageContent));
-
-            _rhxGis = "";
-//            _rhxGis = _rhxGis ?? _pageContentScrapper.GetRhxGisParameter(userPageContent);
+            var userId = GetUserId(userPageContent);
+            _rhxGis = GetRhxGis(userPageContent);
             GetFirstQueries(userPageContent);
             if (!_pageContentScrapper.HasNextPageForPageContent(userPageContent))
             {
@@ -74,6 +71,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 !_pageContentScrapper.IsEmpty(userPageContent)) return true;
             _downloaderProxy.SetProxyFree();
             return false;
+        }
+
+        private long GetUserId(string userPageContent)
+        {
+            return long.Parse(_pageContentScrapper.GetUserIdFromPageContent(userPageContent));
         }
 
         private void GetFirstQueries(string userPageContent)
@@ -107,7 +109,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public void GetUsernamesFromPostComments(string postShortCode, string postPageContent = null,
             int countOfLoading = 10)
         {
-            var postUrl = "/p/" + postShortCode + "/";
+            var postUrl = MakePostUrl(postShortCode);
             Console.WriteLine(postShortCode + "Comments");
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post: {postShortCode}");
 
@@ -115,8 +117,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post successed: {postShortCode}");
 
-            _rhxGis = "";
-//            _rhxGis = _rhxGis ?? _pageContentScrapper.GetRhxGisParameter(postPageContent);
+            _rhxGis = GetRhxGis(postPageContent);
             var resultList = new List<string>();
             try
             {
@@ -159,7 +160,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         public void GetUsernamesFromPostLikes(string postShortCode, string postPageContent = null,
             int countOfLoading = 10)
         {
-            var postUrl = "/p/" + postShortCode + "/";
+            var postUrl = MakePostUrl(postShortCode);
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting users from post likes: {postShortCode}");
             Console.WriteLine(postShortCode + " Likes");
 
@@ -174,8 +175,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 return;
             }
 
-            _rhxGis = "";
-//            _rhxGis = _rhxGis ?? _pageContentScrapper.GetRhxGisParameter(postPageContent);
+            _rhxGis = GetRhxGis(postPageContent);
             var resultList = new List<string>();
             _logger.Info($"Thread: {Thread.CurrentThread.Name} getting json users from post likes: {postShortCode}");
 
@@ -199,9 +199,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _downloaderProxy.SetProxyFree();
         }
 
-        public void
-            DetermineUserLocations(List<string> parents,
-                double maxDistance) //TODO make restriction for number of query downloads
+        public void DetermineUserLocations(List<string> parents, double maxDistance)
         {
             _logger.Info($"Getting locations for {_owner.Username}");
             if (_owner.IsLocationProcessed)
@@ -212,7 +210,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
 
             _owner.IsLocationProcessed = true;
-            if (!TryGetPostsShortCodesAndLocationsIdFromUser(_owner.Username, out _, out var locationsId))
+            if (!TryGetPostsShortCodesAndLocationsIdFromUser(_owner.Username))
             {
                 _downloaderProxy.SetProxyFree();
                 _logger.Info($"Getting locations for {_owner.Username} completed");
@@ -221,7 +219,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
             var locator = new Locator(_downloaderProxy, _pageContentScrapper, _userAgent);
             var count = 0; // TODO: Delete this 
-            foreach (var locationId in locationsId)
+            foreach (var locationId in LocationsId)
             {
                 if (count > 5) break; // TODO: Delete this 
                 count++; // TODO: Delete this 
@@ -259,17 +257,33 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         private bool CheckUser(string username, out int followers, out int following)
         {
-            var userUrl = "/" + username + "/";
+            var userUrl = MakeUserUrl(username);
             var userPageContent = _downloaderProxy.GetPageContent(userUrl, _userAgent);
 //            var parsingArguments = (NameValueCollection) ConfigurationManager.GetSection("parsingarguments");
 //            var minNumberOfFollowers = int.Parse(parsingArguments.Get("MinFollowersValue"));
 //            var subscriptionProportion = float.Parse(parsingArguments.Get("SubscriptionProportion"));
-            var minNumberOfFollowers = 1000;
+            var minNumberOfFollowers = 1000; //TODO Refactor
             var subscriptionProportion = (float) 0.2;
             followers = _pageContentScrapper.GetNumberOfFollowers(userPageContent);
             following = _pageContentScrapper.GetNumberOfFollowing(userPageContent);
             return followers > minNumberOfFollowers &&
                    following / (double) followers < subscriptionProportion;
+        }
+
+        private static string MakePostUrl(string postShortCode)
+        {
+            return "/p/" + postShortCode + "/";
+        }
+
+        private static string MakeUserUrl(string username)
+        {
+            return "/" + username + "/";
+        }
+
+        private string GetRhxGis(string pageContent)
+        {
+//            return _rhxGis = _rhxGis ?? _pageContentScrapper.GetRhxGisParameter(pageContent);
+            return "";
         }
     }
 }
