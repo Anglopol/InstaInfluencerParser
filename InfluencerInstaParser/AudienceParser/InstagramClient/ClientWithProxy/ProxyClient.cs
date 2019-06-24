@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,10 +28,16 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
             {
                 var response = GetResponse(pageUrl);
                 _requestCounter++;
+                if (response.StatusCode == HttpStatusCode.NotFound) return "";
                 response.EnsureSuccessStatusCode();
                 var responseBody = GetResponseBody(response);
                 _httpClient.CancelPendingRequests();
                 return responseBody;
+            }
+            catch (HttpRequestException)
+            {
+                _httpClient.CancelPendingRequests();
+                return GetPageContent(pageUrl);
             }
             catch (TaskCanceledException)
             {
@@ -52,7 +59,7 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
             return responseTask.Result;
         }
 
-        private string GetResponseBody(HttpResponseMessage response)
+        private static string GetResponseBody(HttpResponseMessage response)
         {
             var responseBodyTask = Task.Run(async () => await GetResponseBodyAsync(response));
             responseBodyTask.Wait();
