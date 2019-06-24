@@ -38,7 +38,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _pageContentScraper = new PageContentScraper();
             _userAgent = userAgent;
             _usersSet = ParsingSetSingleton.GetInstance();
-            _downloaderProxy = new PageDownloaderProxy();
             _jObjectScraper = new JObjectScraper();
             _queryRequester = new QueryRequester(userAgent, _downloaderProxy);
             ShortCodes = new List<string>();
@@ -263,9 +262,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             var userUrl = MakeUserUrl(username);
             var userPageContent = _downloaderProxy.GetPageContent(userUrl, _userAgent);
-//            var parsingArguments = (NameValueCollection) ConfigurationManager.GetSection("parsingarguments");
-//            var minNumberOfFollowers = int.Parse(parsingArguments.Get("MinFollowersValue"));
-//            var subscriptionProportion = float.Parse(parsingArguments.Get("SubscriptionProportion"));
             var minNumberOfFollowers = 1000; //TODO Refactor
             var subscriptionProportion = (float) 0.2;
             followers = _pageContentScraper.GetNumberOfFollowers(userPageContent);
