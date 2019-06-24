@@ -1,13 +1,10 @@
+using System.Collections.Generic;
 using System.Net;
 
 namespace InfluencerInstaParser.AudienceParser.Proxy
 {
     public interface IProxyCreatorSingleton
     {
-        WebProxy GetProxy();
-        WebProxy GetProxy(WebProxy usedProxy);
-        void SetProxyFree(WebProxy usedProxy);
-
-        void SetPathToProxyFile(string path);
+        IEnumerable<IWebProxy> GetWebProxies();
     }
 }
