@@ -4,6 +4,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Locate
 {
     public interface ILocator
     {
-        LocatorScrapingResult GetNearestCityByLocationId(ulong locationId);
+        LocatorScrapingResult GetNearestCityByLocationPageContent(string locationPageContent, ulong locationId);
+        bool IsCityAlreadyCached(ulong locationId);
+        LocatorScrapingResult GetCachedCityByLocationId(ulong locationId);
+        string GetLocationPageContentByLocationId(ulong locationId);
+        bool IsLocationPageContentValid(string locationPageContent);
     }
 }
