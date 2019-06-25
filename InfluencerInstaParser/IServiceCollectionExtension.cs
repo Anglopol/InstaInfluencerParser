@@ -1,5 +1,6 @@
 using InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreating;
 using InfluencerInstaParser.AudienceParser.Proxy;
+using InfluencerInstaParser.AudienceParser.WebParsing.Locate;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +14,8 @@ namespace InfluencerInstaParser
             serviceCollection.AddSingleton<IProxyCreatorSingleton>(client => new ProxyFromFileCreator("proxies.txt"));
             serviceCollection.AddScoped<IPageDownloader>(downloader =>
                 new PageDownloader(serviceCollection.BuildServiceProvider()));
+            serviceCollection.AddScoped<ILocator>(locator =>
+                new Locator(serviceCollection.BuildServiceProvider(), "citiesLocations.txt"));
 
             return serviceCollection;
         }

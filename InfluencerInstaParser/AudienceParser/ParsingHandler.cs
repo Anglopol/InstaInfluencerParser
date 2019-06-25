@@ -4,9 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.UserInformation;
 using InfluencerInstaParser.AudienceParser.WebParsing;
-using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
-using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
-using NLog;
+using InfluencerInstaParser.AudienceParser.WebParsing.Locate;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace InfluencerInstaParser.AudienceParser
 {
@@ -15,12 +14,12 @@ namespace InfluencerInstaParser.AudienceParser
         private readonly ParsingSetSingleton _parsingSet;
         private readonly UserAgentCreator _agentCreator;
         private readonly string _targetAccount;
-        private readonly Logger _logger;
         private readonly DateTime _timeOfParsing;
+        private IServiceProvider _serviceProvider;
 
-        public ParsingHandler(string username, DateTime timeOfParsing)
+        public ParsingHandler(IServiceProvider serviceProvider, string username, DateTime timeOfParsing)
         {
-            _logger = LogManager.GetCurrentClassLogger();
+            _serviceProvider = serviceProvider;
             _parsingSet = ParsingSetSingleton.GetInstance();
             _targetAccount = username;
             _timeOfParsing = timeOfParsing;
@@ -29,26 +28,21 @@ namespace InfluencerInstaParser.AudienceParser
 
         public void Parse()
         {
-            _logger.Warn("!!!!!!!");
             var owner = new User(_targetAccount, _timeOfParsing);
             _parsingSet.AddProcessedUser(owner);
-            _logger.Info("target User added in processed set");
-            var web = new WebParser(_agentCreator.GetUserAgent(), owner, _timeOfParsing);
+            var web = new WebParser(_serviceProvider, owner, _timeOfParsing);
             web.TryGetPostsShortCodesAndLocationsIdFromUser(_targetAccount);
             var shortCodes = web.ShortCodes;
-            _logger.Info("Short codes of target user downloaded");
             var shortCodesTask = Task.Run(() => ShortCodesProcessing(owner, shortCodes));
-            _logger.Info("Followers of target user added");
             shortCodesTask.Wait();
             var users = _parsingSet.UnprocessedUsers.Values.ToList();
             var secondLevelTasks = new List<Task>();
             var locationTasks = new List<Task>();
             foreach (var user in users)
             {
-                _logger.Info($"Checking {user.Username} is influencer");
                 if (!user.IsInfluencer || user.Username == _targetAccount) continue;
                 _parsingSet.AddProcessedUser(user);
-                _logger.Info($"Starting second level parsing for {user.Username}");
+
                 var secondLevelTask = Task.Run(() => SecondLevelParsing(user));
                 secondLevelTasks.Add(secondLevelTask);
             }
@@ -71,9 +65,8 @@ namespace InfluencerInstaParser.AudienceParser
 
                 _parsingSet.AddProcessedUser(user);
                 if (!needToGetLocation) continue;
-                Console.WriteLine($"Getting location for {user.Username}");
                 var locationTask = Task.Run(() =>
-                    new WebParser(_agentCreator.GetUserAgent(), user, _timeOfParsing).DetermineUserLocations(
+                    new WebParser(_serviceProvider, user, _timeOfParsing).DetermineUserLocations(
                         user.ModelViewUser.Parents,
                         100000));
                 locationTasks.Add(locationTask);
@@ -82,14 +75,11 @@ namespace InfluencerInstaParser.AudienceParser
             Task.WaitAll(locationTasks.ToArray());
         }
 
-//        private void SecondLevelParsing(User user, IInstaApi authApi)
         private void SecondLevelParsing(User user)
         {
             var countOfLoading = 1;
-            var locator = new Locator(new PageDownloaderProxy(), new PageContentScraper(),
-                _agentCreator.GetUserAgent());
-            var web = new WebParser(_agentCreator.GetUserAgent(), user, _timeOfParsing);
-//            var followers = Task.Run(() => new AudienceDownloader().GetFollowers(user.Username, authApi));
+            var locator = _serviceProvider.GetService<ILocator>();
+            var web = new WebParser(_serviceProvider, user, _timeOfParsing);
             if (!web.TryGetPostsShortCodesAndLocationsIdFromUser(user.Username, countOfLoading)) return;
             var shortCodes = web.ShortCodes;
             var locationsId = web.LocationsId;
@@ -102,10 +92,7 @@ namespace InfluencerInstaParser.AudienceParser
                 if (locator.TryGetLocationByLocationId(locationId, 100000, out var city, out var publicId))
                     user.AddLocation(city, publicId, _targetAccount);
             }
-
-//            followers.Wait();
             shortCodesTask.Wait();
-//            web.FillUnprocessedSet(followers.Result, CommunicationType.Follower);
         }
 
         private void LocationsProcessing(User user, ulong locationId, int maxDistance, Locator locator)
