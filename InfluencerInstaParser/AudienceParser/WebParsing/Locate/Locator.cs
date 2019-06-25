@@ -71,6 +71,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Locate
             var pageDownloader = _serviceProvider.GetService<IPageDownloader>();
             var locationUrl = MakeLocationUrl(locationId);
             var locationPage = pageDownloader.GetPageContent(locationUrl);
+            pageDownloader.SetClientFree();
             return locationPage;
         }
 

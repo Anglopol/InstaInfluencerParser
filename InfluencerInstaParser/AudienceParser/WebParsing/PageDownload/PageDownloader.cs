@@ -23,9 +23,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
             return _client.GetPageContent(pageUrl);
         }
 
-        public void SetClientFree(IProxyClient proxyClient)
+        public void SetClientFree()
         {
-            _proxyClientCreator.FreeTheClient(proxyClient);
+            _proxyClientCreator.FreeTheClient(_client);
         }
 
         private void CheckClient()
@@ -66,7 +66,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
 
         private void ReleaseUnmanagedResources()
         {
-            SetClientFree(_client);
+            SetClientFree();
         }
 
         public void Dispose()
