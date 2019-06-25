@@ -139,7 +139,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Locate
             }
         }
 
-        private string MakeLocationUrl(ulong locationId)
+        private static string MakeLocationUrl(ulong locationId)
         {
             return $"https://www.instagram.com/explore/locations/{locationId}/";
         }
