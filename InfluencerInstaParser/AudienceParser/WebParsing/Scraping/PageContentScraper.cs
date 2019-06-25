@@ -86,7 +86,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
         public string GetQueryUrlForPosts(long userId, int count, string endOfCursor)
         {
             const string defaultQueryUrl =
-                @"/graphql/query/?query_hash=f2405b236d85e8296cf30347c9f08c2a&variables=";
+                @"https://www.instagram.com/graphql/query/?query_hash=f2405b236d85e8296cf30347c9f08c2a&variables=";
             var signatureUrlString = HttpUtility.UrlEncode(MakeSignatureString(userId, count, endOfCursor));
             return defaultQueryUrl + signatureUrlString;
         }
@@ -94,7 +94,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
         public string GetQueryUrlForComments(string shortCode, int count, string endOfCursor)
         {
             const string defaultQueryUrl =
-                @"/graphql/query/?query_hash=f0986789a5c5d17c2400faebf16efd0d&variables=";
+                @"https://www.instagram.com/graphql/query/?query_hash=f0986789a5c5d17c2400faebf16efd0d&variables=";
             var signatureUrlString = HttpUtility.UrlEncode(MakeSignatureString(shortCode, count, endOfCursor));
             return defaultQueryUrl + signatureUrlString;
         }
@@ -102,7 +102,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
         public string GetQueryUrlForLikes(string shortCode, int count, string endOfCursor = "")
         {
             const string defaultQueryUrl =
-                @"/graphql/query/?query_hash=e0f59e4a1c8d78d0161873bc2ee7ec44&variables=";
+                @"https://www.instagram.com/graphql/query/?query_hash=e0f59e4a1c8d78d0161873bc2ee7ec44&variables=";
             var signatureUrlString = HttpUtility.UrlEncode(MakeSignatureStringForLikes(shortCode, count, endOfCursor));
             return defaultQueryUrl + signatureUrlString;
         }

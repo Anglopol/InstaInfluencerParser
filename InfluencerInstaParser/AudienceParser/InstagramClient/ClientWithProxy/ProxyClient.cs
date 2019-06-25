@@ -12,6 +12,8 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
         private DateTime _timeOfLastUsage;
         private readonly HttpClient _httpClient;
         private readonly TimeSpan _defaultTimeSpanBetweenRequests;
+        private const string DefaultUserAgent =
+            "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36";
 
         public ProxyClient(HttpClientHandler httpClientHandler)
         {
@@ -23,6 +25,7 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
 
         public string GetPageContent(string pageUrl)
         {
+            _httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(DefaultUserAgent);
             WaitIfRequired();
             try
             {
