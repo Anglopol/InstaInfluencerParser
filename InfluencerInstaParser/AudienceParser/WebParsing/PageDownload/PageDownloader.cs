@@ -63,5 +63,21 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
             clientTask.Wait();
             return clientTask.Result;
         }
+
+        private void ReleaseUnmanagedResources()
+        {
+            SetClientFree(_client);
+        }
+
+        public void Dispose()
+        {
+            ReleaseUnmanagedResources();
+            GC.SuppressFinalize(this);
+        }
+
+        ~PageDownloader()
+        {
+            ReleaseUnmanagedResources();
+        }
     }
 }
