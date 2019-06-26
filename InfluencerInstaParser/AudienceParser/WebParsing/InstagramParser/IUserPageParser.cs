@@ -5,7 +5,7 @@ using InfluencerInstaParser.Database.Model;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser
 {
-    public interface IInstagramParser
+    public interface IUserPageParser
     {
         string GetUserPage(string username);
         bool IsUserPageValid(string userPageContent);

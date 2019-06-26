@@ -8,9 +8,8 @@ using Newtonsoft.Json.Linq;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser
 {
-    public class InstagramParser : IInstagramParser
+    public class UserPageParser : IUserPageParser
     {
-        private IServiceProvider _serviceProvider;
         private readonly IPageDownloader _pageDownloader;
         private readonly IInstagramPageContentScraper _pageContentScraper;
         private readonly QueryRequester _queryRequester;
@@ -20,9 +19,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser
 
         private const int MaxPaginationToDownload = 2; //TODO Get this parameter from DI
 
-        public InstagramParser(IServiceProvider serviceProvider)
+        public UserPageParser(IServiceProvider serviceProvider)
         {
-            _serviceProvider = serviceProvider;
             _pageDownloader = serviceProvider.GetService<IPageDownloader>();
             _pageContentScraper = serviceProvider.GetService<IInstagramPageContentScraper>();
             _queryRequester = new QueryRequester(serviceProvider); //TODO Make DI
