@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
-using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
+using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.Locate
@@ -14,7 +14,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Locate
         private readonly IServiceProvider _serviceProvider;
         private static ConcurrentDictionary<string, HashSet<LocatorScrapingResult>> _cachedCities;
         private readonly ConcurrentDictionary<string, CityInformation> _citiesFromFile;
-        private readonly PageContentScraper _scraper;
+        private readonly IInstagramLocationPageScraper _scraper;
         private readonly string _citiesFile;
 
         private const double RadiusE = 6378135; // Equatorial radius, in metres
@@ -34,14 +34,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Locate
             _citiesFile = pathToCitiesFile;
             _citiesFromFile = new ConcurrentDictionary<string, CityInformation>();
             _cachedCities = _cachedCities ?? new ConcurrentDictionary<string, HashSet<LocatorScrapingResult>>();
-            _scraper = new PageContentScraper();
+            _scraper = _serviceProvider.GetService<IInstagramLocationPageScraper>();
             FillCities();
         }
 
         public LocatorScrapingResult GetNearestCityByLocationPageContent(string locationPageContent, ulong locationId)
         {
-            var cityLat = _scraper.GetLocationLat(locationPageContent);
-            var cityLong = _scraper.GetLocationLong(locationPageContent);
+            var cityLat = _scraper.GetLatitudeFromLocationPage(locationPageContent);
+            var cityLong = _scraper.GetLongitudeFromLocationPage(locationPageContent);
             var cityName = GetNearestCityByPoints(cityLat, cityLong, out var distance);
             var cityPublicId = _citiesFromFile[cityName].PublicId;
             var result = new LocatorScrapingResult(cityName, cityPublicId, locationId, distance, cityLat, cityLong);
