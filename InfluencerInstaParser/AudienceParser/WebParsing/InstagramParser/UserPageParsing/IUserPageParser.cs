@@ -1,9 +1,6 @@
-
 using System.Collections.Generic;
-using InfluencerInstaParser.AudienceParser.UserInformation;
-using InfluencerInstaParser.Database.Model;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser
+namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPageParsing
 {
     public interface IUserPageParser
     {

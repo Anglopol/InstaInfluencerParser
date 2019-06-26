@@ -53,7 +53,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
                 return true;
             }
 
-            var jsonPage = _queryRequester.GetJsonPageContent(userPageContent, userId);
+            var jsonPage = _queryRequester.GetJsonForUserPage(userPageContent, userId);
             countOfLoading--;
             GetMiddleQueries(jsonPage, userId, countOfLoading);
             GetLastQueries(jsonPage);
@@ -63,10 +63,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         private bool CheckPageOnPrivate(string userPageContent)
         {
-            if (!_pageContentScraper.IsPrivate(userPageContent) &&
-                !_pageContentScraper.IsEmpty(userPageContent)) return true;
-            _downloaderProxy.SetClientFree();
-            return false;
+            return !_pageContentScraper.IsPrivate(userPageContent) &&
+                   !_pageContentScraper.IsEmpty(userPageContent);
         }
 
         private long GetUserId(string userPageContent)
@@ -84,9 +82,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
         {
             while (_jObjectScraper.HasNextPageForPosts(pageJson) && countOfLoading > 0)
             {
-                ShortCodes.AddRange(_jObjectScraper.GetEnumerableOfShortCodesFromQueryContent(pageJson));
+                ShortCodes.AddRange(_jObjectScraper.GetShortCodesFromQueryContent(pageJson));
                 LocationsId.AddRange(
-                    (from queryShortCode in _jObjectScraper.GetEnumerableOfLocationsFromQueryContent(pageJson)
+                    (from queryShortCode in _jObjectScraper.GetLocationsIdFromQueryContent(pageJson)
                         select ulong.Parse(queryShortCode)).ToList());
                 var nextCursor = _jObjectScraper.GetEndOfCursorFromJsonForPosts(pageJson);
                 pageJson = _queryRequester.GetJson(userId, nextCursor);
@@ -96,9 +94,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
 
         private void GetLastQueries(JObject jsonPage)
         {
-            ShortCodes.AddRange(_jObjectScraper.GetEnumerableOfShortCodesFromQueryContent(jsonPage));
+            ShortCodes.AddRange(_jObjectScraper.GetShortCodesFromQueryContent(jsonPage));
             LocationsId.AddRange(
-                (from queryShortCode in _jObjectScraper.GetEnumerableOfLocationsFromQueryContent(jsonPage)
+                (from queryShortCode in _jObjectScraper.GetLocationsIdFromQueryContent(jsonPage)
                     select ulong.Parse(queryShortCode)).ToList());
         }
 
@@ -120,12 +118,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             countOfLoading--;
             while (_jObjectScraper.HasNextPageForComments(jsonPage) && countOfLoading > 0)
             {
-                resultList.AddRange(_jObjectScraper.GetEnumerableOfUsernamesFromQueryContentForPost(jsonPage));
+                resultList.AddRange(_jObjectScraper.GetUsernamesFromQueryContentForPost(jsonPage));
                 var nextCursor = _jObjectScraper.GetEndOfCursorFromJsonForComments(jsonPage);
                 jsonPage = _queryRequester.GetJson(postShortCode, nextCursor);
                 countOfLoading--;
             }
-            resultList.AddRange(_jObjectScraper.GetEnumerableOfUsernamesFromQueryContentForPost(jsonPage));
+            resultList.AddRange(_jObjectScraper.GetUsernamesFromQueryContentForPost(jsonPage));
             FillUnprocessedSet(resultList, CommunicationType.Commentator);
             _owner.Comments += resultList.Count;
             _downloaderProxy.SetClientFree();
@@ -149,13 +147,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             countOfLoading--;
             while (_jObjectScraper.HasNextPageForLikes(jsonPage) && countOfLoading > 0)
             {
-                resultList.AddRange(_jObjectScraper.GetEnumerableOfUsernamesFromQueryContentForLikes(jsonPage));
+                resultList.AddRange(_jObjectScraper.GetUsernamesFromQueryContentForLikes(jsonPage));
                 var nextCursor = _jObjectScraper.GetEndOfCursorFromJsonForLikes(jsonPage);
                 jsonPage = _queryRequester.GetJsonForLikes(postShortCode, nextCursor);
                 countOfLoading--;
             }
 
-            resultList.AddRange(_jObjectScraper.GetEnumerableOfUsernamesFromQueryContentForLikes(jsonPage));
+            resultList.AddRange(_jObjectScraper.GetUsernamesFromQueryContentForLikes(jsonPage));
 
             FillUnprocessedSet(resultList, CommunicationType.Liker);
             _owner.Likes += resultList.Count;

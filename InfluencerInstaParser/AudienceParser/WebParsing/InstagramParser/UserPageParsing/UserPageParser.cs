@@ -6,7 +6,7 @@ using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScrapi
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser
+namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPageParsing
 {
     public class UserPageParser : IUserPageParser
     {
