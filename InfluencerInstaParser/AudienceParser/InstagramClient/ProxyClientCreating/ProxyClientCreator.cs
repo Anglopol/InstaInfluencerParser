@@ -65,6 +65,7 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreati
 
         private static Task WaitFirstProxy(TimeSpan maxSubtract)
         {
+            if (maxSubtract == TimeSpan.Zero) maxSubtract = TimeSpan.FromSeconds(1);
             Thread.Sleep(ProxyClientRestTime.Subtract(maxSubtract));
             return Task.CompletedTask;
         }

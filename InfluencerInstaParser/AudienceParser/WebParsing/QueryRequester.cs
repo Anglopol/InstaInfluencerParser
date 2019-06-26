@@ -20,7 +20,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             _downloaderProxy = serviceProvider.GetService<IPageDownloader>();
         }
 
-        public JObject GetJsonPageContent(string userPageContent, long userId)
+        public JObject GetJsonForUserPage(string userPageContent, ulong userId)
         {
             var endOfCursor = _pageContentScraper.GetEndOfCursorFromUserPage(userPageContent);
 //            var instagramGis = _proc.MakeInstagramGis(rhxGis, userId, 50, endOfCursor);
@@ -36,7 +36,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return _jObjectScraper.GetObjectFromJsonString(_downloaderProxy.GetPageContent(queryUrl));
         }
 
-        public JObject GetJson(long userId, string endOfCursor)
+        public JObject GetJson(ulong userId, string endOfCursor)
         {
 //            var instagramGis = _proc.MakeInstagramGis(rhxGis, userId, 50, endOfCursor);
             var queryUrl = RequestParamsCreator.GetQueryUrlForPosts(userId, 50, endOfCursor);

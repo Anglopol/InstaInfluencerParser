@@ -40,7 +40,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
             return endOfCursor;
         }
 
-        public IEnumerable<string> GetEnumerableOfUsernamesFromQueryContentForPost(JObject queryContent)
+        public IEnumerable<string> GetUsernamesFromQueryContentForPost(JObject queryContent)
         {
             var edges = (JArray) queryContent.SelectToken("data.shortcode_media.edge_media_to_comment.edges");
             var users = new List<string>();
@@ -49,7 +49,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
             return users;
         }
 
-        public IEnumerable<string> GetEnumerableOfUsernamesFromQueryContentForLikes(JObject queryContent)
+        public IEnumerable<string> GetUsernamesFromQueryContentForLikes(JObject queryContent)
         {
             var edges = (JArray) queryContent.SelectToken("data.shortcode_media.edge_liked_by.edges");
             var users = new List<string>();
@@ -58,7 +58,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
             return users;
         }
 
-        public IEnumerable<string> GetEnumerableOfShortCodesFromQueryContent(JObject queryContent)
+        public IEnumerable<string> GetShortCodesFromQueryContent(JObject queryContent)
         {
             var edges = (JArray) queryContent.SelectToken("data.user.edge_owner_to_timeline_media.edges");
             var shortCodes = new List<string>();
@@ -67,15 +67,15 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
             return shortCodes;
         }
 
-        public IEnumerable<string> GetEnumerableOfLocationsFromQueryContent(JObject queryContent)
+        public IEnumerable<ulong> GetLocationsIdFromQueryContent(JObject queryContent)
         {
             var edges = (JArray) queryContent.SelectToken("data.user.edge_owner_to_timeline_media.edges");
-            var locations = new List<string>();
+            var locations = new List<ulong>();
             foreach (var edge in edges)
             {
                 var locationJson = edge.SelectToken("node.location");
                 if (!locationJson.HasValues) continue;
-                locations.Add((string) edge.SelectToken("node.location.id"));
+                locations.Add(ulong.Parse((string) edge.SelectToken("node.location.id")));
             }
 
             return locations;

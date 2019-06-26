@@ -54,8 +54,4 @@
       <EmbeddedResource Remove="AudienceParser\AuthorizedParsing\**" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="AudienceParser\WebParsing\InstagramParser" />
-    </ItemGroup>
-
 </Project>

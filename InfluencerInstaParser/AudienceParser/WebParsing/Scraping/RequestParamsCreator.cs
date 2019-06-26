@@ -14,7 +14,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
             return defaultQueryUrl + signatureUrlString;
         }
 
-        public static string GetQueryUrlForPosts(long userId, int count, string endOfCursor)
+        public static string GetQueryUrlForPosts(ulong userId, int count, string endOfCursor)
         {
             const string defaultQueryUrl =
                 @"https://www.instagram.com/graphql/query/?query_hash=f2405b236d85e8296cf30347c9f08c2a&variables=";
@@ -29,7 +29,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
             var signatureUrlString = HttpUtility.UrlEncode(MakeSignatureString(shortCode, count, endOfCursor));
             return defaultQueryUrl + signatureUrlString;
         }
-        public static string MakeInstagramGis(string rhxGis, long userId, int count, string endOfCursor)
+        public static string MakeInstagramGis(string rhxGis, ulong userId, int count, string endOfCursor)
         {
             var signatureParams = $"{rhxGis}:{MakeSignatureString(userId, count, endOfCursor)}";
             return GetCalculateMd5Hash(signatureParams);
@@ -59,7 +59,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
             return sb.ToString();
         }
         
-        private static string MakeSignatureString(long userId, int count, string endOfCursor)
+        private static string MakeSignatureString(ulong userId, int count, string endOfCursor)
         {
             return $"{{\"id\":\"{userId}\",\"first\":{count},\"after\":\"{endOfCursor}\"}}";
         }
