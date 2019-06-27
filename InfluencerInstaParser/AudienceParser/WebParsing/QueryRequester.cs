@@ -50,7 +50,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             return _jObjectScraper.GetObjectFromJsonString(_downloaderProxy.GetPageContent(queryUrl));
         }
 
-        public JObject GetJsonForLikes(string shortCode, string endOfCursor)
+        public JObject GetJsonForLikes(string shortCode, string endOfCursor = "")
         {
 //            var instagramGis = _proc.MakeInstagramGisForLikes(rhxGis, shortCode, 50, endOfCursor);
             var queryUrl = RequestParamsCreator.GetQueryUrlForLikes(shortCode, 50, endOfCursor);

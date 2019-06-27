@@ -142,7 +142,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
             }
 
             var resultList = new List<string>();
-            var jsonPage = _queryRequester.GetJsonForLikes(postShortCode, "");
+            var jsonPage = _queryRequester.GetJsonForLikes(postShortCode);
 
             countOfLoading--;
             while (_jObjectScraper.HasNextPageForLikes(jsonPage) && countOfLoading > 0)
