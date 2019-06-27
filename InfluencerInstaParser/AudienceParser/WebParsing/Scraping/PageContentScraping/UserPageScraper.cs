@@ -4,32 +4,8 @@ using System.Text.RegularExpressions;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping
 {
-    public class PageContentScraper : IInstagramPageContentScraper
+    public class UserPageScraper : IInstagramUserPageScraper
     {
-        public double GetLatitudeFromLocationPage(string locationPageContent)
-        {
-            return double.Parse(
-                Regex.Match(locationPageContent, "location:latitude\" content=\"[^\"]*")
-                    .ToString().Split("\"")[2]);        }
-
-        public double GetLongitudeFromLocationPage(string locationPageContent)
-        {
-            return double.Parse(
-                Regex.Match(locationPageContent, "location:longitude\" content=\"[^\"]*")
-                    .ToString().Split("\"")[2]);
-        }
-
-        public bool IsPostVideo(string postPageContent)
-        {
-            return postPageContent.Contains("\"is_video\":true");
-        }
-
-        public IEnumerable<string> GetUsernamesFromPostPage(string postPageContent)
-        {
-            return Regex.Matches(postPageContent, "username\".{2}[^\"]*").Select(match => match.Value.ToString()
-                .Split(":")[1].Remove(0, 1)).ToList();
-        }
-
         public string GetRhxGisParameterFromUserPage(string pageContent)
         {
             return Regex.Matches(pageContent, "rhx_gis.{3}[^\"]*")[0].ToString()

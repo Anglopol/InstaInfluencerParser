@@ -11,7 +11,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPa
     public class UserPageParser : IUserPageParser
     {
         private readonly IPageDownloader _pageDownloader;
-        private readonly IInstagramPageContentScraper _pageContentScraper;
+        private readonly IInstagramUserPageScraper _pageContentScraper;
         private readonly QueryRequester _queryRequester;
         private readonly JObjectScraper _jObjectScraper;
         private List<string> _shortCodes;
@@ -22,7 +22,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPa
         public UserPageParser(IServiceProvider serviceProvider)
         {
             _pageDownloader = serviceProvider.GetService<IPageDownloader>();
-            _pageContentScraper = serviceProvider.GetService<IInstagramPageContentScraper>();
+            _pageContentScraper = serviceProvider.GetService<IInstagramUserPageScraper>();
             _queryRequester = new QueryRequester(serviceProvider); //TODO Make DI
             _jObjectScraper = new JObjectScraper(); //TODO Make DI
             _shortCodes = new List<string>();
@@ -115,11 +115,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPa
         private ulong GetUserId(string userPageContent)
         {
             return _pageContentScraper.GetUserIdFromUserPage(userPageContent);
-        }
-
-        private static string MakePostUrl(string postShortCode)
-        {
-            return $"https://www.instagram.com/p/{postShortCode}/";
         }
 
         private static string MakeUserUrl(string username)

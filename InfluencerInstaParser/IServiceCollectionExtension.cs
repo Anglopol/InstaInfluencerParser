@@ -17,10 +17,9 @@ namespace InfluencerInstaParser
                 new PageDownloader(serviceCollection.BuildServiceProvider()));
             serviceCollection.AddScoped<ILocator>(locator =>
                 new Locator(serviceCollection.BuildServiceProvider(), "citiesLocations.txt"));
-            serviceCollection.AddSingleton<IInstagramPageContentScraper, PageContentScraper>();
-            serviceCollection.AddSingleton<IInstagramLocationPageScraper, PageContentScraper>();
-            serviceCollection.AddSingleton<IInstagramUserPageScraper, PageContentScraper>();
-            serviceCollection.AddSingleton<IInstagramPostPageScraper, PageContentScraper>();
+            serviceCollection.AddSingleton<IInstagramLocationPageScraper, LocationPageScraper>();
+            serviceCollection.AddSingleton<IInstagramUserPageScraper, UserPageScraper>();
+            serviceCollection.AddSingleton<IInstagramPostPageScraper, PostPageScraper>();
 
 
             return serviceCollection;

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping
 {
-    public interface IInstagramUserPageScraper
+    public interface IInstagramUserPageScraper : IInstagramPageContentScraper
     {
         string GetRhxGisParameterFromUserPage(string pageContent);
         string GetEndOfCursorFromUserPage(string pageContent);
