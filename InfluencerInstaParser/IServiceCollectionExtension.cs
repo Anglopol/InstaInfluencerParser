@@ -4,6 +4,7 @@ using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPagePa
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPageParsing.LikesParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.Locate;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
+using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,6 +25,7 @@ namespace InfluencerInstaParser
             serviceCollection.AddSingleton<IInstagramPostPageScraper, PostPageScraper>();
             serviceCollection.AddTransient<ICommentsParser, CommentsParser>();
             serviceCollection.AddTransient<ILikesParser, LikesParser>();
+            serviceCollection.AddSingleton<IResponseJsonScraper, ResponseJsonScraper>();
 
 
             return serviceCollection;

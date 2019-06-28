@@ -12,7 +12,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPa
     {
         private readonly IInstagramPostPageScraper _postPageScraper;
         private readonly QueryRequester _queryRequester;
-        private readonly JObjectScraper _jObjectScraper;
+        private readonly IResponseJsonScraper _jObjectScraper;
 
         private const int MaxPaginationToDownload = 2; //TODO Get this parameter from DI
 
@@ -20,7 +20,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPa
         {
             _postPageScraper = serviceProvider.GetService<IInstagramPostPageScraper>();
             _queryRequester = new QueryRequester(serviceProvider); //TODO Make DI
-            _jObjectScraper = new JObjectScraper(); //TODO Make DI
+            _jObjectScraper = serviceProvider.GetService<IResponseJsonScraper>();
         }
 
         public IEnumerable<string> GetUsernamesFromComments(string shortCode, string pageContent)
@@ -46,10 +46,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPa
         {
             var downloadCounter = 1;
             var resultListOfUsernames = new List<string>();
-            while (_jObjectScraper.HasNextPageForComments(commentsJson) && downloadCounter < MaxPaginationToDownload)
+            while (_jObjectScraper.IsNextPageExistsForComments(commentsJson) && downloadCounter < MaxPaginationToDownload)
             {
                 resultListOfUsernames.AddRange(GetUsernamesFromJson(commentsJson));
-                var nextCursor = _jObjectScraper.GetEndOfCursorFromJsonForComments(commentsJson);
+                var nextCursor = _jObjectScraper.GetNextCursorForComments(commentsJson);
                 commentsJson = _queryRequester.GetJson(shortCode, nextCursor);
                 downloadCounter++;
             }
@@ -61,7 +61,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPa
 
         private IEnumerable<string> GetUsernamesFromJson(JObject json)
         {
-            return _jObjectScraper.GetUsernamesFromQueryContentForPost(json);
+            return _jObjectScraper.GetUsernamesFromComments(json);
         }
     }
 }

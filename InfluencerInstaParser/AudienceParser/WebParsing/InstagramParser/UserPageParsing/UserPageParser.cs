@@ -13,7 +13,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPa
         private readonly IPageDownloader _pageDownloader;
         private readonly IInstagramUserPageScraper _pageContentScraper;
         private readonly QueryRequester _queryRequester;
-        private readonly JObjectScraper _jObjectScraper;
+        private readonly IResponseJsonScraper _jObjectScraper;
         private List<string> _shortCodes;
         private List<ulong> _locationsId;
 
@@ -24,7 +24,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPa
             _pageDownloader = serviceProvider.GetService<IPageDownloader>();
             _pageContentScraper = serviceProvider.GetService<IInstagramUserPageScraper>();
             _queryRequester = new QueryRequester(serviceProvider); //TODO Make DI
-            _jObjectScraper = new JObjectScraper(); //TODO Make DI
+            _jObjectScraper = serviceProvider.GetService<IResponseJsonScraper>();
             _shortCodes = new List<string>();
             _locationsId = new List<ulong>();
         }
@@ -75,10 +75,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPa
         private void PaginationDownload(JObject postsJson, ulong userId)
         {
             var downloadCounter = 1;
-            while (_jObjectScraper.HasNextPageForPosts(postsJson) && downloadCounter < MaxPaginationToDownload)
+            while (_jObjectScraper.IsNextPageExistsForPosts(postsJson) && downloadCounter < MaxPaginationToDownload)
             {
                 AddDataFromJsonInHeap(postsJson);
-                var nextCursor = _jObjectScraper.GetEndOfCursorFromJsonForPosts(postsJson);
+                var nextCursor = _jObjectScraper.GetNextCursorForPosts(postsJson);
                 postsJson = _queryRequester.GetJson(userId, nextCursor);
                 downloadCounter++;
             }
@@ -94,12 +94,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPa
 
         private void AddShortCodesFromJsonInHeap(JObject json)
         {
-            _shortCodes.AddRange(_jObjectScraper.GetShortCodesFromQueryContent(json));
+            _shortCodes.AddRange(_jObjectScraper.GetShortCodesFromPosts(json));
         }
 
         private void AddLocationsIdFromJsonInHeap(JObject json)
         {
-            _locationsId.AddRange(_jObjectScraper.GetLocationsIdFromQueryContent(json));
+            _locationsId.AddRange(_jObjectScraper.GetLocationsIdFromPosts(json));
         }
 
         private void DownloadShortCodesFromPageContent(string userPageContent)
