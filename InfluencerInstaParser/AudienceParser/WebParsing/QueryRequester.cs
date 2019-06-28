@@ -10,13 +10,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing
     public class QueryRequester
     {
         private readonly IPageDownloader _downloaderProxy;
-        private readonly JObjectScraper _jObjectScraper;
+        private readonly IResponseJsonScraper _jObjectScraper;
         private readonly IInstagramUserPageScraper _pageContentScraper;
 
         public QueryRequester(IServiceProvider serviceProvider)
         {
             _pageContentScraper = serviceProvider.GetService<IInstagramUserPageScraper>();
-            _jObjectScraper = new JObjectScraper();
+            _jObjectScraper = serviceProvider.GetService<IResponseJsonScraper>();
             _downloaderProxy = serviceProvider.GetService<IPageDownloader>();
         }
 

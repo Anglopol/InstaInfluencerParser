@@ -42,7 +42,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPa
                    !_pageContentScraper.IsUserPagePrivate(userPageContent);
         }
 
-        public void DownloadLocationsAndPostsShortCodesForTargetUser(string userPage)
+        public IEnumerable<Post> GetPostsFromTargetUser(string userPage)
         {
             var userId = GetUserId(userPage);
             DownloadLocationsIdAndShortCodesFromPageContent(userPage);
