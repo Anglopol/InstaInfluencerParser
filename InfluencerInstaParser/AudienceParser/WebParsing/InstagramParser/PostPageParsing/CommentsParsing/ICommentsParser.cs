@@ -4,6 +4,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPa
 {
     public interface ICommentsParser
     {
-        IEnumerable<string> GetUsernamesFromComments(string shortCode, string pageContent);
+        IEnumerable<ParsedUser> GetUsersFromComments(Post post);
     }
 }

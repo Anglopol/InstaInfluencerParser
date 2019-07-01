@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPageParsing.JsonToParsedUserConverting;
+using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
-using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping;
+using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 
@@ -10,58 +12,64 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPa
 {
     public class CommentsParser : ICommentsParser
     {
-        private readonly IInstagramPostPageScraper _postPageScraper;
-        private readonly QueryRequester _queryRequester;
+        private readonly IPageDownloader _pageDownloader;
         private readonly IResponseJsonScraper _jObjectScraper;
+        private readonly IJsonToParsedUsersConverter _converter;
 
         private const int MaxPaginationToDownload = 2; //TODO Get this parameter from DI
 
         public CommentsParser(IServiceProvider serviceProvider)
         {
-            _postPageScraper = serviceProvider.GetService<IInstagramPostPageScraper>();
-            _queryRequester = new QueryRequester(serviceProvider); //TODO Make DI
+            _pageDownloader = serviceProvider.GetService<IPageDownloader>();
             _jObjectScraper = serviceProvider.GetService<IResponseJsonScraper>();
+            _converter = serviceProvider.GetService<IJsonToParsedUsersConverter>();
         }
 
-        public IEnumerable<string> GetUsernamesFromComments(string shortCode, string pageContent)
+        public IEnumerable<ParsedUser> GetUsersFromComments(Post post)
         {
-            var usernames = DownloadUsernamesFromPageContent(pageContent);
-            var resultHeapOfUsernames = usernames.Union(DownloadUsernamesFromPagination(shortCode, pageContent));
-            return resultHeapOfUsernames.Distinct();
+            return !post.HasNextCursor ? post.UsersFromCommentsPreview : GetParsedUsers(post);
         }
 
-        private IEnumerable<string> DownloadUsernamesFromPageContent(string pageContent)
+        private IEnumerable<ParsedUser> GetParsedUsers(Post post)
         {
-            return _postPageScraper.GetUsernamesFromPostPage(pageContent);
+            return post.UsersFromCommentsPreview.Union(DownloadUsernamesFromPagination(post));
         }
 
-        private IEnumerable<string> DownloadUsernamesFromPagination(string shortCode, string pageContent)
+        private IEnumerable<ParsedUser> DownloadUsernamesFromPagination(Post post)
         {
-            if (!_postPageScraper.IsContentHasNextPage(pageContent)) return new List<string>();
-            var json = _queryRequester.GetJsonPageContent(pageContent, shortCode);
-            return PaginationDownload(json, shortCode);
+            var firstQuery = RequestParamsCreator.GetQueryUrlForComments(post.ShortCode, post.NextCommentsCursor);
+            var json = GetJsonFromInstagram(firstQuery);
+            return PaginationDownload(json, post.ShortCode);
         }
 
-        private IEnumerable<string> PaginationDownload(JObject commentsJson, string shortCode)
+        private IEnumerable<ParsedUser> PaginationDownload(JObject commentsJson, string shortCode)
         {
             var downloadCounter = 1;
-            var resultListOfUsernames = new List<string>();
+            var parsedUsers = new List<ParsedUser>();
             while (_jObjectScraper.IsNextPageExistsForComments(commentsJson) && downloadCounter < MaxPaginationToDownload)
             {
-                resultListOfUsernames.AddRange(GetUsernamesFromJson(commentsJson));
+                parsedUsers.AddRange(GetUsersFromJson(commentsJson));
                 var nextCursor = _jObjectScraper.GetNextCursorForComments(commentsJson);
-                commentsJson = _queryRequester.GetJson(shortCode, nextCursor);
+                var nextQuery = RequestParamsCreator.GetQueryUrlForComments(shortCode, nextCursor);
+                commentsJson = GetJsonFromInstagram(nextQuery);
                 downloadCounter++;
             }
 
             if (downloadCounter < MaxPaginationToDownload)
-                resultListOfUsernames.AddRange(GetUsernamesFromJson(commentsJson));
-            return resultListOfUsernames.Distinct();
+                parsedUsers.AddRange(GetUsersFromJson(commentsJson));
+            return parsedUsers.Distinct();
         }
 
-        private IEnumerable<string> GetUsernamesFromJson(JObject json)
+        private IEnumerable<ParsedUser> GetUsersFromJson(JObject json)
         {
-            return _jObjectScraper.GetUsernamesFromComments(json);
+            return _converter.GetUsersFromComments(json);
+        }
+        
+        private JObject GetJsonFromInstagram(string query)
+        {
+            var responseBody = _pageDownloader.GetPageContent(query);
+            _pageDownloader.SetClientFree();
+            return JObject.Parse(responseBody);
         }
     }
 }

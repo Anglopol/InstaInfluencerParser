@@ -2,10 +2,11 @@ using InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreating;
 using InfluencerInstaParser.AudienceParser.Proxy;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPageParsing.CommentsParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPageParsing.LikesParsing;
-using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPageParsing;
+using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPageParsing.JsonToPostConverting;
 using InfluencerInstaParser.AudienceParser.WebParsing.Locate;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping;
+using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.PostScraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,6 +29,7 @@ namespace InfluencerInstaParser
             serviceCollection.AddTransient<ILikesParser, LikesParser>();
             serviceCollection.AddSingleton<IResponseJsonScraper, ResponseJsonScraper>();
             serviceCollection.AddSingleton<IJsonToPostConverter, JsonToPostConverter>();
+            serviceCollection.AddSingleton<IPostJsonScraper, PostJsonScraper>();
 
 
             return serviceCollection;
