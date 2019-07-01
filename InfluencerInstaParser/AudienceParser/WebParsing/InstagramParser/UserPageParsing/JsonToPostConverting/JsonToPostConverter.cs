@@ -5,7 +5,7 @@ using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.Post
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPageParsing
+namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPageParsing.JsonToPostConverting
 {
     public class JsonToPostConverter : IJsonToPostConverter
     {
@@ -35,7 +35,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPa
             var ownerName = _postJsonScraper.GetOwnerName(postJson);
             var ownerId = _postJsonScraper.GetOwnerId(postJson);
             var shortCode = _postJsonScraper.GetShortCode(postJson);
-            var usersFromPreview = _postJsonScraper.GetUsersIdFromCommentsPreview(postJson);
+            var usersFromPreview = _postJsonScraper.GetUsersFromCommentsPreview(postJson);
             var isPostVideo = _postJsonScraper.IsPostVideo(postJson);
             var post = new Post(ownerName, ownerId, shortCode, usersFromPreview, isPostVideo);
             if (_postJsonScraper.TryGetLocationId(postJson, out var locationId))
@@ -43,8 +43,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPa
                 post.LocationId = locationId;
                 post.HasLocation = true;
             }
-            if (_postJsonScraper.TryGetNextCommentsCursor(postJson, out var nextCursor))
-                post.NextCommentsCursor = nextCursor;
+
+            if (!_postJsonScraper.TryGetNextCommentsCursor(postJson, out var nextCursor)) return post;
+            post.NextCommentsCursor = nextCursor;
+            post.HasNextCursor = true;
             return post;
         }
     }
