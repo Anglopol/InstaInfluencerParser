@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
+namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping
 {
     public class ResponseJsonScraper : IResponseJsonScraper
     {
+        private const string PathToPostsInJson = "data.user.edge_owner_to_timeline_media.edges";
         public IEnumerable<string> GetUsernamesFromLikes(JObject likesJson)
         {
             var edges = (JArray) likesJson.SelectToken("data.shortcode_media.edge_liked_by.edges");
@@ -12,6 +13,16 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
             foreach (var edge in edges) users.Add((string) edge.SelectToken("node.username"));
 
             return users;
+        }
+
+        public JArray GetPostsEdges(JObject json)
+        {
+            return (JArray) json.SelectToken(PathToPostsInJson);
+        }
+
+        public JToken GetPostFromEdge(JToken edge)
+        {
+            return edge.SelectToken("node");
         }
 
         public IEnumerable<string> GetUsernamesFromComments(JObject commentsJson)
@@ -25,7 +36,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
 
         public IEnumerable<string> GetShortCodesFromPosts(JObject postsJson)
         {
-            var edges = (JArray) postsJson.SelectToken("data.user.edge_owner_to_timeline_media.edges");
+            var edges = (JArray) postsJson.SelectToken(PathToPostsInJson);
             var shortCodes = new List<string>();
             foreach (var edge in edges) shortCodes.Add((string) edge.SelectToken("node.shortcode"));
 
@@ -34,7 +45,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
 
         public IEnumerable<ulong> GetLocationsIdFromPosts(JObject postsJson)
         {
-            var edges = (JArray) postsJson.SelectToken("data.user.edge_owner_to_timeline_media.edges");
+            var edges = (JArray) postsJson.SelectToken(PathToPostsInJson);
             var locations = new List<ulong>();
             foreach (var edge in edges)
             {

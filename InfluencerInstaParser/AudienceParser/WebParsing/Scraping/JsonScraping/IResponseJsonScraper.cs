@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
+namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping
 {
     public interface IResponseJsonScraper
     {
@@ -9,6 +9,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
         IEnumerable<string> GetUsernamesFromComments(JObject commentsJson);
         IEnumerable<string> GetShortCodesFromPosts(JObject postsJson);
         IEnumerable<ulong> GetLocationsIdFromPosts(JObject postsJson);
+        JArray GetPostsEdges(JObject json);
+        JToken GetPostFromEdge(JToken edge);
         string GetNextCursorForPosts(JObject postsJson);
         string GetNextCursorForLikes(JObject likesJson);
         string GetNextCursorForComments(JObject commentsJson);

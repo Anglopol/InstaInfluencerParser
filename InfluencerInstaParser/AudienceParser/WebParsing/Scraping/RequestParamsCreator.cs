@@ -6,7 +6,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
 {
     public static class RequestParamsCreator
     {
-        public static string GetQueryUrlForLikes(string shortCode, int count, string endOfCursor = "")
+        public static string GetQueryUrlForLikes(string shortCode, string endOfCursor = "", int count = 50)
         {
             const string defaultQueryUrl =
                 @"https://www.instagram.com/graphql/query/?query_hash=e0f59e4a1c8d78d0161873bc2ee7ec44&variables=";
@@ -14,7 +14,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
             return defaultQueryUrl + signatureUrlString;
         }
 
-        public static string GetQueryUrlForPosts(ulong userId, int count, string endOfCursor)
+        public static string GetQueryUrlForPosts(ulong userId, string endOfCursor = "", int count = 50)
         {
             const string defaultQueryUrl =
                 @"https://www.instagram.com/graphql/query/?query_hash=f2405b236d85e8296cf30347c9f08c2a&variables=";
@@ -22,7 +22,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
             return defaultQueryUrl + signatureUrlString;
         }
 
-        public static string GetQueryUrlForComments(string shortCode, int count, string endOfCursor)
+        public static string GetQueryUrlForComments(string shortCode, string endOfCursor, int count = 50)
         {
             const string defaultQueryUrl =
                 @"https://www.instagram.com/graphql/query/?query_hash=f0986789a5c5d17c2400faebf16efd0d&variables=";
@@ -61,7 +61,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
         
         private static string MakeSignatureString(ulong userId, int count, string endOfCursor)
         {
-            return $"{{\"id\":\"{userId}\",\"first\":{count},\"after\":\"{endOfCursor}\"}}";
+            return endOfCursor == "" 
+                ? $"{{\"id\":\"{userId}\",\"first\":{count}}}"
+                : $"{{\"id\":\"{userId}\",\"first\":{count},\"after\":\"{endOfCursor}\"}}";
         }
 
         private static string MakeSignatureString(string shortCode, int count, string endOfCursor)
