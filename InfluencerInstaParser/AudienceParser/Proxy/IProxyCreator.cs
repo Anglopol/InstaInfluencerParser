@@ -3,7 +3,7 @@ using System.Net;
 
 namespace InfluencerInstaParser.AudienceParser.Proxy
 {
-    public interface IProxyCreatorSingleton
+    public interface IProxyCreator
     {
         IEnumerable<IWebProxy> GetWebProxies();
     }

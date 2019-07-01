@@ -7,7 +7,7 @@ using System.Text;
 
 namespace InfluencerInstaParser.AudienceParser.Proxy
 {
-    public class ProxyFromFileCreator : IProxyCreatorSingleton
+    public class ProxyFromFileCreator : IProxyCreator
     {
         private readonly string _pathToProxyFile;
 

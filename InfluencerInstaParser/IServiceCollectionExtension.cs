@@ -2,9 +2,10 @@ using InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreating;
 using InfluencerInstaParser.AudienceParser.Proxy;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPageParsing.CommentsParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPageParsing.LikesParsing;
+using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPageParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.Locate;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
-using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
+using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,7 +16,7 @@ namespace InfluencerInstaParser
         public static IServiceCollection AddInfluncerInstaParserLibrary(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddSingleton<IProxyClientCreator, ProxyClientCreator>();
-            serviceCollection.AddSingleton<IProxyCreatorSingleton>(client => new ProxyFromFileCreator("proxies.txt"));
+            serviceCollection.AddSingleton<IProxyCreator>(client => new ProxyFromFileCreator("proxies.txt"));
             serviceCollection.AddTransient<IPageDownloader>(downloader =>
                 new PageDownloader(serviceCollection.BuildServiceProvider()));
             serviceCollection.AddScoped<ILocator>(locator =>
@@ -26,6 +27,7 @@ namespace InfluencerInstaParser
             serviceCollection.AddTransient<ICommentsParser, CommentsParser>();
             serviceCollection.AddTransient<ILikesParser, LikesParser>();
             serviceCollection.AddSingleton<IResponseJsonScraper, ResponseJsonScraper>();
+            serviceCollection.AddSingleton<IJsonToPostConverter, JsonToPostConverter>();
 
 
             return serviceCollection;
