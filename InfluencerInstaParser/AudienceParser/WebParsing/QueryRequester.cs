@@ -1,6 +1,7 @@
 using System;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
+using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
+using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
@@ -23,9 +23,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPa
             _jObjectScraper = serviceProvider.GetService<IResponseJsonScraper>();
         }
 
-        public IEnumerable<string> GetUsernamesFromLikes(string shortCode, string pageContent)
+        public IEnumerable<ParsedUser> GetUsersFromLikes(Post post)
         {
-            if (IsPostVideo(pageContent)) return new List<string>();
+            if (post.IsVideo) return new List<ParsedUser>();
             return DownloadUsernamesFromPagination(shortCode);
         }
 

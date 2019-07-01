@@ -4,6 +4,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPa
 {
     public interface ILikesParser
     {
-        IEnumerable<string> GetUsernamesFromLikes(string shortCode, string pageContent);
+        IEnumerable<ParsedUser> GetUsersFromLikes(Post post);
     }
 }
