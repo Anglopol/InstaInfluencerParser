@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
+using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
@@ -12,10 +13,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPa
     {
         private readonly IPageDownloader _pageDownloader;
         private readonly IInstagramUserPageScraper _pageContentScraper;
-        private readonly QueryRequester _queryRequester;
+        private readonly IJsonToPostConverter _converter;
         private readonly IResponseJsonScraper _jObjectScraper;
-        private List<string> _shortCodes;
-        private List<ulong> _locationsId;
 
         private const int MaxPaginationToDownload = 2; //TODO Get this parameter from DI
 
@@ -23,10 +22,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPa
         {
             _pageDownloader = serviceProvider.GetService<IPageDownloader>();
             _pageContentScraper = serviceProvider.GetService<IInstagramUserPageScraper>();
-            _queryRequester = new QueryRequester(serviceProvider); //TODO Make DI
+            _converter = serviceProvider.GetService<IJsonToPostConverter>();
             _jObjectScraper = serviceProvider.GetService<IResponseJsonScraper>();
-            _shortCodes = new List<string>();
-            _locationsId = new List<ulong>();
         }
 
         public string GetUserPage(string username)
@@ -42,79 +39,46 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPa
                    !_pageContentScraper.IsUserPagePrivate(userPageContent);
         }
 
-        public IEnumerable<Post> GetPostsFromTargetUser(string userPage)
+        public ulong GetUserId(string userPageContent)
         {
-            var userId = GetUserId(userPage);
-            DownloadLocationsIdAndShortCodesFromPageContent(userPage);
-            DownloadLocationsAndShortCodesFromPagination(userPage, userId);
+            return _pageContentScraper.GetUserIdFromUserPage(userPageContent);
         }
 
-        public IEnumerable<string> GetUsersFromDownloadedShortCodes()
+        public IEnumerable<Post> GetPostsFromUser(ulong userId)
         {
-            return _shortCodes;
+            var requestUrl = RequestParamsCreator.GetQueryUrlForPosts(userId);
+            var firstJsonFromUserPage = GetJsonFromInstagram(requestUrl);
+            return PaginationDownload(firstJsonFromUserPage, userId);
         }
 
-        public IEnumerable<ulong> GetDownloadedLocationsId()
-        {
-            return _locationsId;
-        }
-
-        private void DownloadLocationsIdAndShortCodesFromPageContent(string userPageContent)
-        {
-            DownloadLocationsIdFromPageContent(userPageContent);
-            DownloadShortCodesFromPageContent(userPageContent);
-        }
-
-        private void DownloadLocationsAndShortCodesFromPagination(string userPageContent, ulong userId)
-        {
-            if (!_pageContentScraper.IsContentHasNextPage(userPageContent)) return;
-            var json = _queryRequester.GetJsonForUserPage(userPageContent, userId);
-            PaginationDownload(json, userId);
-        }
-
-        private void PaginationDownload(JObject postsJson, ulong userId)
+        private IEnumerable<Post> PaginationDownload(JObject postsJson, ulong userId)
         {
             var downloadCounter = 1;
+            var posts = new List<Post>();
             while (_jObjectScraper.IsNextPageExistsForPosts(postsJson) && downloadCounter < MaxPaginationToDownload)
             {
-                AddDataFromJsonInHeap(postsJson);
+                posts.AddRange(ConvertJsonToPosts(postsJson));
                 var nextCursor = _jObjectScraper.GetNextCursorForPosts(postsJson);
-                postsJson = _queryRequester.GetJson(userId, nextCursor);
+                var nextQuery = RequestParamsCreator.GetQueryUrlForPosts(userId, nextCursor);
+                postsJson = GetJsonFromInstagram(nextQuery);
                 downloadCounter++;
             }
 
-            if (downloadCounter < MaxPaginationToDownload) AddDataFromJsonInHeap(postsJson);
+            if (downloadCounter < MaxPaginationToDownload) posts.AddRange(ConvertJsonToPosts(postsJson));
+            return posts;
         }
 
-        private void AddDataFromJsonInHeap(JObject json)
+        private IEnumerable<Post> ConvertJsonToPosts(JObject json)
         {
-            AddLocationsIdFromJsonInHeap(json);
-            AddShortCodesFromJsonInHeap(json);
+            return _converter.GetPosts(json);
         }
 
-        private void AddShortCodesFromJsonInHeap(JObject json)
-        {
-            _shortCodes.AddRange(_jObjectScraper.GetShortCodesFromPosts(json));
-        }
 
-        private void AddLocationsIdFromJsonInHeap(JObject json)
+        private JObject GetJsonFromInstagram(string query)
         {
-            _locationsId.AddRange(_jObjectScraper.GetLocationsIdFromPosts(json));
-        }
-
-        private void DownloadShortCodesFromPageContent(string userPageContent)
-        {
-            _shortCodes.AddRange(_pageContentScraper.GetShortCodesFromUserPage(userPageContent));
-        }
-
-        private void DownloadLocationsIdFromPageContent(string userPageContent)
-        {
-            _locationsId.AddRange(_pageContentScraper.GetLocationsIdFromUserPage(userPageContent));
-        }
-
-        private ulong GetUserId(string userPageContent)
-        {
-            return _pageContentScraper.GetUserIdFromUserPage(userPageContent);
+            var responseBody = _pageDownloader.GetPageContent(query);
+            _pageDownloader.SetClientFree();
+            return JObject.Parse(responseBody);
         }
 
         private static string MakeUserUrl(string username)

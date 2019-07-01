@@ -6,8 +6,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPa
     {
         string GetUserPage(string username);
         bool IsUserPageValid(string userPageContent);
+        ulong GetUserId(string userPageContent);
         IEnumerable<Post> GetPostsFromUser(ulong userId);
-        IEnumerable<string> GetUsersFromDownloadedShortCodes();
-        IEnumerable<ulong> GetDownloadedLocationsId();
     }
 }
