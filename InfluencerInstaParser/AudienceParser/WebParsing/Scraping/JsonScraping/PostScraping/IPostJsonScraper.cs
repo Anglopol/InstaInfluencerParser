@@ -1,11 +1,12 @@
 using System.Collections.Generic;
+using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser;
 using Newtonsoft.Json.Linq;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.PostScraping
 {
     public interface IPostJsonScraper
     {
-        IEnumerable<ulong> GetUsersIdFromCommentsPreview(JToken post);
+        IEnumerable<ParsedUser> GetUsersFromCommentsPreview(JToken post);
         string GetOwnerName(JToken post);
         ulong GetOwnerId(JToken post);
         string GetShortCode(JToken post);

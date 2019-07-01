@@ -9,7 +9,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
         public static string GetQueryUrlForLikes(string shortCode, string endOfCursor = "", int count = 50)
         {
             const string defaultQueryUrl =
-                @"https://www.instagram.com/graphql/query/?query_hash=e0f59e4a1c8d78d0161873bc2ee7ec44&variables=";
+                @"https://www.instagram.com/graphql/query/?query_hash=d5d763b1e2acf209d62d22d184488e57&variables=";
             var signatureUrlString = HttpUtility.UrlEncode(MakeSignatureStringForLikes(shortCode, count, endOfCursor));
             return defaultQueryUrl + signatureUrlString;
         }
@@ -25,7 +25,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping
         public static string GetQueryUrlForComments(string shortCode, string endOfCursor, int count = 50)
         {
             const string defaultQueryUrl =
-                @"https://www.instagram.com/graphql/query/?query_hash=f0986789a5c5d17c2400faebf16efd0d&variables=";
+                @"https://www.instagram.com/graphql/query/?query_hash=97b41c52301f77ce508f55e66d17620e&variables=";
             var signatureUrlString = HttpUtility.UrlEncode(MakeSignatureString(shortCode, count, endOfCursor));
             return defaultQueryUrl + signatureUrlString;
         }

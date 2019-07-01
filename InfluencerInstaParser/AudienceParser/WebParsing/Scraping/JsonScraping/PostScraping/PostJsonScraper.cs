@@ -1,22 +1,23 @@
 using System.Collections.Generic;
+using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser;
 using Newtonsoft.Json.Linq;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.PostScraping
 {
     public class PostJsonScraper : IPostJsonScraper
     {
-        public IEnumerable<ulong> GetUsersIdFromCommentsPreview(JToken post)
+        public IEnumerable<ParsedUser> GetUsersFromCommentsPreview(JToken post)
         {
-            var usersId = new List<ulong>();
+            var parsedUsers = new List<ParsedUser>();
             var commentsToken = GetCommentsToken(post);
-            if (!IsPostContainsComments(commentsToken)) return usersId;
+            if (!IsPostContainsComments(commentsToken)) return parsedUsers;
             var commentsEdges = GetCommentsEdges(commentsToken);
             foreach (var edge in commentsEdges)
             {
-                usersId.Add(GetUserIdFromCommentsEdge(edge));
+                parsedUsers.Add(GetParsedUserFromCommentEdge(edge));
             }
 
-            return usersId;
+            return parsedUsers;
         }
 
         public string GetOwnerName(JToken post)
@@ -58,6 +59,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.
             return (bool) post.SelectToken("is_video");
         }
 
+        private ParsedUser GetParsedUserFromCommentEdge(JToken edge)
+        {
+            var id = GetUserIdFromCommentEdge(edge);
+            var name = GetUsernameFromCommentEdge(edge);
+            return new ParsedUser(name, id);
+        }
+
         private static JToken GetCommentsToken(JToken post)
         {
             return post.SelectToken("edge_media_to_comment");
@@ -83,9 +91,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.
             return (string) commentsToken.SelectToken("page_info.end_cursor");
         }
 
-        private ulong GetUserIdFromCommentsEdge(JToken edge)
+        private static ulong GetUserIdFromCommentEdge(JToken edge)
         {
             return (ulong) edge.SelectToken("node.owner.id");
+        }
+
+        private static string GetUsernameFromCommentEdge(JToken edge)
+        {
+            return (string) edge.SelectToken("node.owner.username");
         }
     }
 }
