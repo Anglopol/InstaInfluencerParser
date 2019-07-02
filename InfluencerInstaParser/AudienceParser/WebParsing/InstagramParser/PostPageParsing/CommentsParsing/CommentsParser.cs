@@ -57,7 +57,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPa
 
             if (downloadCounter < MaxPaginationToDownload)
                 parsedUsers.AddRange(GetUsersFromJson(commentsJson));
-            return parsedUsers.Distinct();
+            return parsedUsers;
         }
 
         private IEnumerable<ParsedUser> GetUsersFromJson(JObject json)

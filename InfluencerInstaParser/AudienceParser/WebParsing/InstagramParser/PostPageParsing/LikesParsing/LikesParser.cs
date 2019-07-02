@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPageParsing.JsonToParsedUserConverting;
+using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
+using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping;
-using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 
@@ -10,56 +11,58 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPa
 {
     public class LikesParser : ILikesParser
     {
-        private readonly IInstagramPostPageScraper _postPageScraper;
-        private readonly QueryRequester _queryRequester;
         private readonly IResponseJsonScraper _jObjectScraper;
+        private readonly IPageDownloader _pageDownloader;
+        private readonly IJsonToParsedUsersConverter _converter;
 
         private const int MaxPaginationToDownload = 2; //TODO Get this parameter from DI
 
         public LikesParser(IServiceProvider serviceProvider)
         {
-            _postPageScraper = serviceProvider.GetService<IInstagramPostPageScraper>();
-            _queryRequester = new QueryRequester(serviceProvider); //TODO Make DI
+            _pageDownloader = serviceProvider.GetService<IPageDownloader>();
             _jObjectScraper = serviceProvider.GetService<IResponseJsonScraper>();
+            _converter = serviceProvider.GetService<IJsonToParsedUsersConverter>();
         }
 
         public IEnumerable<ParsedUser> GetUsersFromLikes(Post post)
         {
-            if (post.IsVideo) return new List<ParsedUser>();
-            return DownloadUsernamesFromPagination(shortCode);
+            return post.IsVideo ? new List<ParsedUser>() : DownloadUsernamesFromPagination(post);
         }
 
-        private IEnumerable<string> DownloadUsernamesFromPagination(string shortCode)
+        private IEnumerable<ParsedUser> DownloadUsernamesFromPagination(Post post)
         {
-            var json = _queryRequester.GetJsonForLikes(shortCode);
-            return PaginationDownLoad(json, shortCode);
+            var firstQuery = RequestParamsCreator.GetQueryUrlForLikes(post.ShortCode);
+            var json = GetJsonFromInstagram(firstQuery);
+            return PaginationDownload(json, post.ShortCode);
         }
 
-        private IEnumerable<string> PaginationDownLoad(JObject likesJson, string shortCode)
+        private IEnumerable<ParsedUser> PaginationDownload(JObject likesJson, string shortCode)
         {
             var downloadCounter = 1;
-            var resultListOfUsernames = new List<string>();
+            var parsedUsers = new List<ParsedUser>();
             while (_jObjectScraper.IsNextPageExistsForLikes(likesJson) && downloadCounter < MaxPaginationToDownload)
             {
-                resultListOfUsernames.AddRange(GetUsernamesFromJson(likesJson));
+                parsedUsers.AddRange(GetUsersFromJson(likesJson));
                 var nextCursor = _jObjectScraper.GetNextCursorForLikes(likesJson);
-                likesJson = _queryRequester.GetJsonForLikes(shortCode, nextCursor);
+                var nextQuery = RequestParamsCreator.GetQueryUrlForLikes(shortCode, nextCursor);
+                likesJson = GetJsonFromInstagram(nextQuery);
                 downloadCounter++;
             }
 
-            if (downloadCounter < MaxPaginationToDownload)
-                resultListOfUsernames.AddRange(GetUsernamesFromJson(likesJson));
-            return resultListOfUsernames.Distinct();
+            if (downloadCounter < MaxPaginationToDownload) parsedUsers.AddRange(GetUsersFromJson(likesJson));
+            return parsedUsers;
         }
 
-        private IEnumerable<string> GetUsernamesFromJson(JObject json)
+        private IEnumerable<ParsedUser> GetUsersFromJson(JObject json)
         {
-            return _jObjectScraper.GetUsernamesFromLikes(json);
+            return _converter.GetUsersFromLikes(json);
         }
 
-        private bool IsPostVideo(string postPageContent)
+        private JObject GetJsonFromInstagram(string query)
         {
-            return _postPageScraper.IsPostVideo(postPageContent);
+            var responseBody = _pageDownloader.GetPageContent(query);
+            _pageDownloader.SetClientFree();
+            return JObject.Parse(responseBody);
         }
     }
 }
