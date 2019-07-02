@@ -1,9 +1,9 @@
 using InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreating;
 using InfluencerInstaParser.AudienceParser.Proxy;
 using InfluencerInstaParser.AudienceParser.Proxy.PageDownload;
-using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.LocationParsing;
-using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostParsing.CommentsParsing;
-using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostParsing.LikesParsing;
+using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.LocationParsing;
+using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.PostParsing.CommentsParsing;
+using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.PostParsing.LikesParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.JsonToParsedUserConverting;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.JsonToPostConverting;

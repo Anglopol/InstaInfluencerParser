@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser;
+using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.PostScraping;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
@@ -32,12 +32,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.
 
         private Post GetPost(JToken postJson)
         {
-            var ownerName = _postJsonScraper.GetOwnerName(postJson);
-            var ownerId = _postJsonScraper.GetOwnerId(postJson);
-            var shortCode = _postJsonScraper.GetShortCode(postJson);
-            var usersFromPreview = _postJsonScraper.GetUsersFromCommentsPreview(postJson);
-            var isPostVideo = _postJsonScraper.IsPostVideo(postJson);
-            var post = new Post(ownerName, ownerId, shortCode, usersFromPreview, isPostVideo);
+            var post = CreatePost(postJson);
             if (_postJsonScraper.TryGetLocationId(postJson, out var locationId))
             {
                 post.LocationId = locationId;
@@ -48,6 +43,18 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.
             post.NextCommentsCursor = nextCursor;
             post.HasNextCursor = true;
             return post;
+        }
+
+        private Post CreatePost(JToken postJson)
+        {
+            var ownerName = _postJsonScraper.GetOwnerName(postJson);
+            var ownerId = _postJsonScraper.GetOwnerId(postJson);
+            var shortCode = _postJsonScraper.GetShortCode(postJson);
+            var usersFromPreview = _postJsonScraper.GetUsersFromCommentsPreview(postJson);
+            var isPostVideo = _postJsonScraper.IsPostVideo(postJson);
+            var comments = _postJsonScraper.GetNumberOfComments(postJson);
+            var likes = _postJsonScraper.GetNumberOfLikes(postJson);
+            return new Post(ownerName, ownerId, shortCode, usersFromPreview, isPostVideo, likes, comments);
         }
     }
 }

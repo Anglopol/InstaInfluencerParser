@@ -8,7 +8,7 @@ using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.Json
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostParsing.CommentsParsing
+namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.PostParsing.CommentsParsing
 {
     public class CommentsParser : ICommentsParser
     {

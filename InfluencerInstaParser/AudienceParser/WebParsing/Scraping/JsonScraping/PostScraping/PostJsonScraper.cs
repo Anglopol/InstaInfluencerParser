@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser;
+using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser;
 using Newtonsoft.Json.Linq;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.PostScraping
@@ -35,6 +35,18 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.
             return (string) post.SelectToken("shortcode");
         }
 
+        public int GetNumberOfLikes(JToken post)
+        {
+            var likesToken = GetLikesToken(post);
+            return GetCount(likesToken);
+        }
+
+        public int GetNumberOfComments(JToken post)
+        {
+            var commentsToken = GetCommentsToken(post);
+            return GetCount(commentsToken);
+        }
+
         public bool TryGetLocationId(JToken post, out ulong locationId)
         {
             locationId = 0;
@@ -58,6 +70,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.
         {
             return (bool) post.SelectToken("is_video");
         }
+        
+        private static bool IsPostContainsComments(JToken commentsToken)
+        {
+            return GetCount(commentsToken) != 0;
+        }
 
         private ParsedUser GetParsedUserFromCommentEdge(JToken edge)
         {
@@ -71,14 +88,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.
             return post.SelectToken("edge_media_to_comment");
         }
 
+        private static JToken GetLikesToken(JToken post)
+        {
+            return post.SelectToken("edge_media_preview_like");
+        }
+
         private static JArray GetCommentsEdges(JToken commentsToken)
         {
             return (JArray) commentsToken.SelectToken("edges");
-        }
-
-        private static bool IsPostContainsComments(JToken commentsToken)
-        {
-            return (int) commentsToken.SelectToken("count") != 0;
         }
 
         private static bool IsPostHasNextCursorForComments(JToken commentsToke)
@@ -99,6 +116,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.
         private static string GetUsernameFromCommentEdge(JToken edge)
         {
             return (string) edge.SelectToken("node.owner.username");
+        }
+
+        private static int GetCount(JToken token)
+        {
+            return (int) token.SelectToken("count");
         }
     }
 }

@@ -8,7 +8,7 @@ using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScrapi
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserParsing
+namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.UserParsing
 {
     public class UserPageParser : IUserPageParser
     {
@@ -31,6 +31,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPa
         {
             var userUrl = MakeUserUrl(username);
             var userPageContent = _pageDownloader.GetPageContent(userUrl);
+            _pageDownloader.SetClientFree();
             return userPageContent;
         }
 

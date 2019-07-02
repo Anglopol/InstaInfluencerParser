@@ -1,4 +1,4 @@
-namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser
+namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser
 {
     public class ParsedUser
     {

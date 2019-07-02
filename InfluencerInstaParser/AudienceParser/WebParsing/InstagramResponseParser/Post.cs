@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser
+namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser
 {
     public class Post
     {
@@ -14,9 +14,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser
         public bool IsVideo { get; }
         public bool HasLocation { get; set; }
         public bool HasNextCursor { get; set; }
+        public int Likes { get; }
+        public int Comments { get; }
 
         public Post(string owner, ulong ownerId, string shortCode, IEnumerable<ParsedUser> usersFromCommentsPreview,
-            bool isVideo)
+            bool isVideo, int likes, int comments)
         {
             Owner = owner;
             OwnerId = ownerId;
@@ -25,6 +27,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser
             IsVideo = isVideo;
             HasLocation = false;
             HasNextCursor = false;
+            Likes = likes;
+            Comments = comments;
         }
     }
 }

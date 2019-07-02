@@ -1,4 +1,4 @@
-namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.LocationParsing
+namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.LocationParsing
 {
     public interface ILocator
     {

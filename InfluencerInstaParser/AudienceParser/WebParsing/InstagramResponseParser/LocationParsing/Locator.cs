@@ -7,7 +7,7 @@ using InfluencerInstaParser.AudienceParser.Proxy.PageDownload;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.LocationParsing
+namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.LocationParsing
 {
     public class Locator : ILocator
     {
