@@ -1,6 +1,7 @@
 using InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreating;
 using InfluencerInstaParser.AudienceParser.Proxy;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPageParsing.CommentsParsing;
+using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPageParsing.JsonToParsedUserConverting;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPageParsing.LikesParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPageParsing.JsonToPostConverting;
 using InfluencerInstaParser.AudienceParser.WebParsing.Locate;
@@ -30,7 +31,7 @@ namespace InfluencerInstaParser
             serviceCollection.AddSingleton<IResponseJsonScraper, ResponseJsonScraper>();
             serviceCollection.AddSingleton<IJsonToPostConverter, JsonToPostConverter>();
             serviceCollection.AddSingleton<IPostJsonScraper, PostJsonScraper>();
-
+            serviceCollection.AddSingleton<IJsonToParsedUsersConverter, JsonToParsedUsersConverter>();
 
             return serviceCollection;
         }
