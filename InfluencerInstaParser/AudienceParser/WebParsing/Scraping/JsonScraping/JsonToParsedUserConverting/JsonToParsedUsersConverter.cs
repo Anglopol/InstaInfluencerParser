@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser;
 using Newtonsoft.Json.Linq;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.PostPageParsing.JsonToParsedUserConverting
+namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.JsonToParsedUserConverting
 {
     public class JsonToParsedUsersConverter : IJsonToParsedUsersConverter
     {

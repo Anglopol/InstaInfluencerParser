@@ -1,6 +1,6 @@
 using System;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
+namespace InfluencerInstaParser.AudienceParser.Proxy.PageDownload
 {
     public interface IPageDownloader : IDisposable
     {

@@ -1,6 +1,4 @@
-using System.Collections.Generic;
-
-namespace InfluencerInstaParser.AudienceParser.WebParsing.Locate
+namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.LocationParsing
 {
     public interface ILocator
     {

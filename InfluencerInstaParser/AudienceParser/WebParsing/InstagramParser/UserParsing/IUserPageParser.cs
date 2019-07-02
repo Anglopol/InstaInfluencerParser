@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserPageParsing
+namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.UserParsing
 {
     public interface IUserPageParser
     {

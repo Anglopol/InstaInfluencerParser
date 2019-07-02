@@ -1,4 +1,4 @@
-namespace InfluencerInstaParser.AudienceParser.WebParsing.Locate
+namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.LocationParsing
 {
     public class LocatorScrapingResult
     {

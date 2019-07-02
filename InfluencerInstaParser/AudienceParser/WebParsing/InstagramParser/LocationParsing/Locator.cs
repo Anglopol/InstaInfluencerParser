@@ -3,11 +3,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using InfluencerInstaParser.AudienceParser.WebParsing.PageDownload;
+using InfluencerInstaParser.AudienceParser.Proxy.PageDownload;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing.Locate
+namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramParser.LocationParsing
 {
     public class Locator : ILocator
     {

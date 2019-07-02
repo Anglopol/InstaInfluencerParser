@@ -4,7 +4,7 @@ using InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy;
 using InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreating;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace InfluencerInstaParser.AudienceParser.WebParsing.PageDownload
+namespace InfluencerInstaParser.AudienceParser.Proxy.PageDownload
 {
     public class PageDownloader :  IPageDownloader
     {
