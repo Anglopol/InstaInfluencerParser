@@ -6,26 +6,33 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy;
+using InfluencerInstaParser.AudienceParser.Proxy;
 using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreating
 {
     public class ProxyClientCreator : IProxyClientCreator
     {
-        private ConcurrentDictionary<IProxyClient, DateTime> _proxyClients;
-        private readonly IList<IWebProxy> _proxies;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ConcurrentDictionary<IProxyClient, DateTime> _proxyClients;
+        private IEnumerable<IWebProxy> _proxies;
         private const int MaxValueOfRequests = 170;
         private static readonly TimeSpan ProxyClientRestTime = TimeSpan.FromMinutes(3);
+        private bool _isCreatorInit;
 
-        public ProxyClientCreator([NotNull] IList<IWebProxy> proxies)
+        public ProxyClientCreator(IServiceProvider serviceProvider)
         {
             _proxyClients = new ConcurrentDictionary<IProxyClient, DateTime>();
-            _proxies = proxies;
-            Initialize();
+            _serviceProvider = serviceProvider;
+            _isCreatorInit = false;
         }
 
         private void Initialize()
         {
+            _isCreatorInit = true;
+            var proxyCreator = _serviceProvider.GetService<IProxyCreator>();
+            _proxies = proxyCreator.GetWebProxies();
             foreach (var webProxy in _proxies)
             {
                 var handler = new HttpClientHandler {Proxy = webProxy};
@@ -36,6 +43,7 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreati
 
         public async Task<IProxyClient> GetClientAsync()
         {
+            if(!_isCreatorInit) Initialize();
             foreach (var (client, _) in _proxyClients)
             {
                 if (client.GetRequestCounter() < MaxValueOfRequests && _proxyClients.TryRemove(client, out _))

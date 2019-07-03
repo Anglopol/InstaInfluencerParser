@@ -17,7 +17,7 @@ namespace InfluencerInstaParser
     {
         public static IServiceCollection AddInfluncerInstaParserLibrary(this IServiceCollection serviceCollection)
         {
-            serviceCollection.AddSingleton<IProxyClientCreator, ProxyClientCreator>();
+            serviceCollection.AddSingleton<IProxyClientCreator>(creator => new ProxyClientCreator(serviceCollection.BuildServiceProvider()));
             serviceCollection.AddSingleton<IProxyCreator>(client => new ProxyFromFileCreator("proxies.txt"));
             serviceCollection.AddTransient<IPageDownloader>(downloader =>
                 new PageDownloader(serviceCollection.BuildServiceProvider()));
@@ -26,10 +26,10 @@ namespace InfluencerInstaParser
             serviceCollection.AddSingleton<IInstagramLocationPageScraper, LocationPageScraper>();
             serviceCollection.AddSingleton<IInstagramUserPageScraper, UserPageScraper>();
             serviceCollection.AddSingleton<IInstagramPostPageScraper, PostPageScraper>();
-            serviceCollection.AddTransient<ICommentsParser, CommentsParser>();
-            serviceCollection.AddTransient<ILikesParser, LikesParser>();
+            serviceCollection.AddTransient<ICommentsParser>(parser => new CommentsParser(serviceCollection.BuildServiceProvider()));
+            serviceCollection.AddTransient<ILikesParser>(parser => new LikesParser(serviceCollection.BuildServiceProvider()));
             serviceCollection.AddSingleton<IResponseJsonScraper, ResponseJsonScraper>();
-            serviceCollection.AddSingleton<IJsonToPostConverter, JsonToPostConverter>();
+            serviceCollection.AddSingleton<IJsonToPostConverter>(converter => new JsonToPostConverter(serviceCollection.BuildServiceProvider()));
             serviceCollection.AddSingleton<IPostJsonScraper, PostJsonScraper>();
             serviceCollection.AddSingleton<IJsonToParsedUsersConverter, JsonToParsedUsersConverter>();
 
