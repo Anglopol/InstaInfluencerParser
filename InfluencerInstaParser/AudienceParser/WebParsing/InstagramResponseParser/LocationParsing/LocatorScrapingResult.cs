@@ -8,6 +8,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
         public double Distance { get; set; }
         public double Lat { get; set; }
         public double Long { get; set; }
+        public bool IsResultEmpty;
 
         public LocatorScrapingResult(string name, int publicId, ulong instagramId, double distance, double cityLat,
             double cityLong)
@@ -18,6 +19,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
             Distance = distance;
             Lat = cityLat;
             Long = cityLong;
+            IsResultEmpty = false;
+        }
+
+        public LocatorScrapingResult()
+        {
+            IsResultEmpty = true;
         }
     }
 }
