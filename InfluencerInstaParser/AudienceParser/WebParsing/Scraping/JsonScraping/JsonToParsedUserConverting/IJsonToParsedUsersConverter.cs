@@ -6,7 +6,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.
 {
     public interface IJsonToParsedUsersConverter
     {
-        IEnumerable<ParsedUser> GetUsersFromLikes(JObject json);
-        IEnumerable<ParsedUser> GetUsersFromComments(JObject json);
+        IEnumerable<ParsedUserFromJson> GetUsersFromLikes(JObject json);
+        IEnumerable<ParsedUserFromJson> GetUsersFromComments(JObject json);
     }
 }

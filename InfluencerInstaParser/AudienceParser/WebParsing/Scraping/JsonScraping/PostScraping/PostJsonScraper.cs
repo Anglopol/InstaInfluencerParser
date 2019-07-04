@@ -6,9 +6,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.
 {
     public class PostJsonScraper : IPostJsonScraper
     {
-        public IEnumerable<ParsedUser> GetUsersFromCommentsPreview(JToken post)
+        public IEnumerable<ParsedUserFromJson> GetUsersFromCommentsPreview(JToken post)
         {
-            var parsedUsers = new List<ParsedUser>();
+            var parsedUsers = new List<ParsedUserFromJson>();
             var commentsToken = GetCommentsToken(post);
             if (!IsPostContainsComments(commentsToken)) return parsedUsers;
             var commentsEdges = GetCommentsEdges(commentsToken);
@@ -76,11 +76,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.
             return GetCount(commentsToken) != 0;
         }
 
-        private ParsedUser GetParsedUserFromCommentEdge(JToken edge)
+        private ParsedUserFromJson GetParsedUserFromCommentEdge(JToken edge)
         {
             var id = GetUserIdFromCommentEdge(edge);
             var name = GetUsernameFromCommentEdge(edge);
-            return new ParsedUser(name, id);
+            return new ParsedUserFromJson(name, id);
         }
 
         private static JToken GetCommentsToken(JToken post)

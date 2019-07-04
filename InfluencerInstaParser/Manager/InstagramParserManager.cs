@@ -1,5 +1,6 @@
 using System;
 using InfluencerInstaParser.AudienceParser;
+using InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace InfluencerInstaParser.Manager
@@ -16,6 +17,20 @@ namespace InfluencerInstaParser.Manager
         {
             var instaParser = _serviceProvider.GetService<IInstagramParser>();
             var parsingResult = instaParser.ParseByUsername(username);
+            var targetUser = parsingResult.CreateUser();
+            if (targetUser.IsUserEmpty) return;
+            FirstLevelAudienceProcessing(targetUser);
+        }
+
+        private void FirstLevelAudienceProcessing(IUser user)
+        {
+            var usersToParse = GetDistinctParsedUsers(user);
+            foreach (var userToParse in usersToParse)
+            {
+                var instaParser = _serviceProvider.GetService<IInstagramParser>();
+                if (userToParse.IsPrivate) continue;
+                var postAndLocationsParseResult = instaParser.ParseOnlyPostsAndLocations(userToParse);
+            }
         }
     }
 }

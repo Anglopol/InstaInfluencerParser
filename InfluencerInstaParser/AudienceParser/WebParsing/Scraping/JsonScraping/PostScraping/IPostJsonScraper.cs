@@ -6,7 +6,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.
 {
     public interface IPostJsonScraper
     {
-        IEnumerable<ParsedUser> GetUsersFromCommentsPreview(JToken post);
+        IEnumerable<ParsedUserFromJson> GetUsersFromCommentsPreview(JToken post);
         string GetOwnerName(JToken post);
         ulong GetOwnerId(JToken post);
         string GetShortCode(JToken post);

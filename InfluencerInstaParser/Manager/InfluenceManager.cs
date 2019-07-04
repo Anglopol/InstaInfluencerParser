@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using InfluencerInstaParser.AudienceParser;
 using InfluencerInstaParser.AudienceParser.Proxy;
+using InfluencerInstaParser.AudienceParser.UserCreating;
+using InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser;
 using InfluencerInstaParser.AudienceParser.UserInformation;
 using InfluencerInstaParser.Database;
 using InfluencerInstaParser.Database.Model;

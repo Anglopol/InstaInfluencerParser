@@ -1,6 +1,7 @@
 using InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreating;
 using InfluencerInstaParser.AudienceParser.Proxy;
 using InfluencerInstaParser.AudienceParser.Proxy.PageDownload;
+using InfluencerInstaParser.AudienceParser.ResultOfParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.LocationParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.PostParsing.CommentsParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.PostParsing.LikesParsing;
@@ -17,21 +18,23 @@ namespace InfluencerInstaParser
     {
         public static IServiceCollection AddInfluncerInstaParserLibrary(this IServiceCollection serviceCollection)
         {
-            serviceCollection.AddSingleton<IProxyClientCreator>(creator => new ProxyClientCreator(serviceCollection.BuildServiceProvider()));
+            var provider = serviceCollection.BuildServiceProvider();
+            serviceCollection.AddSingleton<IProxyClientCreator>(creator => new ProxyClientCreator(provider));
             serviceCollection.AddSingleton<IProxyCreator>(client => new ProxyFromFileCreator("proxies.txt"));
             serviceCollection.AddTransient<IPageDownloader>(downloader =>
-                new PageDownloader(serviceCollection.BuildServiceProvider()));
+                new PageDownloader(provider));
             serviceCollection.AddScoped<ILocator>(locator =>
-                new Locator(serviceCollection.BuildServiceProvider(), "citiesLocations.txt"));
+                new Locator(provider, "citiesLocations.txt"));
             serviceCollection.AddSingleton<IInstagramLocationPageScraper, LocationPageScraper>();
             serviceCollection.AddSingleton<IInstagramUserPageScraper, UserPageScraper>();
             serviceCollection.AddSingleton<IInstagramPostPageScraper, PostPageScraper>();
-            serviceCollection.AddTransient<ICommentsParser>(parser => new CommentsParser(serviceCollection.BuildServiceProvider()));
-            serviceCollection.AddTransient<ILikesParser>(parser => new LikesParser(serviceCollection.BuildServiceProvider()));
+            serviceCollection.AddTransient<ICommentsParser>(parser => new CommentsParser(provider));
+            serviceCollection.AddTransient<ILikesParser>(parser => new LikesParser(provider));
             serviceCollection.AddSingleton<IResponseJsonScraper, ResponseJsonScraper>();
-            serviceCollection.AddSingleton<IJsonToPostConverter>(converter => new JsonToPostConverter(serviceCollection.BuildServiceProvider()));
+            serviceCollection.AddSingleton<IJsonToPostConverter>(converter => new JsonToPostConverter(provider));
             serviceCollection.AddSingleton<IPostJsonScraper, PostJsonScraper>();
             serviceCollection.AddSingleton<IJsonToParsedUsersConverter, JsonToParsedUsersConverter>();
+            serviceCollection.AddTransient<IParsingResult>(parsingResult => new ParsingResult(provider));
 
             return serviceCollection;
         }
