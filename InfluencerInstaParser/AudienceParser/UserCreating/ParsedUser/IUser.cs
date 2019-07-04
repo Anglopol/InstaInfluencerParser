@@ -15,5 +15,7 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
         bool IsInfluencer { get; }
         IEnumerable<LocatorScrapingResult> Locations { get; }
         IEnumerable<Post> Posts { get; set; }
+        IEnumerable<ParsedUserFromJson> GetUsersToParse();
+        IUser Clone();
     }
 }

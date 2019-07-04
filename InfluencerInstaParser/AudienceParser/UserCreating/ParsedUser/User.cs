@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.LocationParsing;
 
@@ -47,7 +48,12 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
             _usersFromLikes = new Dictionary<ulong, ParsedUserFromJson>();
         }
 
-        public User Clone()
+        public IEnumerable<ParsedUserFromJson> GetUsersToParse()
+        {
+            return GetNonUniqueUsersFromDictionariesWithValidPrivacy().Union(GetUniqueUsersFromDictionaries());
+        }
+
+        public IUser Clone()
         {
             var copy = (User) MemberwiseClone();
             copy.Uid = Guid.NewGuid().ToString();
@@ -62,6 +68,43 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
             {
                 dictionary.Add(fromJson.UserId, fromJson);
             }
+        }
+
+        private IEnumerable<ParsedUserFromJson> GetUniqueUsersFromDictionaries()
+        {
+            var uniqueFromLikes = GetUniqueUsersFromLikes();
+            var uniqueFromComments = GetUniqueUsersFromComments();
+            return uniqueFromLikes.Union(uniqueFromComments);
+        }
+
+        private IEnumerable<ParsedUserFromJson> GetUniqueUsersFromLikes()
+        {
+            return from fromLike in _usersFromLikes
+                where !_usersFromComments.ContainsKey(fromLike.Key)
+                select fromLike.Value;
+        }
+        
+        private IEnumerable<ParsedUserFromJson> GetUniqueUsersFromComments()
+        {
+            return from fromComments in _usersFromComments
+                where !_usersFromLikes.ContainsKey(fromComments.Key)
+                select fromComments.Value;
+        }
+
+        private IEnumerable<ParsedUserFromJson> GetNonUniqueUsersFromDictionariesWithValidPrivacy()
+        {
+            return from fromLike in _usersFromLikes
+                from fromComment in _usersFromComments
+                where fromLike.Key == fromComment.Key
+                let name = fromLike.Value.Name
+                let id = fromLike.Value.UserId
+                let isPrivate = PrivacyDisjunction(fromLike.Value, fromComment.Value)
+                select new ParsedUserFromJson(name, id, isPrivate);
+        }
+
+        private static bool PrivacyDisjunction(ParsedUserFromJson firstUser, ParsedUserFromJson secondUser)
+        {
+            return firstUser.IsPrivate || secondUser.IsPrivate;
         }
     }
 }
