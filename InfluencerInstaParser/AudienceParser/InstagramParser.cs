@@ -27,18 +27,26 @@ namespace InfluencerInstaParser.AudienceParser
         {
             var userPage = _userPageParser.GetUserPage(username);
             var userId = _userPageParser.GetUserId(userPage);
-            return _userPageParser.IsUserPageValid(userPage) ? ParseById(userId) : new ParsingResult();
+            return _userPageParser.IsUserPageValid(userPage)
+                ? ParseById(userId)
+                : _serviceProvider.GetService<IParsingResult>();
         }
 
         public IParsingResult ParseById(ulong userId)
         {
-            var posts = _userPageParser.GetPostsFromUser(userId);
+            var posts = GetPosts(userId);
             return PostsProcessing(posts);
+        }
+
+        public IParsingResult ParseOnlyPostsAndLocations(ParsedUserFromJson userFromJson)
+        {
+            var posts = GetPosts(userFromJson.UserId);
+            return OnlyLocationsPostProcessing(posts);
         }
 
         private IParsingResult PostsProcessing(IEnumerable<Post> posts)
         {
-            var parsingResult = new ParsingResult();
+            var parsingResult = _serviceProvider.GetService<IParsingResult>();
             var postProcessingTasks = posts.Select(post =>
                 Task.Factory.StartNew(() => SinglePostProcessing(post, parsingResult),
                     TaskCreationOptions.LongRunning));
@@ -47,10 +55,21 @@ namespace InfluencerInstaParser.AudienceParser
             return parsingResult;
         }
 
-        private void SinglePostProcessing(Post post, ParsingResult parsingResult)
+        private IParsingResult OnlyLocationsPostProcessing(IEnumerable<Post> posts)
         {
-            parsingResult.Posts.Add(post);
-            
+            var parsingResult = _serviceProvider.GetService<IParsingResult>();
+            var postProcessingTasks = posts.Select(post =>
+                Task.Factory.StartNew(() => OnlyLocationsSinglePostProcessing(post, parsingResult),
+                    TaskCreationOptions.LongRunning));
+            Task.WaitAll(postProcessingTasks.ToArray());
+
+            return parsingResult;
+        }
+
+        private void SinglePostProcessing(Post post, IParsingResult parsingResult)
+        {
+            parsingResult.AddPost(post);
+
             Task.Factory.StartNew(() => CommentsPostProcessing(post, parsingResult),
                 TaskCreationOptions.AttachedToParent);
             Task.Factory.StartNew(() => LikesPostProcessing(post, parsingResult),
@@ -59,22 +78,35 @@ namespace InfluencerInstaParser.AudienceParser
                 TaskCreationOptions.AttachedToParent);
         }
 
-        private void CommentsPostProcessing(Post post, ParsingResult parsingResult)
+        private void OnlyLocationsSinglePostProcessing(Post post, IParsingResult parsingResult)
+        {
+            parsingResult.AddPost(post);
+            Task.Factory.StartNew(() => LocationPostProcessing(post, parsingResult),
+                TaskCreationOptions.AttachedToParent);
+        }
+
+        private void CommentsPostProcessing(Post post, IParsingResult parsingResult)
         {
             var commentsParser = _serviceProvider.GetService<ICommentsParser>();
             parsingResult.AddUsersFromComments(commentsParser.GetUsersFromComments(post));
         }
 
-        private void LikesPostProcessing(Post post, ParsingResult parsingResult)
+        private void LikesPostProcessing(Post post, IParsingResult parsingResult)
         {
             var likesParser = _serviceProvider.GetService<ILikesParser>();
             parsingResult.AddUsersFromLikes(likesParser.GetUsersFromLikes(post));
         }
-        private void LocationPostProcessing(Post post, ParsingResult parsingResult)
+
+        private void LocationPostProcessing(Post post, IParsingResult parsingResult)
         {
             var locator = _serviceProvider.GetService<ILocator>();
             var locationScrapResult = locator.GetLocatorScrapingResultByLocationId(post.LocationId);
-            parsingResult.ScrapedLocations.Add(locationScrapResult);
+            parsingResult.AddLocationScrapResult(locationScrapResult);
+        }
+
+        private IEnumerable<Post> GetPosts(ulong userId)
+        {
+            return _userPageParser.GetPostsFromUser(userId);
         }
     }
 }
