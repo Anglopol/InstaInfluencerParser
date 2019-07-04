@@ -25,27 +25,27 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
             _converter = serviceProvider.GetService<IJsonToParsedUsersConverter>();
         }
 
-        public IEnumerable<ParsedUser> GetUsersFromComments(Post post)
+        public IEnumerable<ParsedUserFromJson> GetUsersFromComments(Post post)
         {
             return !post.HasNextCursor ? post.UsersFromCommentsPreview : GetParsedUsers(post);
         }
 
-        private IEnumerable<ParsedUser> GetParsedUsers(Post post)
+        private IEnumerable<ParsedUserFromJson> GetParsedUsers(Post post)
         {
             return post.UsersFromCommentsPreview.Union(DownloadUsernamesFromPagination(post));
         }
 
-        private IEnumerable<ParsedUser> DownloadUsernamesFromPagination(Post post)
+        private IEnumerable<ParsedUserFromJson> DownloadUsernamesFromPagination(Post post)
         {
             var firstQuery = RequestParamsCreator.GetQueryUrlForComments(post.ShortCode, post.NextCommentsCursor);
             var json = GetJsonFromInstagram(firstQuery);
             return PaginationDownload(json, post.ShortCode);
         }
 
-        private IEnumerable<ParsedUser> PaginationDownload(JObject commentsJson, string shortCode)
+        private IEnumerable<ParsedUserFromJson> PaginationDownload(JObject commentsJson, string shortCode)
         {
             var downloadCounter = 1;
-            var parsedUsers = new List<ParsedUser>();
+            var parsedUsers = new List<ParsedUserFromJson>();
             while (_jObjectScraper.IsNextPageExistsForComments(commentsJson) && downloadCounter < MaxPaginationToDownload)
             {
                 parsedUsers.AddRange(GetUsersFromJson(commentsJson));
@@ -60,7 +60,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
             return parsedUsers;
         }
 
-        private IEnumerable<ParsedUser> GetUsersFromJson(JObject json)
+        private IEnumerable<ParsedUserFromJson> GetUsersFromJson(JObject json)
         {
             return _converter.GetUsersFromComments(json);
         }

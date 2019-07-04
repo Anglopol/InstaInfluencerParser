@@ -24,22 +24,22 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
             _converter = serviceProvider.GetService<IJsonToParsedUsersConverter>();
         }
 
-        public IEnumerable<ParsedUser> GetUsersFromLikes(Post post)
+        public IEnumerable<ParsedUserFromJson> GetUsersFromLikes(Post post)
         {
-            return post.IsVideo ? new List<ParsedUser>() : DownloadUsernamesFromPagination(post);
+            return post.IsVideo ? new List<ParsedUserFromJson>() : DownloadUsernamesFromPagination(post);
         }
 
-        private IEnumerable<ParsedUser> DownloadUsernamesFromPagination(Post post)
+        private IEnumerable<ParsedUserFromJson> DownloadUsernamesFromPagination(Post post)
         {
             var firstQuery = RequestParamsCreator.GetQueryUrlForLikes(post.ShortCode);
             var json = GetJsonFromInstagram(firstQuery);
             return PaginationDownload(json, post.ShortCode);
         }
 
-        private IEnumerable<ParsedUser> PaginationDownload(JObject likesJson, string shortCode)
+        private IEnumerable<ParsedUserFromJson> PaginationDownload(JObject likesJson, string shortCode)
         {
             var downloadCounter = 1;
-            var parsedUsers = new List<ParsedUser>();
+            var parsedUsers = new List<ParsedUserFromJson>();
             while (_jObjectScraper.IsNextPageExistsForLikes(likesJson) && downloadCounter < MaxPaginationToDownload)
             {
                 parsedUsers.AddRange(GetUsersFromJson(likesJson));
@@ -53,7 +53,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
             return parsedUsers;
         }
 
-        private IEnumerable<ParsedUser> GetUsersFromJson(JObject json)
+        private IEnumerable<ParsedUserFromJson> GetUsersFromJson(JObject json)
         {
             return _converter.GetUsersFromLikes(json);
         }

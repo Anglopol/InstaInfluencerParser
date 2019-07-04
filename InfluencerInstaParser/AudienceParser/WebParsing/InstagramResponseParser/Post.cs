@@ -10,14 +10,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
         public string ShortCode { get; }
         public ulong LocationId { get; set; }
         [CanBeNull] public string NextCommentsCursor { get; set; }
-        public IEnumerable<ParsedUser> UsersFromCommentsPreview { get; }
+        public IEnumerable<ParsedUserFromJson> UsersFromCommentsPreview { get; }
         public bool IsVideo { get; }
         public bool HasLocation { get; set; }
         public bool HasNextCursor { get; set; }
         public int Likes { get; }
         public int Comments { get; }
 
-        public Post(string owner, ulong ownerId, string shortCode, IEnumerable<ParsedUser> usersFromCommentsPreview,
+        public Post(string owner, ulong ownerId, string shortCode, IEnumerable<ParsedUserFromJson> usersFromCommentsPreview,
             bool isVideo, int likes, int comments)
         {
             Owner = owner;

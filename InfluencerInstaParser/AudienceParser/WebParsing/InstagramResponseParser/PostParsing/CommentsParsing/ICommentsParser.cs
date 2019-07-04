@@ -4,6 +4,6 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
 {
     public interface ICommentsParser
     {
-        IEnumerable<ParsedUser> GetUsersFromComments(Post post);
+        IEnumerable<ParsedUserFromJson> GetUsersFromComments(Post post);
     }
 }
