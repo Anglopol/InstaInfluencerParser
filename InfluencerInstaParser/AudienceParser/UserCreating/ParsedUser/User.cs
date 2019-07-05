@@ -16,19 +16,31 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
         public bool IsInfluencer { get; }
         public IEnumerable<LocatorScrapingResult> Locations { get; }
         public IEnumerable<Post> Posts { get; set; }
-        private readonly Dictionary<ulong, ParsedUserFromJson> _usersFromComments;
-        private readonly Dictionary<ulong, ParsedUserFromJson> _usersFromLikes;
+        private readonly Dictionary<ulong, UsersFromJsonWithCounter> _usersFromComments;
+        private readonly Dictionary<ulong, UsersFromJsonWithCounter> _usersFromLikes;
 
         public IEnumerable<ParsedUserFromJson> UsersFromLikes
         {
-            get => _usersFromLikes.Values;
+            get => UsersDictToEnum(_usersFromLikes);
             set => EnumToUsersDict(value, _usersFromLikes);
         }
 
         public IEnumerable<ParsedUserFromJson> UsersFromComments
         {
-            get => _usersFromComments.Values;
+            get => UsersDictToEnum(_usersFromComments);
             set => EnumToUsersDict(value, _usersFromComments);
+        }
+        
+        private class UsersFromJsonWithCounter
+        {
+            public ParsedUserFromJson UserFromJson { get; }
+            public int Counter { get; set; }
+
+            public UsersFromJsonWithCounter(ParsedUserFromJson fromJson)
+            {
+                UserFromJson = fromJson;
+                Counter = 1;
+            }
         }
 
         public User()
@@ -44,8 +56,8 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
             Uid = Guid.NewGuid().ToString();
             IsUserEmpty = false;
             IsInfluencer = isInfluencer;
-            _usersFromComments = new Dictionary<ulong, ParsedUserFromJson>();
-            _usersFromLikes = new Dictionary<ulong, ParsedUserFromJson>();
+            _usersFromComments = new Dictionary<ulong, UsersFromJsonWithCounter>();
+            _usersFromLikes = new Dictionary<ulong, UsersFromJsonWithCounter>();
         }
 
         public IEnumerable<ParsedUserFromJson> GetUsersToParse()
@@ -61,13 +73,20 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
         }
 
         private static void EnumToUsersDict(IEnumerable<ParsedUserFromJson> userFromJsons,
-            IDictionary<ulong, ParsedUserFromJson> dictionary)
+            IDictionary<ulong, UsersFromJsonWithCounter> dictionary)
         {
             dictionary.Clear();
             foreach (var fromJson in userFromJsons)
             {
-                dictionary.Add(fromJson.UserId, fromJson);
+                if (!dictionary.TryAdd(fromJson.UserId, new UsersFromJsonWithCounter(fromJson)))
+                    dictionary[fromJson.UserId].Counter++;
             }
+        }
+
+        private static IEnumerable<ParsedUserFromJson> UsersDictToEnum(
+            IDictionary<ulong, UsersFromJsonWithCounter> dictionary)
+        {
+            return from usersFromJsonWithCounter in dictionary select usersFromJsonWithCounter.Value.UserFromJson;
         }
 
         private IEnumerable<ParsedUserFromJson> GetUniqueUsersFromDictionaries()
@@ -81,14 +100,14 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
         {
             return from fromLike in _usersFromLikes
                 where !_usersFromComments.ContainsKey(fromLike.Key)
-                select fromLike.Value;
+                select fromLike.Value.UserFromJson;
         }
         
         private IEnumerable<ParsedUserFromJson> GetUniqueUsersFromComments()
         {
             return from fromComments in _usersFromComments
                 where !_usersFromLikes.ContainsKey(fromComments.Key)
-                select fromComments.Value;
+                select fromComments.Value.UserFromJson;
         }
 
         private IEnumerable<ParsedUserFromJson> GetNonUniqueUsersFromDictionariesWithValidPrivacy()
@@ -96,9 +115,9 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
             return from fromLike in _usersFromLikes
                 from fromComment in _usersFromComments
                 where fromLike.Key == fromComment.Key
-                let name = fromLike.Value.Name
-                let id = fromLike.Value.UserId
-                let isPrivate = PrivacyDisjunction(fromLike.Value, fromComment.Value)
+                let name = fromLike.Value.UserFromJson.Name
+                let id = fromLike.Value.UserFromJson.UserId
+                let isPrivate = PrivacyDisjunction(fromLike.Value.UserFromJson, fromComment.Value.UserFromJson)
                 select new ParsedUserFromJson(name, id, isPrivate);
         }
 
