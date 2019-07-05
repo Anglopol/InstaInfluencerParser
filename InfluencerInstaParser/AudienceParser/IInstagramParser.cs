@@ -1,4 +1,5 @@
 using InfluencerInstaParser.AudienceParser.ResultOfParsing;
+using InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser;
 
 namespace InfluencerInstaParser.AudienceParser
@@ -8,5 +9,6 @@ namespace InfluencerInstaParser.AudienceParser
         IParsingResult ParseByUsername(string username);
         IParsingResult ParseById(ulong userId);
         IParsingResult ParseOnlyPostsAndLocations(ParsedUserFromJson userFromJson);
+        IParsingResult SecondLevelParsingForInfluencers(IUser influencer);
     }
 }

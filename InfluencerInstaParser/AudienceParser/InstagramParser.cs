@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.ResultOfParsing;
+using InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.LocationParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.PostParsing.CommentsParsing;
@@ -44,6 +45,15 @@ namespace InfluencerInstaParser.AudienceParser
             return OnlyLocationsPostProcessing(posts);
         }
 
+        public IParsingResult SecondLevelParsingForInfluencers(IUser influencer)
+        {
+            var posts = influencer.Posts.ToList();
+            var secondLevelResult = SecondLevelParsingPostProcessing(posts);
+            secondLevelResult.AddPosts(posts);
+            secondLevelResult.AddLocationScrapResult(influencer.Locations);
+            return secondLevelResult;
+        }
+
         private IParsingResult PostsProcessing(IEnumerable<Post> posts)
         {
             var parsingResult = _serviceProvider.GetService<IParsingResult>();
@@ -66,6 +76,17 @@ namespace InfluencerInstaParser.AudienceParser
             return parsingResult;
         }
 
+        private IParsingResult SecondLevelParsingPostProcessing(IEnumerable<Post> posts)
+        {
+            var parsingResult = _serviceProvider.GetService<IParsingResult>();
+            var postProcessingTasks = posts.Select(post =>
+                Task.Factory.StartNew(() => SecondLevelSinglePostProcessing(post, parsingResult),
+                    TaskCreationOptions.LongRunning));
+            Task.WaitAll(postProcessingTasks.ToArray());
+
+            return parsingResult;
+        }
+
         private void SinglePostProcessing(Post post, IParsingResult parsingResult)
         {
             parsingResult.AddPost(post);
@@ -82,6 +103,14 @@ namespace InfluencerInstaParser.AudienceParser
         {
             parsingResult.AddPost(post);
             Task.Factory.StartNew(() => LocationPostProcessing(post, parsingResult),
+                TaskCreationOptions.AttachedToParent);
+        }
+
+        private void SecondLevelSinglePostProcessing(Post post, IParsingResult parsingResult)
+        {
+            Task.Factory.StartNew(() => CommentsPostProcessing(post, parsingResult),
+                TaskCreationOptions.AttachedToParent);
+            Task.Factory.StartNew(() => LikesPostProcessing(post, parsingResult),
                 TaskCreationOptions.AttachedToParent);
         }
 
