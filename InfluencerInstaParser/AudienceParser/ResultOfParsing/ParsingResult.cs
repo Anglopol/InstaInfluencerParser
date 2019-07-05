@@ -63,9 +63,25 @@ namespace InfluencerInstaParser.AudienceParser.ResultOfParsing
             ScrapedLocations.Add(scrapingResult);
         }
 
+        public void AddLocationScrapResult(IEnumerable<LocatorScrapingResult> scrapingResult)
+        {
+            foreach (var locatorScrapingResult in scrapingResult)
+            {
+                AddLocationScrapResult(locatorScrapingResult);
+            }
+        }
+
         public void AddPost(Post post)
         {
             Posts.Add(post);
+        }
+
+        public void AddPosts(IEnumerable<Post> posts)
+        {
+            foreach (var post in posts)
+            {
+                AddPost(post);
+            }
         }
 
         private bool IsInfluencer()

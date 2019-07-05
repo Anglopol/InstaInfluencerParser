@@ -11,6 +11,9 @@ namespace InfluencerInstaParser.AudienceParser.ResultOfParsing
         void AddUsersFromComments(IEnumerable<ParsedUserFromJson> users);
         void AddUsersFromLikes(IEnumerable<ParsedUserFromJson> users);
         void AddLocationScrapResult(LocatorScrapingResult scrapingResult);
+        void AddLocationScrapResult(IEnumerable<LocatorScrapingResult> scrapingResult);
         void AddPost(Post post);
+        void AddPosts(IEnumerable<Post> posts);
+        
     }
 }
