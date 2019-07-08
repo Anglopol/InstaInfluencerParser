@@ -1,14 +1,16 @@
-using System;
 using System.Collections.Generic;
 using InfluencerInstaParser.AudienceParser.Proxy.PageDownload;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.JsonToParsedUserConverting;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.PostParsing.LikesParsing
 {
+    public class LikeParserOptions
+    {
+    }
+
     public class LikesParser : ILikesParser
     {
         private readonly IResponseJsonScraper _jObjectScraper;
@@ -17,11 +19,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
 
         private const int MaxPaginationToDownload = 2; //TODO Get this parameter from DI
 
-        public LikesParser(IServiceProvider serviceProvider)
+        public LikesParser(IPageDownloader pageDownloader, IResponseJsonScraper responseJsonScraper,
+            IJsonToParsedUsersConverter jsonToParsedUsersConverter)
         {
-            _pageDownloader = serviceProvider.GetService<IPageDownloader>();
-            _jObjectScraper = serviceProvider.GetService<IResponseJsonScraper>();
-            _converter = serviceProvider.GetService<IJsonToParsedUsersConverter>();
+            _pageDownloader = pageDownloader;
+            _jObjectScraper = responseJsonScraper;
+            _converter = jsonToParsedUsersConverter;
         }
 
         public IEnumerable<ParsedUserFromJson> GetUsersFromLikes(Post post)

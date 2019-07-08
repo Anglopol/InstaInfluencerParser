@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser;
+using InfluencerInstaParser.Database.DataClasses;
 
-namespace InfluencerInstaParser.Manager
+namespace InfluencerInstaParser.Database.ModelCreating
 {
     public interface IModelCreator
     {

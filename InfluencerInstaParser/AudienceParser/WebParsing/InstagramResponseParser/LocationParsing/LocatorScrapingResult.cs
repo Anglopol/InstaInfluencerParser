@@ -2,13 +2,14 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
 {
     public class LocatorScrapingResult
     {
-        public string Name { get; set; }
-        public int PublicId { get; set; }
-        public ulong InstagramId { get; set; }
-        public double Distance { get; set; }
-        public double Lat { get; set; }
-        public double Long { get; set; }
-        public bool IsResultEmpty;
+        public string Name { get; }
+        public int PublicId { get; }
+        public ulong InstagramId { get; }
+        public double Distance { get; }
+        public double Lat { get; }
+        public double Long { get; }
+        public bool IsResultEmpty { get; }
+
 
         public LocatorScrapingResult(string name, int publicId, ulong instagramId, double distance, double cityLat,
             double cityLong)

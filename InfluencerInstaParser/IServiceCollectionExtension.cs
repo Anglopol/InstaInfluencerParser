@@ -28,13 +28,13 @@ namespace InfluencerInstaParser
             serviceCollection.AddSingleton<IInstagramLocationPageScraper, LocationPageScraper>();
             serviceCollection.AddSingleton<IInstagramUserPageScraper, UserPageScraper>();
             serviceCollection.AddSingleton<IInstagramPostPageScraper, PostPageScraper>();
-            serviceCollection.AddTransient<ICommentsParser>(parser => new CommentsParser(provider));
-            serviceCollection.AddTransient<ILikesParser>(parser => new LikesParser(provider));
+            serviceCollection.AddTransient<ICommentsParser, CommentsParser>();
+            serviceCollection.AddTransient<ILikesParser, LikesParser>();
             serviceCollection.AddSingleton<IResponseJsonScraper, ResponseJsonScraper>();
-            serviceCollection.AddSingleton<IJsonToPostConverter>(converter => new JsonToPostConverter(provider));
+            serviceCollection.AddSingleton<IJsonToPostConverter, JsonToPostConverter>();
             serviceCollection.AddSingleton<IPostJsonScraper, PostJsonScraper>();
             serviceCollection.AddSingleton<IJsonToParsedUsersConverter, JsonToParsedUsersConverter>();
-            serviceCollection.AddTransient<IParsingResult>(parsingResult => new ParsingResult(provider));
+            serviceCollection.AddTransient<IParsingResult, ParsingResult>();
 
             return serviceCollection;
         }

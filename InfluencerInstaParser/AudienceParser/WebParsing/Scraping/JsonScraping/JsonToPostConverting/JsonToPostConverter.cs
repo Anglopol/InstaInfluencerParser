@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.PostScraping;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.JsonToPostConverting
@@ -12,13 +10,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.
         private readonly IResponseJsonScraper _jsonScraper;
         private readonly IPostJsonScraper _postJsonScraper;
 
-        public JsonToPostConverter(IServiceProvider serviceProvider)
+        public JsonToPostConverter(IResponseJsonScraper jsonScraper, IPostJsonScraper postJsonScraper)
         {
-            _jsonScraper = serviceProvider.GetService<IResponseJsonScraper>();
-            _postJsonScraper = serviceProvider.GetService<IPostJsonScraper>();
+            _jsonScraper = jsonScraper;
+            _postJsonScraper = postJsonScraper;
         }
 
-        public IEnumerable<Post> GetPosts(JObject json)
+        public IEnumerable<Post>  GetPosts(JObject json)
         {
             var posts = new List<Post>();
             var edges = _jsonScraper.GetPostsEdges(json);

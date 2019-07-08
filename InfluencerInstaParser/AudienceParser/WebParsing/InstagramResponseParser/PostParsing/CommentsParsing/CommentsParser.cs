@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using InfluencerInstaParser.AudienceParser.Proxy.PageDownload;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.JsonToParsedUserConverting;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.PostParsing.CommentsParsing
@@ -18,11 +16,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
 
         private const int MaxPaginationToDownload = 2; //TODO Get this parameter from DI
 
-        public CommentsParser(IServiceProvider serviceProvider)
+        public CommentsParser(IPageDownloader pageDownloader,
+            IResponseJsonScraper responseJsonScraper,
+            IJsonToParsedUsersConverter jsonToParsedUsersConverter)
         {
-            _pageDownloader = serviceProvider.GetService<IPageDownloader>();
-            _jObjectScraper = serviceProvider.GetService<IResponseJsonScraper>();
-            _converter = serviceProvider.GetService<IJsonToParsedUsersConverter>();
+            _pageDownloader = pageDownloader;
+            _jObjectScraper = responseJsonScraper;
+            _converter = jsonToParsedUsersConverter;
         }
 
         public IEnumerable<ParsedUserFromJson> GetUsersFromComments(Post post)
@@ -46,7 +46,8 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
         {
             var downloadCounter = 1;
             var parsedUsers = new List<ParsedUserFromJson>();
-            while (_jObjectScraper.IsNextPageExistsForComments(commentsJson) && downloadCounter < MaxPaginationToDownload)
+            while (_jObjectScraper.IsNextPageExistsForComments(commentsJson) &&
+                   downloadCounter < MaxPaginationToDownload)
             {
                 parsedUsers.AddRange(GetUsersFromJson(commentsJson));
                 var nextCursor = _jObjectScraper.GetNextCursorForComments(commentsJson);
@@ -64,7 +65,7 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
         {
             return _converter.GetUsersFromComments(json);
         }
-        
+
         private JObject GetJsonFromInstagram(string query)
         {
             var responseBody = _pageDownloader.GetPageContent(query);

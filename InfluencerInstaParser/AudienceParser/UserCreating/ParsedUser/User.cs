@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.LocationParsing;
+using InfluencerInstaParser.Database.DataClasses;
 
 namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
 {
@@ -70,6 +71,21 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
             var copy = (User) MemberwiseClone();
             copy.Uid = Guid.NewGuid().ToString();
             return copy;
+        }
+
+        public UserToUserRelation GetRelation(IUser user)
+        {
+            var childId = user.InstagramId;
+            var relation = new UserToUserRelation(Uid, user.Uid);
+            if (_usersFromLikes.TryGetValue(childId, out var child)) relation.Likes = child.Counter;
+            if (_usersFromComments.TryGetValue(childId, out child)) relation.Comments = child.Counter;
+            return relation;
+        }
+
+        public bool HasRelationToUser(IUser user)
+        {
+            var userId = user.InstagramId;
+            return _usersFromComments.ContainsKey(userId) || _usersFromLikes.ContainsKey(userId);
         }
 
         private static void EnumToUsersDict(IEnumerable<ParsedUserFromJson> userFromJsons,

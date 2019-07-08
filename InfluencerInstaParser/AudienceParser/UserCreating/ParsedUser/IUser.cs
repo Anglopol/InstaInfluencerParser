@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.LocationParsing;
+using InfluencerInstaParser.Database.DataClasses;
 
 namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
 {
@@ -17,5 +18,7 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
         IEnumerable<Post> Posts { get; set; }
         IEnumerable<ParsedUserFromJson> GetUsersToParse();
         IUser Clone();
+        UserToUserRelation GetRelation(IUser user);
+        bool HasRelationToUser(IUser user);
     }
 }
