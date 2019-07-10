@@ -11,8 +11,12 @@ namespace InfluencerInstaParser.Database.ModelCreating
         {
             var firstLevelList = firstLevelUsers.ToList();
             var secondLevelList = secondLevelUsers.ToList();
-            var userToUserRelations = GetUserRelations(target, firstLevelList, secondLevelList);
-            var locations = GetLocations(target, firstLevelList, secondLevelList);
+            var allUsers = firstLevelList.Union(secondLevelList).Append(target).ToList();
+            var userToUserRelations = GetUserRelations(target, firstLevelList, secondLevelList).ToList();
+            var locations = GetLocations(target, firstLevelList, secondLevelList).ToList();
+            var userToLocationRelations =
+                GetUserToLocationRelations(locations, userToUserRelations, GetUidIUserDictionary(allUsers));
+            return new Model(userToUserRelations, userToLocationRelations, allUsers.Distinct(), locations, target);
         }
 
         private static IEnumerable<UserToUserRelation> GetUserRelations(IUser target,
@@ -58,14 +62,33 @@ namespace InfluencerInstaParser.Database.ModelCreating
             return locations.Values;
         }
 
-        private static IEnumerable<UserToLocationRelation> GetUserToLocationRelations()
+        private static IEnumerable<UserToLocationRelation> GetUserToLocationRelations(IEnumerable<Location> locations,
+            IEnumerable<UserToUserRelation> userToUserRelations, Dictionary<string, IUser> users)
         {
-            
+            return from userToUserRelation in userToUserRelations
+                from location in locations
+                where location.InfluencerUid == userToUserRelation.ParentUid
+                from user in users
+                where user.Value.Uid == userToUserRelation.ChildUid
+                from locationFromUser in user.Value.Locations
+                select new UserToLocationRelation(userToUserRelation.ChildUid, location.Uid, locationFromUser.Distance,
+                    locationFromUser.InstagramId, locationFromUser.Lat, locationFromUser.Long);
         }
 
         private static IEnumerable<IUser> GetInfluencers(IEnumerable<IUser> users)
         {
             return from influencer in users where influencer.IsInfluencer select influencer;
+        }
+
+        private static Dictionary<string, IUser> GetUidIUserDictionary(IEnumerable<IUser> users)
+        {
+            var result = new Dictionary<string, IUser>();
+            foreach (var user in users)
+            {
+                result.TryAdd(user.Uid, user);
+            }
+
+            return result;
         }
     }
 }

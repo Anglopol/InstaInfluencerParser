@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser;
 
@@ -9,5 +10,7 @@ namespace InfluencerInstaParser.Database.DataClasses
         IEnumerable<UserToLocationRelation> UserToLocationRelations { get; }
         IEnumerable<IUser> Users { get; }
         IEnumerable<Location> Locations { get; }
+        IUser Target { get; }
+        DateTime ModelCreatingDate { get; }
     }
 }

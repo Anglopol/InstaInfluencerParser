@@ -10,6 +10,10 @@ using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.Json
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.JsonToPostConverting;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.PostScraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping;
+using InfluencerInstaParser.Database.Client;
+using InfluencerInstaParser.Database.Client.Connection;
+using InfluencerInstaParser.Database.ModelCreating;
+using InfluencerInstaParser.Manager;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace InfluencerInstaParser
@@ -35,6 +39,10 @@ namespace InfluencerInstaParser
             serviceCollection.AddSingleton<IPostJsonScraper, PostJsonScraper>();
             serviceCollection.AddSingleton<IJsonToParsedUsersConverter, JsonToParsedUsersConverter>();
             serviceCollection.AddTransient<IParsingResult, ParsingResult>();
+            serviceCollection.AddSingleton<IConnectionParams, ConnectionParams>();
+            serviceCollection.AddScoped<IDatabaseClientHandler, Neo4JDatabaseInstagramClient>();
+            serviceCollection.AddTransient<IModelCreator, ModelCreator>();
+            serviceCollection.AddTransient<IInstagramParserManager, InstagramParserManager>();
 
             return serviceCollection;
         }
