@@ -7,9 +7,9 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating
     public class UserFactory : IUserFactory
     {
         public IUser CreateUser(string username, ulong userId, bool isInfluencer,
-            IEnumerable<LocatorScrapingResult> scrapingResults)
+            IEnumerable<LocatorScrapingResult> scrapingResults, int likes, int comments)
         {
-            return new User(username, userId, isInfluencer, scrapingResults);
+            return new User(username, userId, isInfluencer, scrapingResults, likes, comments);
         }
 
         public IUser CreateUser()

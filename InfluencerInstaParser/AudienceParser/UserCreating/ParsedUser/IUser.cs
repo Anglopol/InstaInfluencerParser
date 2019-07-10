@@ -14,6 +14,8 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
         ulong InstagramId { get; }
         bool IsUserEmpty { get; }
         bool IsInfluencer { get; }
+        int Likes { get; }
+        int Comments { get; }
         IEnumerable<LocatorScrapingResult> Locations { get; }
         IEnumerable<Post> Posts { get; set; }
         IEnumerable<ParsedUserFromJson> GetUsersToParse();

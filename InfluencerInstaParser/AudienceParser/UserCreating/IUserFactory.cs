@@ -6,7 +6,7 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating
 {
     public interface IUserFactory
     {
-        IUser CreateUser(string username, ulong userId, bool isInfluencer, IEnumerable<LocatorScrapingResult> scrapingResults);
+        IUser CreateUser(string username, ulong userId, bool isInfluencer, IEnumerable<LocatorScrapingResult> scrapingResults, int likes, int comments);
         IUser CreateUser();
     }
 }

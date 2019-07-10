@@ -33,7 +33,9 @@ namespace InfluencerInstaParser.AudienceParser.ResultOfParsing
             var username = GetUsername();
             var userId = GetUserId();
             var isInfluencer = IsInfluencer();
-            var newUser = _userFactory.CreateUser(username, userId, isInfluencer, ScrapedLocations);
+            var likes = GetLikes();
+            var comments = GetComments();
+            var newUser = _userFactory.CreateUser(username, userId, isInfluencer, ScrapedLocations, likes, comments);
             newUser.UsersFromLikes = UsersFromLikes;
             newUser.UsersFromComments = UsersFromComments;
             return newUser;
@@ -90,10 +92,26 @@ namespace InfluencerInstaParser.AudienceParser.ResultOfParsing
 
         private int GetCountOfActivity()
         {
+            return GetLikes() + GetComments() * CommentCoefficient;
+        }
+
+        private int GetLikes()
+        {
             var count = 0;
             foreach (var post in Posts)
             {
-                count += post.Comments * CommentCoefficient + post.Likes;
+                count += post.Likes;
+            }
+
+            return count;
+        }
+
+        private int GetComments()
+        {
+            var count = 0;
+            foreach (var post in Posts)
+            {
+                count += post.Comments;
             }
 
             return count;

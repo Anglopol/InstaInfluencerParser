@@ -15,6 +15,8 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
 
         public bool IsUserEmpty { get; }
         public bool IsInfluencer { get; }
+        public int Likes { get; }
+        public int Comments { get;  }
         public IEnumerable<LocatorScrapingResult> Locations { get; }
         public IEnumerable<Post> Posts { get; set; }
         private readonly Dictionary<ulong, UsersFromJsonWithCounter> _usersFromComments;
@@ -49,7 +51,7 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
             IsUserEmpty = true;
         }
 
-        public User(string name, ulong instagramId, bool isInfluencer, IEnumerable<LocatorScrapingResult> locations)
+        public User(string name, ulong instagramId, bool isInfluencer, IEnumerable<LocatorScrapingResult> locations, int likes, int comments)
         {
             Name = name;
             InstagramId = instagramId;
@@ -57,6 +59,8 @@ namespace InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser
             Uid = Guid.NewGuid().ToString();
             IsUserEmpty = false;
             IsInfluencer = isInfluencer;
+            Likes = likes;
+            Comments = comments;
             _usersFromComments = new Dictionary<ulong, UsersFromJsonWithCounter>();
             _usersFromLikes = new Dictionary<ulong, UsersFromJsonWithCounter>();
         }

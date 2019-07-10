@@ -22,9 +22,6 @@
       <None Update="accounts.config">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="parsingarguments.config">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
       <None Remove="AudienceParser\AuthorizedParsing\**" />
     </ItemGroup>
 
@@ -44,9 +41,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Update="Manager\InfluenceManager.cs">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Compile>
         <Compile Remove="AudienceParser\AuthorizedParsing\**" />
     </ItemGroup>
 
