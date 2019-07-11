@@ -2,20 +2,18 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using InfluencerInstaParser.AudienceParser.Proxy.PageDownload;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.LocationParsing
 {
     public class Locator : ILocator
     {
-        private readonly IServiceProvider _serviceProvider;
         private static ConcurrentDictionary<string, HashSet<LocatorScrapingResult>> _cachedCities;
         private readonly ConcurrentDictionary<string, CityInformation> _citiesFromFile;
         private readonly IInstagramLocationPageScraper _scraper;
-        private readonly string _citiesFile;
+        private readonly IPageDownloader _pageDownloader;
+        private const string CitiesFile = "citiesLocations.txt";
 
         private const double RadiusE = 6378135; // Equatorial radius, in metres
         private const double RadiusP = 6356750; // Polar Radius
@@ -28,13 +26,12 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
         }
 
 
-        public Locator(IServiceProvider serviceProvider, string pathToCitiesFile)
+        public Locator(IInstagramLocationPageScraper scraper, IPageDownloader pageDownloader)
         {
-            _serviceProvider = serviceProvider;
-            _citiesFile = pathToCitiesFile;
             _citiesFromFile = new ConcurrentDictionary<string, CityInformation>();
             _cachedCities = _cachedCities ?? new ConcurrentDictionary<string, HashSet<LocatorScrapingResult>>();
-            _scraper = _serviceProvider.GetService<IInstagramLocationPageScraper>();
+            _scraper = scraper;
+            _pageDownloader = pageDownloader;
             FillCities();
         }
 
@@ -66,23 +63,22 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
 
         private string GetLocationPageContentByLocationId(ulong locationId)
         {
-            var pageDownloader = _serviceProvider.GetService<IPageDownloader>();
             var locationUrl = MakeLocationUrl(locationId);
-            var locationPage = pageDownloader.GetPageContent(locationUrl);
-            pageDownloader.SetClientFree();
+            var locationPage = _pageDownloader.GetPageContent(locationUrl);
+            _pageDownloader.SetClientFree();
             return locationPage;
         }
 
         private void FillCities()
         {
-            var cityLines = File.ReadAllLines(_citiesFile, Encoding.UTF8);
+            var cityLines = File.ReadAllLines(CitiesFile);
             foreach (var city in cityLines)
             {
                 var cityParams = city.Split(":");
                 var cityId = int.Parse(cityParams[0]);
                 var cityName = cityParams[1];
-                var cityLat = double.Parse(cityParams[2]);
-                var cityLong = double.Parse(cityParams[3]);
+                var cityLat = Convert.ToDouble(cityParams[2]);
+                var cityLong = Convert.ToDouble(cityParams[3]);
                 _citiesFromFile.TryAdd(cityName,
                     new CityInformation {CityLat = cityLat, CityLong = cityLong, PublicId = cityId});
             }

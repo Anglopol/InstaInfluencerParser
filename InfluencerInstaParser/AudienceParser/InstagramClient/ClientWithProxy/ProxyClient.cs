@@ -89,8 +89,8 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
         private void WaitIfRequired()
         {
             var delay = DateTime.Now.Subtract(_timeOfLastUsage);
-            if (TimeSpan.Compare(delay, _defaultTimeSpanBetweenRequests) >= 0)
-                Thread.Sleep(delay.Subtract(_defaultTimeSpanBetweenRequests));
+            if (delay.Subtract(_defaultTimeSpanBetweenRequests) > TimeSpan.Zero)
+                Thread.Sleep(_defaultTimeSpanBetweenRequests); //TODO пересчитать 
         }
 
         public int GetRequestCounter()

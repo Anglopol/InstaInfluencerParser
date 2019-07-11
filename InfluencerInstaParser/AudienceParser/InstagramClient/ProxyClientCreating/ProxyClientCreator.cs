@@ -8,31 +8,29 @@ using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy;
 using InfluencerInstaParser.AudienceParser.Proxy;
 using JetBrains.Annotations;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreating
 {
     public class ProxyClientCreator : IProxyClientCreator
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly ConcurrentDictionary<IProxyClient, DateTime> _proxyClients;
         private IEnumerable<IWebProxy> _proxies;
         private const int MaxValueOfRequests = 170;
         private static readonly TimeSpan ProxyClientRestTime = TimeSpan.FromMinutes(3);
+        private readonly IProxyCreator _proxyCreator;
         private bool _isCreatorInit;
 
-        public ProxyClientCreator(IServiceProvider serviceProvider)
+        public ProxyClientCreator(IProxyCreator creator)
         {
+            _proxyCreator = creator;
             _proxyClients = new ConcurrentDictionary<IProxyClient, DateTime>();
-            _serviceProvider = serviceProvider;
             _isCreatorInit = false;
         }
 
         private void Initialize()
         {
             _isCreatorInit = true;
-            var proxyCreator = _serviceProvider.GetService<IProxyCreator>();
-            _proxies = proxyCreator.GetWebProxies();
+            _proxies = _proxyCreator.GetWebProxies();
             foreach (var webProxy in _proxies)
             {
                 var handler = new HttpClientHandler {Proxy = webProxy};

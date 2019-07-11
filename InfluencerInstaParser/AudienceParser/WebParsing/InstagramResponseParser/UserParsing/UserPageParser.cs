@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
 using InfluencerInstaParser.AudienceParser.Proxy.PageDownload;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.JsonToPostConverting;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.UserParsing
@@ -19,12 +17,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
 
         private const int MaxPaginationToDownload = 2; //TODO Get this parameter from DI
 
-        public UserPageParser(IServiceProvider serviceProvider)
+        public UserPageParser(IPageDownloader pageDownloader, IInstagramUserPageScraper userPageScraper,
+            IJsonToPostConverter toPostConverter, IResponseJsonScraper jsonScraper)
         {
-            _pageDownloader = serviceProvider.GetService<IPageDownloader>();
-            _pageContentScraper = serviceProvider.GetService<IInstagramUserPageScraper>();
-            _converter = serviceProvider.GetService<IJsonToPostConverter>();
-            _jObjectScraper = serviceProvider.GetService<IResponseJsonScraper>();
+            _pageDownloader = pageDownloader;
+            _pageContentScraper = userPageScraper;
+            _converter = toPostConverter;
+            _jObjectScraper = jsonScraper;
         }
 
         public string GetUserPage(string username)

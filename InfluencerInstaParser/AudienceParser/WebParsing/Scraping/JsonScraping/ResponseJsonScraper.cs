@@ -1,3 +1,4 @@
+using System;
 using Newtonsoft.Json.Linq;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping
@@ -45,19 +46,19 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping
         {
             var nextPageProperty =
                 (string) postsJson.SelectToken("data.user.edge_owner_to_timeline_media.page_info.has_next_page");
-            return bool.Parse(nextPageProperty);
+            return Convert.ToBoolean(nextPageProperty);
         }
 
         public bool IsNextPageExistsForLikes(JObject likesJson)
         {
             var nextPageProperty =
                 (string) likesJson.SelectToken("data.shortcode_media.edge_liked_by.page_info.has_next_page");
-            return bool.Parse(nextPageProperty);        }
+            return Convert.ToBoolean(nextPageProperty);        }
 
         public bool IsNextPageExistsForComments(JObject commentsJson)
         {
             var nextPageProperty =
                 (string) commentsJson.SelectToken("data.shortcode_media.edge_media_to_comment.page_info.has_next_page");
-            return bool.Parse(nextPageProperty);        }
+            return Convert.ToBoolean(nextPageProperty);        }
     }
 }

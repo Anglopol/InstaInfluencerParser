@@ -1,3 +1,4 @@
+using System;
 using System.Text.RegularExpressions;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping
@@ -11,13 +12,13 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentSc
 
         public double GetLatitudeFromLocationPage(string locationPageContent)
         {
-            return double.Parse(
+            return Convert.ToDouble(
                 Regex.Match(locationPageContent, "location:latitude\" content=\"[^\"]*")
                     .ToString().Split("\"")[2]);        }
 
         public double GetLongitudeFromLocationPage(string locationPageContent)
         {
-            return double.Parse(
+            return Convert.ToDouble(
                 Regex.Match(locationPageContent, "location:longitude\" content=\"[^\"]*")
                     .ToString().Split("\"")[2]);
         }

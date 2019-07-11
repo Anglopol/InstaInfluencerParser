@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,19 +8,25 @@ using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.Lo
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.PostParsing.CommentsParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.PostParsing.LikesParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.UserParsing;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace InfluencerInstaParser.AudienceParser
 {
     public class InstagramParser : IInstagramParser
     {
         private readonly IUserPageParser _userPageParser;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IParsingResultFactory _parsingResultFactory;
+        private readonly ICommentsParser _commentsParser;
+        private readonly ILikesParser _likesParser;
+        private readonly ILocator _locator;
 
-        public InstagramParser(IServiceProvider serviceProvider)
+        public InstagramParser(IUserPageParser userPageParser, IParsingResultFactory parsingResultFactory,
+            ICommentsParser commentsParser, ILikesParser likesParser, ILocator locator)
         {
-            _serviceProvider = serviceProvider;
-            _userPageParser = serviceProvider.GetService<IUserPageParser>();
+            _userPageParser = userPageParser;
+            _parsingResultFactory = parsingResultFactory;
+            _commentsParser = commentsParser;
+            _likesParser = likesParser;
+            _locator = locator;
         }
 
         public IParsingResult ParseByUsername(string username)
@@ -30,7 +35,7 @@ namespace InfluencerInstaParser.AudienceParser
             var userId = _userPageParser.GetUserId(userPage);
             return _userPageParser.IsUserPageValid(userPage)
                 ? ParseById(userId)
-                : _serviceProvider.GetService<IParsingResult>();
+                : _parsingResultFactory.MakeParsingResult();
         }
 
         public IParsingResult ParseById(ulong userId)
@@ -56,7 +61,7 @@ namespace InfluencerInstaParser.AudienceParser
 
         private IParsingResult PostsProcessing(IEnumerable<Post> posts)
         {
-            var parsingResult = _serviceProvider.GetService<IParsingResult>();
+            var parsingResult = _parsingResultFactory.MakeParsingResult();
             var postProcessingTasks = posts.Select(post =>
                 Task.Factory.StartNew(() => SinglePostProcessing(post, parsingResult),
                     TaskCreationOptions.LongRunning));
@@ -67,7 +72,7 @@ namespace InfluencerInstaParser.AudienceParser
 
         private IParsingResult OnlyLocationsPostProcessing(IEnumerable<Post> posts)
         {
-            var parsingResult = _serviceProvider.GetService<IParsingResult>();
+            var parsingResult = _parsingResultFactory.MakeParsingResult();
             var postProcessingTasks = posts.Select(post =>
                 Task.Factory.StartNew(() => OnlyLocationsSinglePostProcessing(post, parsingResult),
                     TaskCreationOptions.LongRunning));
@@ -78,7 +83,7 @@ namespace InfluencerInstaParser.AudienceParser
 
         private IParsingResult SecondLevelParsingPostProcessing(IEnumerable<Post> posts)
         {
-            var parsingResult = _serviceProvider.GetService<IParsingResult>();
+            var parsingResult = _parsingResultFactory.MakeParsingResult();
             var postProcessingTasks = posts.Select(post =>
                 Task.Factory.StartNew(() => SecondLevelSinglePostProcessing(post, parsingResult),
                     TaskCreationOptions.LongRunning));
@@ -89,6 +94,7 @@ namespace InfluencerInstaParser.AudienceParser
 
         private void SinglePostProcessing(Post post, IParsingResult parsingResult)
         {
+            if(post == null) return;
             parsingResult.AddPost(post);
 
             Task.Factory.StartNew(() => CommentsPostProcessing(post, parsingResult),
@@ -116,20 +122,17 @@ namespace InfluencerInstaParser.AudienceParser
 
         private void CommentsPostProcessing(Post post, IParsingResult parsingResult)
         {
-            var commentsParser = _serviceProvider.GetService<ICommentsParser>();
-            parsingResult.AddUsersFromComments(commentsParser.GetUsersFromComments(post));
+            parsingResult.AddUsersFromComments(_commentsParser.GetUsersFromComments(post));
         }
 
         private void LikesPostProcessing(Post post, IParsingResult parsingResult)
         {
-            var likesParser = _serviceProvider.GetService<ILikesParser>();
-            parsingResult.AddUsersFromLikes(likesParser.GetUsersFromLikes(post));
+            parsingResult.AddUsersFromLikes(_likesParser.GetUsersFromLikes(post));
         }
 
         private void LocationPostProcessing(Post post, IParsingResult parsingResult)
         {
-            var locator = _serviceProvider.GetService<ILocator>();
-            var locationScrapResult = locator.GetLocatorScrapingResultByLocationId(post.LocationId);
+            var locationScrapResult = _locator.GetLocatorScrapingResultByLocationId(post.LocationId);
             parsingResult.AddLocationScrapResult(locationScrapResult);
         }
 

@@ -9,12 +9,7 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
 {
     public class ProxyFromFileCreator : IProxyCreator
     {
-        private readonly string _pathToProxyFile;
-
-        public ProxyFromFileCreator(string pathToProxyFile)
-        {
-            _pathToProxyFile = pathToProxyFile;
-        }
+        private const string PathToProxyFile = "proxies.txt"; //TODO Make params class 
 
         public IEnumerable<IWebProxy> GetWebProxies()
         {
@@ -23,7 +18,7 @@ namespace InfluencerInstaParser.AudienceParser.Proxy
 
         private IEnumerable<WebProxy> CreateProxies()
         {
-            var proxyLines = File.ReadAllLines(_pathToProxyFile, Encoding.UTF8);
+            var proxyLines = File.ReadAllLines(PathToProxyFile, Encoding.UTF8);
 
             return from line in proxyLines
                 select line.Split(":")
