@@ -5,6 +5,7 @@ using InfluencerInstaParser.AudienceParser.WebParsing.Scraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.JsonToParsedUserConverting;
 using Newtonsoft.Json.Linq;
+using Serilog;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.PostParsing.CommentsParsing
 {
@@ -13,16 +14,19 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
         private readonly IPageDownloader _pageDownloader;
         private readonly IResponseJsonScraper _jObjectScraper;
         private readonly IJsonToParsedUsersConverter _converter;
+        private readonly ILogger _logger;
 
         private const int MaxPaginationToDownload = 2; //TODO Get this parameter from DI
 
         public CommentsParser(IPageDownloader pageDownloader,
             IResponseJsonScraper responseJsonScraper,
-            IJsonToParsedUsersConverter jsonToParsedUsersConverter)
+            IJsonToParsedUsersConverter jsonToParsedUsersConverter,
+            ILogger logger)
         {
             _pageDownloader = pageDownloader;
             _jObjectScraper = responseJsonScraper;
             _converter = jsonToParsedUsersConverter;
+            _logger = logger;
         }
 
         public IEnumerable<ParsedUserFromJson> GetUsersFromComments(Post post)

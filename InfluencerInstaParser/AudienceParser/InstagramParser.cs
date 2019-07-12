@@ -8,6 +8,7 @@ using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.Lo
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.PostParsing.CommentsParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.PostParsing.LikesParsing;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.UserParsing;
+using Serilog;
 
 namespace InfluencerInstaParser.AudienceParser
 {
@@ -18,21 +19,24 @@ namespace InfluencerInstaParser.AudienceParser
         private readonly ICommentsParser _commentsParser;
         private readonly ILikesParser _likesParser;
         private readonly ILocator _locator;
+        private readonly ILogger _logger;
 
         public InstagramParser(IUserPageParser userPageParser, IParsingResultFactory parsingResultFactory,
-            ICommentsParser commentsParser, ILikesParser likesParser, ILocator locator)
+            ICommentsParser commentsParser, ILikesParser likesParser, ILocator locator, ILogger logger)
         {
             _userPageParser = userPageParser;
             _parsingResultFactory = parsingResultFactory;
             _commentsParser = commentsParser;
             _likesParser = likesParser;
             _locator = locator;
+            _logger = logger;
         }
 
         public IParsingResult ParseByUsername(string username)
         {
             var userPage = _userPageParser.GetUserPage(username);
             var userId = _userPageParser.GetUserId(userPage);
+            _logger.Verbose("UserId is {id}", userId);
             return _userPageParser.IsUserPageValid(userPage)
                 ? ParseById(userId)
                 : _parsingResultFactory.MakeParsingResult();
@@ -95,6 +99,7 @@ namespace InfluencerInstaParser.AudienceParser
         private void SinglePostProcessing(Post post, IParsingResult parsingResult)
         {
             if(post == null) return;
+            _logger.Verbose("Processing {@Post}", post);
             parsingResult.AddPost(post);
 
             Task.Factory.StartNew(() => CommentsPostProcessing(post, parsingResult),

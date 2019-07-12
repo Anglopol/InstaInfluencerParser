@@ -32,6 +32,7 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
                 var response = GetResponse(pageUrl);
                 _requestCounter++;
                 if (response.StatusCode == HttpStatusCode.NotFound) return "";
+                Console.WriteLine(response.StatusCode + " " + pageUrl); //TODO remove 
                 response.EnsureSuccessStatusCode();
                 var responseBody = GetResponseBody(response);
                 _httpClient.CancelPendingRequests();

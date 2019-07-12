@@ -7,11 +7,13 @@ using InfluencerInstaParser.AudienceParser.UserCreating.ParsedUser;
 using InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser;
 using InfluencerInstaParser.Database.Client;
 using InfluencerInstaParser.Database.ModelCreating;
+using Serilog;
 
 namespace InfluencerInstaParser.Manager
 {
     public class InstagramParserManager : IInstagramParserManager
     {
+        private readonly ILogger _logger;
         private readonly IInstagramParser _instagramParser;
         private readonly IDatabaseClientHandler _databaseClient;
         private readonly IModelCreator _modelCreator;
@@ -20,8 +22,9 @@ namespace InfluencerInstaParser.Manager
         private IUser _targetUser;
 
         public InstagramParserManager(IInstagramParser instagramParser, IDatabaseClientHandler clientHandler,
-            IModelCreator modelCreator)
+            IModelCreator modelCreator, ILogger logger)
         {
+            _logger = logger;
             _modelCreator = modelCreator;
             _databaseClient = clientHandler;
             _instagramParser = instagramParser;
@@ -31,6 +34,7 @@ namespace InfluencerInstaParser.Manager
 
         public void AnalyzeUser(string username)
         {
+            _logger.Information("starting analysis for {username}", username);
             var parsingResult = _instagramParser.ParseByUsername(username);
             _targetUser = parsingResult.CreateUser();
             if (_targetUser.IsUserEmpty) return;
