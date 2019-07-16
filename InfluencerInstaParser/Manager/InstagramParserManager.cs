@@ -37,10 +37,15 @@ namespace InfluencerInstaParser.Manager
             _logger.Information("starting analysis for {username}", username);
             var parsingResult = _instagramParser.ParseByUsername(username);
             _targetUser = parsingResult.CreateUser();
+            _logger.Debug("Target user created @target", _targetUser);
             if (_targetUser.IsUserEmpty) return;
+            _logger.Debug("First level for target");
             FirstLevelAudienceProcessing(_targetUser);
+            _logger.Debug("Second level for target");
             SecondLevelAudienceProcessing();
+            _logger.Debug("Third level for target");
             InfluencersAudienceProcessing();
+            _logger.Debug("Model creating");
             var model = _modelCreator.CreateModel(_targetUser, _firstLevelUsers.Values, _secondLevelUsers.Values);
             _databaseClient.CreateAnalysis(model);
         }

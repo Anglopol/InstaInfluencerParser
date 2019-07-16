@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy;
 using InfluencerInstaParser.AudienceParser.Proxy;
 using JetBrains.Annotations;
+using Serilog;
 
 namespace InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreating
 {
@@ -19,9 +20,11 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreati
         private static readonly TimeSpan ProxyClientRestTime = TimeSpan.FromMinutes(3);
         private readonly IProxyCreator _proxyCreator;
         private bool _isCreatorInit;
+        private readonly ILogger _logger;
 
-        public ProxyClientCreator(IProxyCreator creator)
+        public ProxyClientCreator(IProxyCreator creator, ILogger logger)
         {
+            _logger = logger;
             _proxyCreator = creator;
             _proxyClients = new ConcurrentDictionary<IProxyClient, DateTime>();
             _isCreatorInit = false;
@@ -34,7 +37,7 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreati
             foreach (var webProxy in _proxies)
             {
                 var handler = new HttpClientHandler {Proxy = webProxy};
-                var client = new ProxyClient(handler);
+                var client = new ProxyClient(handler, _logger);
                 _proxyClients.TryAdd(client, client.GetLastUsageTime());
             }
         }

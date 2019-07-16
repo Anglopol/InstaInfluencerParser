@@ -5,6 +5,7 @@ using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.JsonScraping.JsonToPostConverting;
 using InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentScraping;
 using Newtonsoft.Json.Linq;
+using Serilog;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser.UserParsing
 {
@@ -14,16 +15,18 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
         private readonly IInstagramUserPageScraper _pageContentScraper;
         private readonly IJsonToPostConverter _converter;
         private readonly IResponseJsonScraper _jObjectScraper;
+        private readonly ILogger _logger;
 
         private const int MaxPaginationToDownload = 2; //TODO Get this parameter from DI
 
         public UserPageParser(IPageDownloader pageDownloader, IInstagramUserPageScraper userPageScraper,
-            IJsonToPostConverter toPostConverter, IResponseJsonScraper jsonScraper)
+            IJsonToPostConverter toPostConverter, IResponseJsonScraper jsonScraper, ILogger logger)
         {
             _pageDownloader = pageDownloader;
             _pageContentScraper = userPageScraper;
             _converter = toPostConverter;
             _jObjectScraper = jsonScraper;
+            _logger = logger;
         }
 
         public string GetUserPage(string username)
@@ -47,8 +50,11 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
 
         public IEnumerable<Post> GetPostsFromUser(ulong userId)
         {
+            _logger.Debug("Getting Posts from {userId}", userId);
             var requestUrl = RequestParamsCreator.GetQueryUrlForPosts(userId);
+            _logger.Verbose("Request url: {url}", requestUrl);
             var firstJsonFromUserPage = GetJsonFromInstagram(requestUrl);
+            _logger.Verbose("Starting pagination download");
             return PaginationDownload(firstJsonFromUserPage, userId);
         }
 
@@ -78,8 +84,10 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
         private JObject GetJsonFromInstagram(string query)
         {
             var responseBody = _pageDownloader.GetPageContent(query);
+            _logger.Verbose("JSON: {value}", responseBody);
+            var result = JObject.Parse(responseBody);
             _pageDownloader.SetClientFree();
-            return JObject.Parse(responseBody);
+            return result;
         }
 
         private static string MakeUserUrl(string username)

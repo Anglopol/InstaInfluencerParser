@@ -19,20 +19,20 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.Scraping.PageContentSc
 
         public double GetLatitudeFromLocationPage(string locationPageContent)
         {
-            if (double.TryParse(
-                Regex.Match(locationPageContent, "location:latitude\" content=\"[^\"]*")
-                    .ToString().Split("\"")[2], out var result)) return result;
-            _logger.Error("Can't parse Latitude for {page} \nlocation page", locationPageContent);
+            var value = Regex.Match(locationPageContent, "location:latitude\" content=\"[^\"]*")
+                .ToString().Split("\"")[2].Replace(".", ",");
+            if (double.TryParse(value, out var result)) return result;
+            _logger.Error("Can't parse Latitude value:{page}", value);
             return 0;
         }
 
 
         public double GetLongitudeFromLocationPage(string locationPageContent)
         {
-            if (double.TryParse(
-                Regex.Match(locationPageContent, "location:longitude\" content=\"[^\"]*")
-                    .ToString().Split("\"")[2], out var result)) return result;
-            _logger.Error("Can't parse Longitude for {page} \nlocation page", locationPageContent);
+            var value = Regex.Match(locationPageContent, "location:longitude\" content=\"[^\"]*")
+                .ToString().Split("\"")[2].Replace(".", ",");
+            if (double.TryParse(value, out var result)) return result;
+            _logger.Error("Can't parse Longitude value:{value}", value);
             return 0;
         }
     }

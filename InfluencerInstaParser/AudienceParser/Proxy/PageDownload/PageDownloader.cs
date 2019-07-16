@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy;
 using InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreating;
+using Serilog;
 
 namespace InfluencerInstaParser.AudienceParser.Proxy.PageDownload
 {
@@ -10,9 +11,11 @@ namespace InfluencerInstaParser.AudienceParser.Proxy.PageDownload
         private IProxyClient _client;
         private readonly IProxyClientCreator _proxyClientCreator;
         private const int MaxValueOfRequests = 180;
-        public PageDownloader(IProxyClientCreator clientCreator)
+        private readonly ILogger _logger;
+        public PageDownloader(IProxyClientCreator clientCreator, ILogger logger)
         {
             _proxyClientCreator = clientCreator;
+            _logger = logger;
         }
         
         public string GetPageContent(string pageUrl)
@@ -44,8 +47,10 @@ namespace InfluencerInstaParser.AudienceParser.Proxy.PageDownload
 
         private IProxyClient GetClient()
         {
+            _logger.Verbose("Getting new client");
             var clientTask = Task.Run(async () => await _proxyClientCreator.GetClientAsync());
             clientTask.Wait();
+            _logger.Verbose("Client getting complete");
             return clientTask.Result;
         }
         

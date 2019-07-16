@@ -64,8 +64,9 @@ namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParse
         private JObject GetJsonFromInstagram(string query)
         {
             var responseBody = _pageDownloader.GetPageContent(query);
+            var result =  JObject.Parse(responseBody);
             _pageDownloader.SetClientFree();
-            return JObject.Parse(responseBody);
+            return result;
         }
     }
 }

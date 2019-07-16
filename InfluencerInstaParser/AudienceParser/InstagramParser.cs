@@ -45,6 +45,7 @@ namespace InfluencerInstaParser.AudienceParser
         public IParsingResult ParseById(ulong userId)
         {
             var posts = GetPosts(userId);
+            _logger.Debug("All posts downloaded");
             return PostsProcessing(posts);
         }
 
@@ -65,12 +66,11 @@ namespace InfluencerInstaParser.AudienceParser
 
         private IParsingResult PostsProcessing(IEnumerable<Post> posts)
         {
+            _logger.Debug("Start Posts Processing");
             var parsingResult = _parsingResultFactory.MakeParsingResult();
-            var postProcessingTasks = posts.Select(post =>
-                Task.Factory.StartNew(() => SinglePostProcessing(post, parsingResult),
-                    TaskCreationOptions.LongRunning));
+            var postProcessingTasks = posts.Select(post => Task.Run(() => SinglePostProcessing(post, parsingResult)));
             Task.WaitAll(postProcessingTasks.ToArray());
-
+            _logger.Debug("End posts processing");
             return parsingResult;
         }
 
@@ -98,16 +98,18 @@ namespace InfluencerInstaParser.AudienceParser
 
         private void SinglePostProcessing(Post post, IParsingResult parsingResult)
         {
-            if(post == null) return;
+            if (post == null) return;
             _logger.Verbose("Processing {@Post}", post);
             parsingResult.AddPost(post);
-
-            Task.Factory.StartNew(() => CommentsPostProcessing(post, parsingResult),
-                TaskCreationOptions.AttachedToParent);
-            Task.Factory.StartNew(() => LikesPostProcessing(post, parsingResult),
-                TaskCreationOptions.AttachedToParent);
-            Task.Factory.StartNew(() => LocationPostProcessing(post, parsingResult),
-                TaskCreationOptions.AttachedToParent);
+            var tasks = new List<Task>();
+            var commentTask = Task.Run(() => CommentsPostProcessing(post, parsingResult));
+            tasks.Add(commentTask);
+            var likesTask = Task.Run(() => LikesPostProcessing(post, parsingResult));
+            tasks.Add(likesTask);
+            var locationTask = Task.Run(() => LocationPostProcessing(post, parsingResult));
+            tasks.Add(locationTask);
+            Task.WaitAll(tasks.ToArray());
+            _logger.Debug("POST PROCESSED");
         }
 
         private void OnlyLocationsSinglePostProcessing(Post post, IParsingResult parsingResult)

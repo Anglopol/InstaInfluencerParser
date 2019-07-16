@@ -3,28 +3,35 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
 {
     public class ProxyClient : IProxyClient
     {
+        private readonly ILogger _logger;
         private int _requestCounter;
         private DateTime _timeOfLastUsage;
         private readonly HttpClient _httpClient;
         private readonly TimeSpan _defaultTimeSpanBetweenRequests;
         private const string DefaultUserAgent =
             "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36";
+        private const int MaxTimeSpanForRequest = 30;
+        private const int TimeSpanBetweenRequests = 800;
 
-        public ProxyClient(HttpClientHandler httpClientHandler)
+        public ProxyClient(HttpClientHandler httpClientHandler, ILogger logger)
         {
+            _logger = logger;
             _timeOfLastUsage = DateTime.MinValue;
             _requestCounter = 0;
             _httpClient = new HttpClient(httpClientHandler, true);
-            _defaultTimeSpanBetweenRequests = TimeSpan.FromMilliseconds(600);
+            _httpClient.Timeout = TimeSpan.FromMinutes(MaxTimeSpanForRequest);
+            _defaultTimeSpanBetweenRequests = TimeSpan.FromMilliseconds(TimeSpanBetweenRequests);
         }
 
         public string GetPageContent(string pageUrl)
         {
+            var g = Guid.NewGuid().ToString();
             _httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(DefaultUserAgent);
             WaitIfRequired();
             try
@@ -35,22 +42,21 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
                 Console.WriteLine(response.StatusCode + " " + pageUrl); //TODO remove 
                 response.EnsureSuccessStatusCode();
                 var responseBody = GetResponseBody(response);
-                _httpClient.CancelPendingRequests();
                 return responseBody;
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException e)
             {
-                _httpClient.CancelPendingRequests();
+                _logger.Error("Request {exception} {guid}", e, g);
                 return GetPageContent(pageUrl);
             }
-            catch (TaskCanceledException)
+            catch (AggregateException e)
             {
-                _httpClient.CancelPendingRequests();
+                _logger.Error("Canceled {exception} {guid}", e, g);
                 return GetPageContent(pageUrl);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                _httpClient.CancelPendingRequests();
+                _logger.Error("Simple {exception} {guid}", e, g);
                 return "";
             }
         }
