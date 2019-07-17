@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 
 namespace InfluencerInstaParser.AudienceParser.WebParsing.InstagramResponseParser
 {
-    public class Post
+    public class  Post
     {
         public string Owner { get; }
         public ulong OwnerId { get; }

@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy;
 using InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreating;
@@ -21,7 +22,8 @@ namespace InfluencerInstaParser.AudienceParser.Proxy.PageDownload
         public string GetPageContent(string pageUrl)
         {
             CheckClient();
-            return _client.GetPageContent(pageUrl);
+            var response =  _client.GetResponse(pageUrl);
+            return StatusCodeCheck(response, pageUrl);
         }
 
         public void SetClientFree()
@@ -29,10 +31,22 @@ namespace InfluencerInstaParser.AudienceParser.Proxy.PageDownload
             _proxyClientCreator.FreeTheClient(_client);
         }
 
+        private string StatusCodeCheck(ProxyClientResponse response, string pageUrl)
+        {
+            switch (response.Code)
+            {
+                case HttpStatusCode.OK: return response.PageContent;
+                case HttpStatusCode.TooManyRequests:
+                    PutTheClientToSleep();
+                    return GetPageContent(pageUrl);
+                default: return GetPageContent(pageUrl);
+            }
+        }
+
         private void CheckClient()
         {
             if(_client == null) RefreshClient();
-            if(_client.GetRequestCounter() >= MaxValueOfRequests) RefreshClient();
+            if(_client.RequestCounter >= MaxValueOfRequests) RefreshClient();
         }
 
         private void RefreshClient()
@@ -59,6 +73,11 @@ namespace InfluencerInstaParser.AudienceParser.Proxy.PageDownload
             var clientTask = Task.Run(async () => await _proxyClientCreator.GetClientAsync(proxyClient));
             clientTask.Wait();
             return clientTask.Result;
+        }
+
+        private void PutTheClientToSleep()
+        {
+            _client.OverloadRequestCounter();
         }
 
         private void ReleaseUnmanagedResources()

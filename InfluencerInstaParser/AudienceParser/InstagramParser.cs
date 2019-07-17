@@ -115,16 +115,18 @@ namespace InfluencerInstaParser.AudienceParser
         private void OnlyLocationsSinglePostProcessing(Post post, IParsingResult parsingResult)
         {
             parsingResult.AddPost(post);
-            Task.Factory.StartNew(() => LocationPostProcessing(post, parsingResult),
-                TaskCreationOptions.AttachedToParent);
+            var task = Task.Run(() => LocationPostProcessing(post, parsingResult));
+            task.Wait();
         }
 
         private void SecondLevelSinglePostProcessing(Post post, IParsingResult parsingResult)
         {
-            Task.Factory.StartNew(() => CommentsPostProcessing(post, parsingResult),
-                TaskCreationOptions.AttachedToParent);
-            Task.Factory.StartNew(() => LikesPostProcessing(post, parsingResult),
-                TaskCreationOptions.AttachedToParent);
+            var tasks = new List<Task>
+            {
+                Task.Run(() => CommentsPostProcessing(post, parsingResult)),
+                Task.Run(() => LikesPostProcessing(post, parsingResult))
+            };
+            Task.WaitAll(tasks.ToArray());
         }
 
         private void CommentsPostProcessing(Post post, IParsingResult parsingResult)
@@ -139,6 +141,7 @@ namespace InfluencerInstaParser.AudienceParser
 
         private void LocationPostProcessing(Post post, IParsingResult parsingResult)
         {
+            if(!post.HasLocation) return;
             var locationScrapResult = _locator.GetLocatorScrapingResultByLocationId(post.LocationId);
             parsingResult.AddLocationScrapResult(locationScrapResult);
         }

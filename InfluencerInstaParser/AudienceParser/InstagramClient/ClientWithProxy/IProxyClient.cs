@@ -4,10 +4,11 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
 {
     public interface IProxyClient
     {
-        string GetPageContent(string pageUrl);
-        string GetPageContent(string pageUrl, string userAgent);
-        int GetRequestCounter();
+        ProxyClientResponse GetResponse(string pageUrl);
+        ProxyClientResponse GetResponse(string pageUrl, string userAgent);
+        int RequestCounter { get; }
         void ResetRequestCounter();
+        void OverloadRequestCounter();
         DateTime GetLastUsageTime();
     }
 }

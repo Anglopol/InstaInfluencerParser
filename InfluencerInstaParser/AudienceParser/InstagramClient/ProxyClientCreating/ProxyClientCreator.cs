@@ -47,7 +47,7 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreati
             if(!_isCreatorInit) Initialize();
             foreach (var (client, _) in _proxyClients)
             {
-                if (client.GetRequestCounter() < MaxValueOfRequests && _proxyClients.TryRemove(client, out _))
+                if (client.RequestCounter < MaxValueOfRequests && _proxyClients.TryRemove(client, out _))
                     return client;
             }
 
