@@ -17,8 +17,8 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
         private const string DefaultUserAgent =
             "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36";
 
-        private const int MaxTimeSpanForRequest = 30;
-        private const int TimeSpanBetweenRequests = 900;
+        private const int MaxTimeSpanForRequestInMin = 2;
+        private const int TimeSpanBetweenRequestsInMs = 1000;
 
         public int RequestCounter { get; private set; }
 
@@ -30,10 +30,10 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
             RequestCounter = 0;
             _httpClient = new HttpClient(httpClientHandler, true)
             {
-                Timeout = TimeSpan.FromMinutes(MaxTimeSpanForRequest)
+                Timeout = TimeSpan.FromMinutes(MaxTimeSpanForRequestInMin)
             };
             _httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd(DefaultUserAgent);
-            _defaultTimeSpanBetweenRequests = TimeSpan.FromMilliseconds(TimeSpanBetweenRequests);
+            _defaultTimeSpanBetweenRequests = TimeSpan.FromMilliseconds(TimeSpanBetweenRequestsInMs);
         }
 
         public ProxyClientResponse GetResponse(string pageUrl)
@@ -65,7 +65,7 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
 
         private HttpResponseMessage GetResponseMessage(string pageUrl)
         {
-            var responseTask = Task.Run(async () => await GetResponseMessageAsync(pageUrl));
+            var responseTask = Task.Run(async () => await GetResponseMessageAsync(pageUrl).ConfigureAwait(false));
             _timeOfLastUsage = DateTime.Now;
             responseTask.Wait();
             return responseTask.Result;
@@ -73,7 +73,7 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
 
         private static string GetResponseBody(HttpResponseMessage response)
         {
-            var responseBodyTask = Task.Run(async () => await GetResponseBodyAsync(response));
+            var responseBodyTask = Task.Run(async () => await GetResponseBodyAsync(response).ConfigureAwait(false));
             responseBodyTask.Wait();
             return responseBodyTask.Result;
         }
@@ -92,7 +92,7 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
         private void WaitIfRequired()
         {
             var delay = DateTime.Now.Subtract(_timeOfLastUsage);
-            if (delay.Subtract(_defaultTimeSpanBetweenRequests) > TimeSpan.Zero)
+            if (delay - _defaultTimeSpanBetweenRequests > TimeSpan.Zero)
                 Thread.Sleep(_defaultTimeSpanBetweenRequests); //TODO пересчитать 
         }
 
