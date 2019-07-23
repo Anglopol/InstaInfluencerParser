@@ -18,6 +18,7 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreati
         private IEnumerable<IWebProxy> _proxies;
         private const int MaxValueOfRequests = 170;
         private static readonly TimeSpan ProxyClientRestTime = TimeSpan.FromMinutes(3);
+        private static readonly TimeSpan ProxyWaitingTime = TimeSpan.FromSeconds(10);
         private readonly IProxyCreator _proxyCreator;
         private bool _isCreatorInit;
         private readonly ILogger _logger;
@@ -58,31 +59,26 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ProxyClientCreati
         {
             while (true)
             {
-                var oldestDateOfUsage = DateTime.Now;
-                var maxSubtract = TimeSpan.Zero;
                 foreach (var (client, lastUsageTime) in _proxyClients)
                 {
-                    var curSubtract = oldestDateOfUsage.Subtract(lastUsageTime);
-                    if (curSubtract > maxSubtract) maxSubtract = curSubtract;
                     if (!CheckDateTimeOnValid(lastUsageTime) || !_proxyClients.TryRemove(client, out _)) continue;
                     client.ResetRequestCounter();
                     return client;
                 }
-                await WaitFirstProxy(maxSubtract);
+                await WaitFirstProxy(ProxyWaitingTime);
             }
         }
 
-        private static Task WaitFirstProxy(TimeSpan maxSubtract)
+        private static Task WaitFirstProxy(TimeSpan timeSpan)
         {
-            if (maxSubtract == TimeSpan.Zero) maxSubtract = TimeSpan.FromSeconds(1);
-            Thread.Sleep(ProxyClientRestTime.Subtract(maxSubtract));
+            Thread.Sleep(timeSpan);
             return Task.CompletedTask;
         }
 
         private static bool CheckDateTimeOnValid(DateTime lastUsageTime)
         {
             var delay = DateTime.Now.Subtract(lastUsageTime);
-            return TimeSpan.Compare(delay, ProxyClientRestTime) >= 0;
+            return delay >= ProxyClientRestTime;
         }
 
         public async Task<IProxyClient> GetClientAsync([NotNull] IProxyClient spentClient)

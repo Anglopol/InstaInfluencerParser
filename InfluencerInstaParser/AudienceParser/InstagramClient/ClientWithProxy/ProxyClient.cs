@@ -41,8 +41,9 @@ namespace InfluencerInstaParser.AudienceParser.InstagramClient.ClientWithProxy
             WaitIfRequired();
             try
             {
-                var responseMessage = GetResponseMessage(pageUrl);
                 RequestCounter++;
+                var responseMessage = GetResponseMessage(pageUrl);
+                
                 Console.WriteLine(responseMessage.StatusCode + " " + pageUrl); //TODO remove 
                 if (!responseMessage.IsSuccessStatusCode)
                     return new ProxyClientResponse("", responseMessage.StatusCode);

@@ -21,7 +21,7 @@ namespace InfluencerInstaParser.Database.Client
         public void CreateAnalysis(IModel model)
         {
             CreateTargetAndAnalysisNodes(model);
-            CreateUsers(model.Users);
+            CreateUsers(model.Users, model.Target);
             CreateLocations(model.Locations);
             CreateUserToUserRelations(model.UserToUserRelations);
             CreateUserToLocationRelations(model.UserToLocationRelations);
@@ -33,12 +33,12 @@ namespace InfluencerInstaParser.Database.Client
             _graphClient.Cypher
                 .Merge($"(target:Target {{instagramId: {model.Target.InstagramId}}})")
                 .Create(
-                    $"(analysis:Analysis {{date: \"{model.ModelCreatingDate}\", uid: \"{analysisUid}\", targetInstagramId: {model.Target.InstagramId}, analysisTargetUid: \"{model.Target.Uid}\"}})")
+                    $"(analysis:Analysis {{date: \"{model.ModelCreatingDate}\", uid: \"{analysisUid}\", targetInstagramId: {model.Target.InstagramId}, targetUid: \"{model.Target.Uid}\"}})")
                 .Merge($"(analysis)-[:INSTAGRAM_ANALYSIS {{date: \"{model.ModelCreatingDate}\"}}]->(target)")
                 .ExecuteWithoutResults();
         }
 
-        private void CreateUsers(IEnumerable<IUser> users)
+        private void CreateUsers(IEnumerable<IUser> users, IUser target)
         {
             foreach (var user in users)
             {
@@ -47,6 +47,17 @@ namespace InfluencerInstaParser.Database.Client
                         $"(u:User {{name: \"{user.Name}\", uid: \"{user.Uid}\", instagramId: {user.InstagramId}, likes: {user.Likes}, comments: {user.Comments}}})")
                     .ExecuteWithoutResults();
             }
+            CreateUserToAnalysisRelation(target);
+        }
+
+        private void CreateUserToAnalysisRelation(IUser user)
+        {
+            _graphClient.Cypher
+                .Match("(analysis:Analysis)", "(user:User)")
+                .Where($"analysis.targetUid = {user.Uid}")
+                .AndWhere($"user.uid = {user.Uid}")
+                .Merge("(user)-[:ANALYZED]->(analysis)")
+                .ExecuteWithoutResults();
         }
 
         private void CreateLocations(IEnumerable<Location> locations)
